@@ -22,18 +22,103 @@
   }
   .screen {
     flex: 1;
-    padding: 24px;
+    padding: 0 24px 24px;
+  }
+  /* Sticky header keeps the title + day bar visible while routines scroll */
+  .screen-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(242,243,247,0.95);
+    backdrop-filter: blur(8px);
+    padding-top: 16px;
+    margin: 0 -24px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
   }
   h1 {
-    font-size: 24px;
-    margin-bottom: 12px;
-    text-align: center;
+    font-size: 22px;
   }
+  .history-btn {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #5b6cff;
+    background: #fff;
+    border: 1px solid #d8dcf0;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .history-btn:active { transform: scale(0.97); }
   .hint {
     text-align: center;
     color: #8a8fa3;
     font-size: 14px;
   }
+
+  /* History popup */
+  .hist-back {
+    background: none;
+    border: none;
+    color: #5b6cff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-right: auto;
+  }
+  .hist-back.hidden { visibility: hidden; }
+  #historyTitle { flex: 1; text-align: center; }
+  .hist-empty {
+    color: #8a8fa3;
+    text-align: center;
+    padding: 32px 12px;
+    font-size: 15px;
+  }
+  .hist-week, .hist-day {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 16px;
+    margin-bottom: 10px;
+    background: #f7f8fc;
+    border: 1px solid #e6e8f0;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1c1c2e;
+    cursor: pointer;
+  }
+  .hist-week:active, .hist-day:active { transform: scale(0.99); }
+  .hist-day.active {
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff;
+    border-color: transparent;
+  }
+  .hist-days {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .hist-days .hist-day { margin-bottom: 0; }
+  .hist-routine {
+    background: #f7f8fc;
+    border: 1px solid #e6e8f0;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .hist-routine-name { font-weight: 700; margin-bottom: 6px; }
+  .hist-line { font-size: 14px; color: #555; margin-top: 3px; }
+  .hist-done { color: #2faa6a; font-weight: 600; }
 
   /* Bottom button bar */
   .bottom-bar {
@@ -124,6 +209,24 @@
     color: #fff;
     border-color: transparent;
   }
+  /* "today" gets a subtle outline even when another day is selected */
+  .day-pill.today {
+    border-color: #5b6cff;
+    box-shadow: 0 0 0 1px #5b6cff inset;
+  }
+  .day-pill.today.active {
+    box-shadow: none;
+  }
+  .day-pill .today-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #5b6cff;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+  .day-pill.active .today-dot { background: #fff; }
 
   /* Routine inputs below selected day */
   .routines h3 {
@@ -534,41 +637,43 @@
 <body>
   <div class="app">
     <div class="screen">
-      <h1>My Exercise Sheet</h1>
-      <p class="hint">Tap the button below to open your week.</p>
-    </div>
-
-    <!-- Bottom button bar -->
-    <div class="bottom-bar">
-      <button class="menu-btn" onclick="openCard()">Full Week Exercise</button>
-    </div>
-
-    <!-- Full Week card -->
-    <div class="overlay" id="weekOverlay">
-      <div class="card">
-        <div class="card-header">
-          <h2>Full Week Exercise</h2>
-          <button class="close-btn" onclick="closeCard()">&times;</button>
+      <!-- Sticky header: title + days bar stay on top while you scroll -->
+      <div class="screen-top">
+        <div class="title-row">
+          <h1>My Exercise Sheet</h1>
+          <button class="history-btn" onclick="openHistory()">History</button>
         </div>
 
         <!-- Days across the top, left to right -->
         <div class="day-row" id="dayRow"></div>
+      </div>
 
-        <!-- Routine inputs for the selected day -->
-        <div class="routines">
-          <div class="routines-header">
-            <h3 id="selectedDayTitle">Monday</h3>
-            <button class="copy-btn" onclick="toggleCopyPicker()">Copy to…</button>
-          </div>
-          <div class="copy-picker" id="copyPicker">
-            <div class="copy-picker-title">Copy this day's routines to:</div>
-            <div class="copy-picker-days" id="copyPickerDays"></div>
-            <button class="copy-confirm" onclick="confirmCopy()">Copy</button>
-            <div class="copy-msg" id="copyMsg"></div>
-          </div>
-          <div id="routineList"></div>
-          <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
+      <!-- Routine inputs for the selected day -->
+      <div class="routines">
+        <div class="routines-header">
+          <h3 id="selectedDayTitle">Monday</h3>
+          <button class="copy-btn" onclick="toggleCopyPicker()">Copy to…</button>
         </div>
+        <div class="copy-picker" id="copyPicker">
+          <div class="copy-picker-title">Copy this day's routines to:</div>
+          <div class="copy-picker-days" id="copyPickerDays"></div>
+          <button class="copy-confirm" onclick="confirmCopy()">Copy</button>
+          <div class="copy-msg" id="copyMsg"></div>
+        </div>
+        <div id="routineList"></div>
+        <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
+      </div>
+    </div>
+
+    <!-- History popup -->
+    <div class="overlay" id="historyOverlay">
+      <div class="card">
+        <div class="card-header">
+          <button class="hist-back" id="histBack" onclick="historyBack()">‹ Back</button>
+          <h2 id="historyTitle">History</h2>
+          <button class="close-btn" onclick="closeHistory()">&times;</button>
+        </div>
+        <div id="historyBody"></div>
       </div>
     </div>
   </div>
@@ -576,7 +681,9 @@
 <script>
   const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const fullNames = {Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday",Sun:"Sunday"};
-  let selectedDay = "Mon";
+  // Which weekday is today (JS getDay: Sun=0..Sat=6 -> our Mon-first list)
+  const todayKey = days[(new Date().getDay() + 6) % 7];
+  let selectedDay = todayKey;
 
   function blankRoutine(){
     return {
@@ -591,19 +698,85 @@
     };
   }
 
-  // Each day holds its own list of routines
-  const weekData = {};
-  days.forEach(d => { weekData[d] = [blankRoutine(), blankRoutine(), blankRoutine()]; });
+  // A fresh week = 7 days, each with 3 blank routines
+  function blankWeek(){
+    const w = {};
+    days.forEach(d => { w[d] = [blankRoutine(), blankRoutine(), blankRoutine()]; });
+    return w;
+  }
+  // Copy a week's plan but wipe all the "done" checkmarks (for a fresh new week)
+  function clearDoneInWeek(week){
+    const w = JSON.parse(JSON.stringify(week));
+    days.forEach(d => {
+      (w[d] || []).forEach(r => {
+        if (r.details && r.details.reps && r.details.reps.sets)
+          r.details.reps.sets.forEach(s => s.done = false);
+        if (r.timer && r.timer.segments)
+          r.timer.segments.forEach(s => s.done = false);
+      });
+    });
+    return w;
+  }
+  // The key for a week is the Monday of that week, as YYYY-MM-DD
+  function mondayKey(date){
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), da = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${da}`;
+  }
+  const currentWeekKey = mondayKey(new Date());
+
+  // ---- Saving to this device (so work survives a refresh/close) ----
+  const WEEKS_KEY = "mowes_weeks_v1";
+  const OLD_KEY = "mowes_week_v1";
+  let allWeeks = {};
+  function saveData(){
+    try { localStorage.setItem(WEEKS_KEY, JSON.stringify(allWeeks)); } catch(e){}
+  }
+  function loadAllWeeks(){
+    try {
+      const raw = localStorage.getItem(WEEKS_KEY);
+      if (raw){ allWeeks = JSON.parse(raw) || {}; return; }
+      // Migrate older single-week save into the current week
+      const old = localStorage.getItem(OLD_KEY);
+      if (old){
+        const parsed = JSON.parse(old);
+        const w = blankWeek();
+        days.forEach(d => { if (Array.isArray(parsed[d])) w[d] = parsed[d]; });
+        allWeeks[currentWeekKey] = w;
+      }
+    } catch(e){ allWeeks = {}; }
+  }
+  loadAllWeeks();
+
+  // Make sure this week exists. If it's a brand-new week, repeat last week's
+  // plan with the "done" marks cleared. Older weeks stay saved for History.
+  if (!allWeeks[currentWeekKey]){
+    const past = Object.keys(allWeeks).filter(k => k < currentWeekKey).sort();
+    allWeeks[currentWeekKey] = past.length
+      ? clearDoneInWeek(allWeeks[past[past.length - 1]])
+      : blankWeek();
+    saveData();
+  }
+  // weekData points at THIS week; all existing code edits it directly
+  let weekData = allWeeks[currentWeekKey];
 
   const dayRow = document.getElementById("dayRow");
   days.forEach(day => {
     const pill = document.createElement("div");
-    pill.className = "day-pill" + (day === selectedDay ? " active" : "");
-    pill.textContent = day;
+    pill.className = "day-pill"
+      + (day === selectedDay ? " active" : "")
+      + (day === todayKey ? " today" : "");
+    pill.innerHTML = day + (day === todayKey ? ' <span class="today-dot"></span>' : "");
     pill.onclick = () => selectDay(day);
     pill.dataset.day = day;
     dayRow.appendChild(pill);
   });
+
+  function dayTitle(day){
+    return (day === todayKey ? "Today · " : "") + fullNames[day];
+  }
 
   function selectDay(day){
     captureDay();
@@ -611,9 +784,90 @@
     document.querySelectorAll(".day-pill").forEach(p => {
       p.classList.toggle("active", p.dataset.day === day);
     });
-    document.getElementById("selectedDayTitle").textContent = fullNames[day];
+    document.getElementById("selectedDayTitle").textContent = dayTitle(day);
     document.getElementById("copyPicker").classList.remove("show");
     renderRoutines();
+    saveData();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // ---------------- History ----------------
+  function escapeHtml(s){
+    return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  }
+  function weekRangeLabel(key){
+    const start = new Date(key + "T00:00:00");
+    const end = new Date(start); end.setDate(end.getDate() + 6);
+    const opt = { month:"short", day:"numeric" };
+    return start.toLocaleDateString(undefined, opt) + " – " + end.toLocaleDateString(undefined, opt) + ", " + end.getFullYear();
+  }
+  function routineIsEmpty(r){
+    if (r.name && r.name.trim()) return false;
+    const d = r.details || {};
+    if (["reps","time","weight","distance"].some(f => d[f] && d[f].on)) return false;
+    if (r.timer && r.timer.on) return false;
+    return true;
+  }
+  function routineReadOnly(r, idx){
+    const name = (r.name && r.name.trim()) ? r.name : "Untitled exercise";
+    let html = `<div class="hist-routine"><div class="hist-routine-name">${idx}. ${escapeHtml(name)}</div>`;
+    const det = r.details || {};
+    if (det.reps && det.reps.on){
+      const sets = det.reps.sets || [];
+      html += '<div class="hist-line">Reps: ' + sets.map((s, i) =>
+        `Set ${i+1}: ${escapeHtml(s.reps || "-")}${s.done ? ' <span class="hist-done">✓</span>' : ""}`).join(" · ") + '</div>';
+    }
+    ["time","weight","distance"].forEach(f => {
+      if (det[f] && det[f].on) html += `<div class="hist-line">${detailLabels[f]}: ${escapeHtml(det[f].val || "-")}</div>`;
+    });
+    if (r.timer && r.timer.on){
+      const segs = r.timer.segments || [];
+      html += '<div class="hist-line">Timer: ' + segs.map(s =>
+        `${escapeHtml(s.label || "part")} ${s.min}:${String(s.sec).padStart(2,"0")}${s.done ? ' <span class="hist-done">✓</span>' : ""}`).join(" · ") + '</div>';
+    }
+    return html + '</div>';
+  }
+
+  let histWeek = null; // which past week is open (null = week list)
+  function openHistory(){
+    captureDay(); saveData();
+    histWeek = null;
+    renderHistoryWeeks();
+    document.getElementById("historyOverlay").classList.add("open");
+  }
+  function closeHistory(){ document.getElementById("historyOverlay").classList.remove("open"); }
+  function historyBack(){ if (histWeek){ histWeek = null; renderHistoryWeeks(); } }
+
+  function renderHistoryWeeks(){
+    document.getElementById("historyTitle").textContent = "History";
+    document.getElementById("histBack").classList.add("hidden");
+    const body = document.getElementById("historyBody");
+    const keys = Object.keys(allWeeks).filter(k => k < currentWeekKey).sort().reverse();
+    if (!keys.length){
+      body.innerHTML = '<p class="hist-empty">No past weeks yet.<br>When this week ends, it will appear here so you can look back on it.</p>';
+      return;
+    }
+    body.innerHTML = keys.map(k => `<button class="hist-week" onclick="openHistoryWeek('${k}')">${weekRangeLabel(k)}</button>`).join("");
+  }
+
+  function openHistoryWeek(key){
+    histWeek = key;
+    document.getElementById("historyTitle").textContent = weekRangeLabel(key);
+    document.getElementById("histBack").classList.remove("hidden");
+    const body = document.getElementById("historyBody");
+    body.innerHTML = '<div class="hist-days">'
+      + days.map(d => `<button class="hist-day" data-day="${d}" onclick="openHistoryDay('${key}','${d}')">${fullNames[d]}</button>`).join("")
+      + '</div><div id="histDayView"></div>';
+  }
+
+  function openHistoryDay(key, day){
+    document.querySelectorAll(".hist-day").forEach(b => b.classList.toggle("active", b.dataset.day === day));
+    const wk = allWeeks[key] || {};
+    const routines = (wk[day] || []).filter(r => !routineIsEmpty(r));
+    const view = document.getElementById("histDayView");
+    view.innerHTML = routines.length
+      ? routines.map((r, i) => routineReadOnly(r, i + 1)).join("")
+      : '<p class="hist-empty">Nothing recorded for this day.</p>';
   }
 
   const detailFields = ["reps","time","weight","distance"];
@@ -777,6 +1031,7 @@
     targets.forEach(t => { weekData[t] = JSON.parse(JSON.stringify(weekData[selectedDay])); });
     msg.textContent = `Copied ${fullNames[selectedDay]} to ${targets.map(t => fullNames[t]).join(", ")}.`;
     checks.forEach(c => { c.checked = false; });
+    saveData();
   }
 
   function renderSets(fieldEl, sets){
@@ -971,10 +1226,39 @@
     renderRoutines();
   }
 
-  function openCard(){ document.getElementById("weekOverlay").classList.add("open"); }
-  function closeCard(){ document.getElementById("weekOverlay").classList.remove("open"); }
-
+  document.getElementById("selectedDayTitle").textContent = dayTitle(selectedDay);
   renderRoutines();
+
+  // Auto-save: any typing, toggle, or button tap in the routines saves your work
+  const routineListEl = document.getElementById("routineList");
+  ["input", "change", "click"].forEach(evt => {
+    routineListEl.addEventListener(evt, () => { captureDay(); saveData(); });
+  });
+
+  // Move to the previous/next day of the week (wraps around)
+  function changeDay(offset){
+    const i = days.indexOf(selectedDay);
+    const ni = (i + offset + days.length) % days.length;
+    selectDay(days[ni]);
+  }
+
+  // Swipe on the routines area: right = day before, left = day after
+  (function(){
+    const area = document.querySelector(".routines");
+    let sx = 0, sy = 0, tracking = false;
+    area.addEventListener("touchstart", e => {
+      if (e.touches.length !== 1) { tracking = false; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+    }, { passive: true });
+    area.addEventListener("touchend", e => {
+      if (!tracking) return; tracking = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){
+        changeDay(dx > 0 ? -1 : 1);
+      }
+    }, { passive: true });
+  })();
 </script>
 </body>
 </html>
