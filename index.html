@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise Sheet</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f2f3f7;
+    color: #1c1c2e;
+    min-height: 100vh;
+  }
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .screen {
+    flex: 1;
+    padding: 24px;
+  }
+  h1 {
+    font-size: 24px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .hint {
+    text-align: center;
+    color: #8a8fa3;
+    font-size: 14px;
+  }
+
+  /* Bottom button bar */
+  .bottom-bar {
+    position: sticky;
+    bottom: 0;
+    padding: 16px 24px calc(16px + env(safe-area-inset-bottom));
+    background: rgba(242,243,247,0.9);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid #e2e4ee;
+  }
+  .menu-btn {
+    width: 100%;
+    padding: 18px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(91,108,255,0.3);
+    transition: transform 0.1s ease;
+  }
+  .menu-btn:active { transform: scale(0.98); }
+
+  /* Card overlay */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .overlay.open { display: flex; }
+
+  .card {
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 20px 20px 28px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.25);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .card-header h2 { font-size: 20px; }
+  .close-btn {
+    background: #eceef5;
+    border: none;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #555;
+  }
+
+  /* Day selector row (left to right) */
+  .day-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #eceef5;
+  }
+  .day-pill {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #f2f3f7;
+    border: 1px solid #e6e8f0;
+    font-weight: 600;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .day-pill.active {
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff;
+    border-color: transparent;
+  }
+
+  /* Routine inputs below selected day */
+  .routines h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #5b6cff;
+  }
+  .routine-card {
+    background: #f7f8fc;
+    border: 1px solid #e6e8f0;
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .routine-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .routine-num {
+    flex: 0 0 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #eef0fa;
+    color: #5b6cff;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .routine-input {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1px solid #e6e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    background: #fff;
+  }
+  .routine-input:focus {
+    outline: none;
+    border-color: #5b6cff;
+  }
+
+  /* Detail chips + fields */
+  .detail-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    padding-left: 36px;
+  }
+  .chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid #c9cce0;
+    background: #fff;
+    color: #6a6f85;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .chip.on {
+    background: #eef0fa;
+    border-color: #5b6cff;
+    color: #5b6cff;
+  }
+  .detail-fields {
+    margin-top: 10px;
+    padding-left: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .detail-field {
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+  .detail-field.show { display: flex; }
+  .detail-label {
+    flex: 0 0 70px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6a6f85;
+  }
+  .detail-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+  }
+  .detail-input:focus { outline: none; border-color: #5b6cff; }
+
+  /* Sets (reps broken into individual sets) */
+  .sets-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .set-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .set-num {
+    flex: 0 0 48px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6a6f85;
+  }
+  .set-reps {
+    width: 72px;
+    padding: 8px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    text-align: center;
+    background: #fff;
+  }
+  .set-reps:focus { outline: none; border-color: #5b6cff; }
+  .set-done {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid #c9cce0;
+    background: #fff;
+    color: #6a6f85;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .set-row.done .set-done {
+    background: #e6f7ee;
+    border-color: #2faa6a;
+    color: #2faa6a;
+  }
+  .set-row.done .set-reps {
+    text-decoration: line-through;
+    color: #aab;
+  }
+  .set-remove {
+    background: none;
+    border: none;
+    color: #c0c4d6;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .add-set {
+    align-self: flex-start;
+    padding: 6px 12px;
+    border: 1px dashed #b9bedb;
+    border-radius: 10px;
+    background: transparent;
+    color: #5b6cff;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* Timer on/off */
+  .timer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding: 10px 12px 10px 36px;
+  }
+  .timer-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6a6f85;
+  }
+  .toggle {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    flex: 0 0 auto;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider {
+    position: absolute;
+    inset: 0;
+    background: #d3d6e2;
+    border-radius: 28px;
+    transition: 0.2s;
+    cursor: pointer;
+  }
+  .toggle .slider::before {
+    content: "";
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle input:checked + .slider { background: #5b6cff; }
+  .toggle input:checked + .slider::before { transform: translateX(20px); }
+
+  .timer-display {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+    padding: 10px 12px 8px 36px;
+  }
+  .timer-display.show { display: flex; }
+
+  .timer-modes { display: flex; gap: 8px; }
+  .mode-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #c9cce0;
+    background: #fff;
+    color: #6a6f85;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .mode-btn.active {
+    background: #eef0fa;
+    border-color: #5b6cff;
+    color: #5b6cff;
+  }
+
+  /* Show the right view per mode */
+  .timer-up, .segments { display: none; }
+  .timer-display[data-mode="up"] .timer-up { display: block; }
+  .timer-display[data-mode="down"] .segments { display: flex; flex-direction: column; gap: 8px; }
+
+  /* Count Down parts (intervals) */
+  .segment-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6a6f85;
+    flex-wrap: wrap;
+  }
+  .seg-label {
+    flex: 1 1 90px;
+    min-width: 90px;
+    padding: 8px 10px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+  }
+  .seg-min, .seg-sec {
+    width: 48px;
+    padding: 8px 6px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    text-align: center;
+    background: #fff;
+  }
+  .seg-label:focus, .seg-min:focus, .seg-sec:focus { outline: none; border-color: #5b6cff; }
+  .seg-clock {
+    min-width: 52px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1c1c2e;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+  .seg-start {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: none;
+    background: #5b6cff;
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .seg-start.running { background: #ff5b6c; }
+  .segment-row.done .seg-start { background: #2faa6a; }
+  .segment-row.done .seg-clock { color: #2faa6a; }
+  .seg-remove {
+    background: none;
+    border: none;
+    color: #c0c4d6;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .add-segment {
+    align-self: flex-start;
+    padding: 6px 12px;
+    border: 1px dashed #b9bedb;
+    border-radius: 10px;
+    background: transparent;
+    color: #5b6cff;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .timer-main { display: flex; align-items: center; gap: 12px; }
+  .timer-clock {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1c1c2e;
+    font-variant-numeric: tabular-nums;
+    min-width: 70px;
+  }
+  .timer-start, .timer-reset {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .timer-start { background: #5b6cff; color: #fff; }
+  .timer-start.running { background: #ff5b6c; }
+  .timer-reset { background: #eef0fa; color: #5b6cff; }
+  .add-routine {
+    margin-top: 6px;
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed #b9bedb;
+    border-radius: 12px;
+    background: transparent;
+    color: #5b6cff;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  /* Copy day */
+  .routines-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .copy-btn {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid #5b6cff;
+    background: #fff;
+    color: #5b6cff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .copy-picker {
+    display: none;
+    background: #f7f8fc;
+    border: 1px solid #e6e8f0;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .copy-picker.show { display: block; }
+  .copy-picker-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6a6f85;
+    margin-bottom: 10px;
+  }
+  .copy-picker-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .copy-day {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid #c9cce0;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6a6f85;
+    cursor: pointer;
+  }
+  .copy-day input { accent-color: #5b6cff; }
+  .copy-confirm {
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: none;
+    background: #5b6cff;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .copy-msg {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2faa6a;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="screen">
+      <h1>My Exercise Sheet</h1>
+      <p class="hint">Tap the button below to open your week.</p>
+    </div>
+
+    <!-- Bottom button bar -->
+    <div class="bottom-bar">
+      <button class="menu-btn" onclick="openCard()">Full Week Exercise</button>
+    </div>
+
+    <!-- Full Week card -->
+    <div class="overlay" id="weekOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>Full Week Exercise</h2>
+          <button class="close-btn" onclick="closeCard()">&times;</button>
+        </div>
+
+        <!-- Days across the top, left to right -->
+        <div class="day-row" id="dayRow"></div>
+
+        <!-- Routine inputs for the selected day -->
+        <div class="routines">
+          <div class="routines-header">
+            <h3 id="selectedDayTitle">Monday</h3>
+            <button class="copy-btn" onclick="toggleCopyPicker()">Copy to…</button>
+          </div>
+          <div class="copy-picker" id="copyPicker">
+            <div class="copy-picker-title">Copy this day's routines to:</div>
+            <div class="copy-picker-days" id="copyPickerDays"></div>
+            <button class="copy-confirm" onclick="confirmCopy()">Copy</button>
+            <div class="copy-msg" id="copyMsg"></div>
+          </div>
+          <div id="routineList"></div>
+          <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const fullNames = {Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday",Sun:"Sunday"};
+  let selectedDay = "Mon";
+
+  function blankRoutine(){
+    return {
+      name: "",
+      details: {
+        reps:     { on:false, sets:[ {reps:"", done:false} ] },
+        time:     { on:false, val:"" },
+        weight:   { on:false, val:"" },
+        distance: { on:false, val:"" }
+      },
+      timer: { on:false, mode:"up", segments:[ {label:"", min:0, sec:30, done:false} ] }
+    };
+  }
+
+  // Each day holds its own list of routines
+  const weekData = {};
+  days.forEach(d => { weekData[d] = [blankRoutine(), blankRoutine(), blankRoutine()]; });
+
+  const dayRow = document.getElementById("dayRow");
+  days.forEach(day => {
+    const pill = document.createElement("div");
+    pill.className = "day-pill" + (day === selectedDay ? " active" : "");
+    pill.textContent = day;
+    pill.onclick = () => selectDay(day);
+    pill.dataset.day = day;
+    dayRow.appendChild(pill);
+  });
+
+  function selectDay(day){
+    captureDay();
+    selectedDay = day;
+    document.querySelectorAll(".day-pill").forEach(p => {
+      p.classList.toggle("active", p.dataset.day === day);
+    });
+    document.getElementById("selectedDayTitle").textContent = fullNames[day];
+    document.getElementById("copyPicker").classList.remove("show");
+    renderRoutines();
+  }
+
+  const detailFields = ["reps","time","weight","distance"];
+  const detailPlaceholders = {
+    reps: "e.g. 12 reps / 3 sets of 10",
+    time: "e.g. 30 sec / 2 min",
+    weight: "e.g. 20 lbs",
+    distance: "e.g. 1 mile"
+  };
+  const detailLabels = { reps:"Reps", time:"Time", weight:"Weight", distance:"Distance" };
+
+  function renderRoutines(){
+    const list = document.getElementById("routineList");
+    // stop any running timers before clearing
+    list.querySelectorAll(".timer-display").forEach(stopRun);
+    list.querySelectorAll(".segment-row").forEach(stopSegment);
+    list.innerHTML = "";
+
+    weekData[selectedDay].forEach((r, idx) => {
+      const i = idx + 1;
+      const card = document.createElement("div");
+      card.className = "routine-card";
+      card.innerHTML = `
+        <div class="routine-row">
+          <div class="routine-num">${i}</div>
+          <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
+        </div>
+        <div class="detail-chips">
+          ${detailFields.map(f => `<div class="chip" data-field="${f}" onclick="toggleDetail(this,'${f}')">+ ${detailLabels[f]}</div>`).join("")}
+        </div>
+        <div class="detail-fields">
+          ${detailFields.map(f => {
+            if (f === "reps"){
+              return `
+          <div class="detail-field" data-field="reps">
+            <div class="sets-block">
+              <div class="sets-list"></div>
+              <button class="add-set" onclick="addSet(this)">+ Add set</button>
+            </div>
+          </div>`;
+            }
+            return `
+          <div class="detail-field" data-field="${f}">
+            <span class="detail-label">${detailLabels[f]}</span>
+            <input class="detail-input" type="text" placeholder="${detailPlaceholders[f]}">
+          </div>`;
+          }).join("")}
+        </div>
+        <div class="timer-row">
+          <span class="timer-label">Timer</span>
+          <label class="toggle">
+            <input type="checkbox" onchange="toggleTimer(this)">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="timer-display">
+          <div class="timer-modes">
+            <button class="mode-btn" data-mode="up" onclick="setMode(this,'up')">Count Up</button>
+            <button class="mode-btn" data-mode="down" onclick="setMode(this,'down')">Count Down (parts)</button>
+          </div>
+          <div class="timer-up">
+            <div class="timer-main">
+              <span class="timer-clock">00:00</span>
+              <button class="timer-start" onclick="startStop(this)">Start</button>
+              <button class="timer-reset" onclick="resetTimer(this)">Reset</button>
+            </div>
+          </div>
+          <div class="segments">
+            <div class="segments-list"></div>
+            <button class="add-segment" onclick="addSegment(this)">+ Add part</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(card);
+
+      // populate from saved data
+      card.querySelector(".routine-input").value = r.name;
+      detailFields.forEach(f => {
+        const d = r.details[f];
+        const fe = card.querySelector(`.detail-field[data-field="${f}"]`);
+        if (f === "reps") renderSets(fe, d.sets);
+        if (d.on){
+          card.querySelector(`.chip[data-field="${f}"]`).classList.add("on");
+          fe.classList.add("show");
+          if (f !== "reps") fe.querySelector(".detail-input").value = d.val;
+        }
+      });
+
+      const display = card.querySelector(".timer-display");
+      display.dataset.mode = r.timer.mode || "up";
+      display.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === display.dataset.mode));
+      renderSegments(display, r.timer.segments);
+      if (r.timer.on){
+        card.querySelector(".toggle input").checked = true;
+        display.classList.add("show");
+      }
+      resetTimer(display);
+    });
+  }
+
+  // Read the current day's DOM back into weekData
+  function captureDay(){
+    const cards = document.querySelectorAll("#routineList .routine-card");
+    const arr = [];
+    cards.forEach(card => {
+      const r = blankRoutine();
+      r.name = card.querySelector(".routine-input").value;
+      detailFields.forEach(f => {
+        const chip = card.querySelector(`.chip[data-field="${f}"]`);
+        const fe = card.querySelector(`.detail-field[data-field="${f}"]`);
+        const on = chip.classList.contains("on");
+        if (f === "reps"){
+          r.details.reps.on = on;
+          r.details.reps.sets = [...fe.querySelectorAll(".set-row")].map(row => ({
+            reps: row.querySelector(".set-reps").value,
+            done: row.dataset.done === "true"
+          }));
+          if (!r.details.reps.sets.length) r.details.reps.sets = [{ reps:"", done:false }];
+        } else {
+          r.details[f].on = on;
+          r.details[f].val = fe.querySelector(".detail-input").value;
+        }
+      });
+      const display = card.querySelector(".timer-display");
+      r.timer.on = card.querySelector(".toggle input").checked;
+      r.timer.mode = display.dataset.mode || "up";
+      r.timer.segments = [...display.querySelectorAll(".segment-row")].map(row => ({
+        label: row.querySelector(".seg-label").value,
+        min: parseInt(row.querySelector(".seg-min").value) || 0,
+        sec: parseInt(row.querySelector(".seg-sec").value) || 0,
+        done: row.dataset.done === "true"
+      }));
+      if (!r.timer.segments.length) r.timer.segments = [{ label:"", min:0, sec:30, done:false }];
+      arr.push(r);
+    });
+    weekData[selectedDay] = arr;
+  }
+
+  function toggleCopyPicker(){
+    const picker = document.getElementById("copyPicker");
+    const open = picker.classList.toggle("show");
+    if (open){
+      const cont = document.getElementById("copyPickerDays");
+      cont.innerHTML = "";
+      days.filter(d => d !== selectedDay).forEach(d => {
+        const label = document.createElement("label");
+        label.className = "copy-day";
+        label.innerHTML = `<input type="checkbox" value="${d}"> ${fullNames[d]}`;
+        cont.appendChild(label);
+      });
+      document.getElementById("copyMsg").textContent = "";
+    }
+  }
+
+  function confirmCopy(){
+    captureDay();
+    const checks = [...document.querySelectorAll("#copyPickerDays input:checked")];
+    const targets = checks.map(c => c.value);
+    const msg = document.getElementById("copyMsg");
+    if (!targets.length){ msg.textContent = "Pick at least one day first."; return; }
+    targets.forEach(t => { weekData[t] = JSON.parse(JSON.stringify(weekData[selectedDay])); });
+    msg.textContent = `Copied ${fullNames[selectedDay]} to ${targets.map(t => fullNames[t]).join(", ")}.`;
+    checks.forEach(c => { c.checked = false; });
+  }
+
+  function renderSets(fieldEl, sets){
+    const listWrap = fieldEl.querySelector(".sets-list");
+    listWrap.innerHTML = "";
+    const data = (sets && sets.length) ? sets : [{ reps:"", done:false }];
+    data.forEach((s, i) => listWrap.appendChild(buildSetRow(i + 1, s.reps, s.done)));
+  }
+
+  function buildSetRow(num, reps, done){
+    const row = document.createElement("div");
+    row.className = "set-row" + (done ? " done" : "");
+    row.dataset.done = done ? "true" : "false";
+    row.innerHTML = `
+      <span class="set-num">Set ${num}</span>
+      <input class="set-reps" type="number" min="0" placeholder="reps">
+      <button class="set-done" onclick="toggleSetDone(this)">${done ? "✓ Done" : "Done"}</button>
+      <button class="set-remove" onclick="removeSet(this)">✕</button>
+    `;
+    row.querySelector(".set-reps").value = reps == null ? "" : reps;
+    return row;
+  }
+
+  function addSet(btn){
+    const listWrap = btn.closest(".detail-field").querySelector(".sets-list");
+    listWrap.appendChild(buildSetRow(listWrap.children.length + 1, "", false));
+  }
+
+  function removeSet(btn){
+    const row = btn.closest(".set-row");
+    const listWrap = row.parentElement;
+    if (listWrap.children.length <= 1) return;
+    row.remove();
+    [...listWrap.children].forEach((r, i) => {
+      r.querySelector(".set-num").textContent = "Set " + (i + 1);
+    });
+  }
+
+  function toggleSetDone(btn){
+    const row = btn.closest(".set-row");
+    const nowDone = row.dataset.done !== "true";
+    row.dataset.done = nowDone ? "true" : "false";
+    row.classList.toggle("done", nowDone);
+    btn.textContent = nowDone ? "✓ Done" : "Done";
+  }
+
+  function toggleDetail(chip, field){
+    chip.classList.toggle("on");
+    const card = chip.closest(".routine-card");
+    const fieldEl = card.querySelector(`.detail-field[data-field="${field}"]`);
+    fieldEl.classList.toggle("show");
+  }
+
+  function toggleTimer(input){
+    const card = input.closest(".routine-card");
+    const display = card.querySelector(".timer-display");
+    display.classList.toggle("show", input.checked);
+    if (!input.checked) resetTimer(display);
+  }
+
+  function fmt(total){
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+  }
+
+  function setMode(btn, mode){
+    const display = btn.closest(".timer-display");
+    stopRun(display);
+    display.querySelectorAll(".segment-row").forEach(stopSegment);
+    display.dataset.mode = mode;
+    display.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  }
+
+  function resetTimer(el){
+    const display = el.classList && el.classList.contains("timer-display") ? el : el.closest(".timer-display");
+    stopRun(display);
+    display._seconds = 0;
+    const clock = display.querySelector(".timer-clock");
+    if (clock) clock.textContent = fmt(0);
+  }
+
+  function stopRun(display){
+    if (display._interval){
+      clearInterval(display._interval);
+      display._interval = null;
+    }
+    const btn = display.querySelector(".timer-start");
+    if (btn){ btn.textContent = "Start"; btn.classList.remove("running"); }
+  }
+
+  // Count Up stopwatch
+  function startStop(btn){
+    const display = btn.closest(".timer-display");
+    if (display._interval){ stopRun(display); return; }
+    const clock = display.querySelector(".timer-clock");
+    if (display._seconds == null) display._seconds = 0;
+    btn.textContent = "Stop";
+    btn.classList.add("running");
+    display._interval = setInterval(() => {
+      display._seconds++;
+      clock.textContent = fmt(display._seconds);
+    }, 1000);
+  }
+
+  // Count Down parts (intervals like run/walk)
+  function segTotal(row){
+    const m = parseInt(row.querySelector(".seg-min").value) || 0;
+    const s = parseInt(row.querySelector(".seg-sec").value) || 0;
+    return m * 60 + s;
+  }
+
+  function renderSegments(display, segments){
+    const list = display.querySelector(".segments-list");
+    list.innerHTML = "";
+    const data = (segments && segments.length) ? segments : [{ label:"", min:0, sec:30, done:false }];
+    data.forEach(s => list.appendChild(buildSegmentRow(s)));
+  }
+
+  function buildSegmentRow(seg){
+    const total = (parseInt(seg.min) || 0) * 60 + (parseInt(seg.sec) || 0);
+    const row = document.createElement("div");
+    row.className = "segment-row" + (seg.done ? " done" : "");
+    row.dataset.done = seg.done ? "true" : "false";
+    row.innerHTML = `
+      <input class="seg-label" type="text" placeholder="e.g. Run / Walk">
+      <input class="seg-min" type="number" min="0" value="0">m
+      <input class="seg-sec" type="number" min="0" max="59" value="0">s
+      <span class="seg-clock">${fmt(total)}</span>
+      <button class="seg-start" onclick="startSegment(this)">${seg.done ? "✓ Done" : "Start"}</button>
+      <button class="seg-remove" onclick="removeSegment(this)">✕</button>
+    `;
+    row.querySelector(".seg-label").value = seg.label || "";
+    row.querySelector(".seg-min").value = seg.min == null ? 0 : seg.min;
+    row.querySelector(".seg-sec").value = seg.sec == null ? 0 : seg.sec;
+    const upd = () => { if (!row._interval) row.querySelector(".seg-clock").textContent = fmt(segTotal(row)); };
+    row.querySelector(".seg-min").addEventListener("input", upd);
+    row.querySelector(".seg-sec").addEventListener("input", upd);
+    return row;
+  }
+
+  function addSegment(btn){
+    const list = btn.closest(".segments").querySelector(".segments-list");
+    list.appendChild(buildSegmentRow({ label:"", min:0, sec:0, done:false }));
+  }
+
+  function removeSegment(btn){
+    const row = btn.closest(".segment-row");
+    const list = row.parentElement;
+    if (list.children.length <= 1) return;
+    stopSegment(row);
+    row.remove();
+  }
+
+  function stopSegment(row){
+    if (row._interval){ clearInterval(row._interval); row._interval = null; }
+    const btn = row.querySelector(".seg-start");
+    btn.textContent = row.dataset.done === "true" ? "✓ Done" : "Start";
+    btn.classList.remove("running");
+  }
+
+  function startSegment(btn){
+    const row = btn.closest(".segment-row");
+    if (row._interval){ stopSegment(row); return; }
+    let remaining = segTotal(row);
+    if (remaining <= 0) return;
+    row.dataset.done = "false";
+    row.classList.remove("done");
+    const clock = row.querySelector(".seg-clock");
+    clock.textContent = fmt(remaining);
+    btn.textContent = "Stop";
+    btn.classList.add("running");
+    row._interval = setInterval(() => {
+      remaining--;
+      if (remaining <= 0){
+        clock.textContent = fmt(0);
+        clearInterval(row._interval);
+        row._interval = null;
+        row.dataset.done = "true";
+        row.classList.add("done");
+        btn.textContent = "✓ Done";
+        btn.classList.remove("running");
+        return;
+      }
+      clock.textContent = fmt(remaining);
+    }, 1000);
+  }
+
+  function addRoutine(){
+    captureDay();
+    weekData[selectedDay].push(blankRoutine());
+    renderRoutines();
+  }
+
+  function openCard(){ document.getElementById("weekOverlay").classList.add("open"); }
+  function closeCard(){ document.getElementById("weekOverlay").classList.remove("open"); }
+
+  renderRoutines();
+</script>
+</body>
+</html>

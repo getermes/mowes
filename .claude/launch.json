@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mowes",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4600", "--directory", "."],
+      "port": 4600
+    }
+  ]
+}
