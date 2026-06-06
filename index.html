@@ -418,6 +418,94 @@
     cursor: pointer;
   }
 
+  /* Time rows — each is its own count-down timer (name + minutes [+ miles]) */
+  /* Reps & Time fields hold a stacked list, so let them be full-width blocks */
+  .detail-field[data-field="reps"].show,
+  .detail-field[data-field="time"].show { display: block; }
+  .sets-block { min-width: 0; }
+  .interval-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+    width: 100%;
+    min-width: 0;
+  }
+  .iv-label {
+    flex: 1 1 50px;
+    min-width: 0;
+    padding: 8px 8px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+  }
+  .iv-min, .iv-miles {
+    flex: 0 0 auto;
+    width: 42px;
+    padding: 8px 4px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    text-align: center;
+    background: #fff;
+  }
+  .iv-label:focus, .iv-min:focus, .iv-miles:focus { outline: none; border-color: #5b6cff; }
+  .iv-clock {
+    flex: 0 0 auto;
+    min-width: 42px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1c1c2e;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+  .iv-start {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: #5b6cff;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .iv-start.running { background: #ff5b6c; }
+  .interval-row.done .iv-start { background: #2faa6a; }
+  .interval-row.done .iv-clock { color: #2faa6a; }
+  .interval-row.done .iv-label,
+  .interval-row.done .iv-min,
+  .interval-row.done .iv-miles {
+    text-decoration: line-through;
+    color: #aab;
+  }
+  .iv-remove {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    color: #c0c4d6;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+  /* miles box appears only when Distance is turned on for the card */
+  .iv-miles { display: none; }
+  .routine-card.dist-on .iv-miles { display: block; }
+  /* hide the standalone Distance box while Time rows are in use (miles live in the rows) */
+  .routine-card.time-on .detail-field[data-field="distance"].show { display: none; }
+  .add-interval {
+    align-self: flex-start;
+    padding: 6px 12px;
+    border: 1px dashed #b9bedb;
+    border-radius: 10px;
+    background: transparent;
+    color: #5b6cff;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
   /* Timer on/off */
   .timer-row {
     display: flex;
@@ -725,7 +813,7 @@
       name: "",
       details: {
         reps:     { on:false, sets:[ {reps:"", done:false} ] },
-        time:     { on:false, val:"" },
+        time:     { on:false, rows:[ {label:"", min:"", miles:"", done:false} ] },
         weight:   { on:false, val:"" },
         distance: { on:false, val:"" }
       },
@@ -746,6 +834,8 @@
       (w[d] || []).forEach(r => {
         if (r.details && r.details.reps && r.details.reps.sets)
           r.details.reps.sets.forEach(s => s.done = false);
+        if (r.details && r.details.time && r.details.time.rows)
+          r.details.time.rows.forEach(s => s.done = false);
         if (r.timer && r.timer.segments)
           r.timer.segments.forEach(s => s.done = false);
       });
@@ -852,7 +942,15 @@
       html += '<div class="hist-line">Reps: ' + sets.map((s, i) =>
         `Set ${i+1}: ${escapeHtml(s.reps || "-")}${s.done ? ' <span class="hist-done">✓</span>' : ""}`).join(" · ") + '</div>';
     }
-    ["time","weight","distance"].forEach(f => {
+    if (det.time && det.time.on){
+      if (det.time.rows){
+        html += '<div class="hist-line">Time: ' + det.time.rows.map(rw =>
+          `${escapeHtml(rw.label || "part")} ${escapeHtml(rw.min || "-")} min${rw.miles ? " / " + escapeHtml(rw.miles) + " mi" : ""}${rw.done ? ' <span class="hist-done">✓</span>' : ""}`).join(" · ") + '</div>';
+      } else {
+        html += `<div class="hist-line">Time: ${escapeHtml(det.time.val || "-")}</div>`;
+      }
+    }
+    ["weight","distance"].forEach(f => {
       if (det[f] && det[f].on) html += `<div class="hist-line">${detailLabels[f]}: ${escapeHtml(det[f].val || "-")}</div>`;
     });
     if (r.timer && r.timer.on){
@@ -906,6 +1004,9 @@
   }
 
   const detailFields = ["reps","time","weight","distance"];
+  // The order detail FIELDS stack in the card (chips keep detailFields order).
+  // Weight sits above the Time rows; the "+ Add Time" button sits below them.
+  const fieldOrder = ["reps","weight","time","distance"];
   const detailPlaceholders = {
     reps: "e.g. 12 reps / 3 sets of 10",
     time: "e.g. 30 sec / 2 min",
@@ -919,6 +1020,7 @@
     // stop any running timers before clearing
     list.querySelectorAll(".timer-display").forEach(stopRun);
     list.querySelectorAll(".segment-row").forEach(stopSegment);
+    list.querySelectorAll(".interval-row").forEach(stopTimeRow);
     list.innerHTML = "";
 
     weekData[selectedDay].forEach((r, idx) => {
@@ -934,13 +1036,22 @@
           ${detailFields.map(f => `<div class="chip" data-field="${f}" onclick="toggleDetail(this,'${f}')">+ ${detailLabels[f]}</div>`).join("")}
         </div>
         <div class="detail-fields">
-          ${detailFields.map(f => {
+          ${fieldOrder.map(f => {
             if (f === "reps"){
               return `
           <div class="detail-field" data-field="reps">
             <div class="sets-block">
               <div class="sets-list"></div>
               <button class="add-set" onclick="addSet(this)">+ Add set</button>
+            </div>
+          </div>`;
+            }
+            if (f === "time"){
+              return `
+          <div class="detail-field" data-field="time">
+            <div class="sets-block">
+              <div class="intervals-list"></div>
+              <button class="add-interval" onclick="addInterval(this)">+ Add Time</button>
             </div>
           </div>`;
             }
@@ -984,12 +1095,14 @@
         const d = r.details[f];
         const fe = card.querySelector(`.detail-field[data-field="${f}"]`);
         if (f === "reps") renderSets(fe, d.sets);
+        if (f === "time") renderIntervals(fe, d.rows);
         if (d.on){
           card.querySelector(`.chip[data-field="${f}"]`).classList.add("on");
           fe.classList.add("show");
-          if (f !== "reps") fe.querySelector(".detail-input").value = d.val;
+          if (f !== "reps" && f !== "time") fe.querySelector(".detail-input").value = d.val;
         }
       });
+      updateCardModes(card);
 
       const display = card.querySelector(".timer-display");
       display.dataset.mode = r.timer.mode || "up";
@@ -1021,6 +1134,15 @@
             done: row.dataset.done === "true"
           }));
           if (!r.details.reps.sets.length) r.details.reps.sets = [{ reps:"", done:false }];
+        } else if (f === "time"){
+          r.details.time.on = on;
+          r.details.time.rows = [...fe.querySelectorAll(".interval-row")].map(row => ({
+            label: row.querySelector(".iv-label").value,
+            min: row.querySelector(".iv-min").value,
+            miles: row.querySelector(".iv-miles").value,
+            done: row.dataset.done === "true"
+          }));
+          if (!r.details.time.rows.length) r.details.time.rows = [{ label:"", min:"", miles:"", done:false }];
         } else {
           r.details[f].on = on;
           r.details[f].val = fe.querySelector(".detail-input").value;
@@ -1113,11 +1235,102 @@
     btn.textContent = nowDone ? "✓ Done" : "Done";
   }
 
+  // ---- Time rows: each one is its own count-down timer ----
+  function renderIntervals(fieldEl, rows){
+    const listWrap = fieldEl.querySelector(".intervals-list");
+    listWrap.innerHTML = "";
+    const data = (rows && rows.length) ? rows : [{ label:"", min:"", miles:"", done:false }];
+    data.forEach(rw => listWrap.appendChild(buildIntervalRow(rw)));
+  }
+
+  function buildIntervalRow(rw){
+    const mins = parseInt(rw.min) || 0;
+    const row = document.createElement("div");
+    row.className = "interval-row" + (rw.done ? " done" : "");
+    row.dataset.done = rw.done ? "true" : "false";
+    row.innerHTML = `
+      <input class="iv-label" type="text" placeholder="Run / Walk">
+      <input class="iv-min" type="number" min="0" placeholder="min">
+      <input class="iv-miles" type="number" min="0" step="0.1" placeholder="mi">
+      <span class="iv-clock">${fmt(mins * 60)}</span>
+      <button class="iv-start" onclick="startTimeRow(this)">${rw.done ? "✓" : "▶"}</button>
+      <button class="iv-remove" onclick="removeInterval(this)">✕</button>
+    `;
+    row.querySelector(".iv-label").value = rw.label || "";
+    row.querySelector(".iv-min").value = rw.min == null ? "" : rw.min;
+    row.querySelector(".iv-miles").value = rw.miles == null ? "" : rw.miles;
+    // keep the clock matching the minutes box while the row isn't running
+    const upd = () => { if (!row._ivInterval) row.querySelector(".iv-clock").textContent = fmt((parseInt(row.querySelector(".iv-min").value) || 0) * 60); };
+    row.querySelector(".iv-min").addEventListener("input", upd);
+    return row;
+  }
+
+  function addInterval(btn){
+    const listWrap = btn.closest(".detail-field").querySelector(".intervals-list");
+    listWrap.appendChild(buildIntervalRow({ label:"", min:"", miles:"", done:false }));
+  }
+
+  function removeInterval(btn){
+    const row = btn.closest(".interval-row");
+    const listWrap = row.parentElement;
+    if (listWrap.children.length <= 1) return;
+    stopTimeRow(row);
+    row.remove();
+  }
+
+  function timeRowSeconds(row){
+    return (parseInt(row.querySelector(".iv-min").value) || 0) * 60;
+  }
+
+  function stopTimeRow(row){
+    if (row._ivInterval){ clearInterval(row._ivInterval); row._ivInterval = null; }
+    const btn = row.querySelector(".iv-start");
+    if (btn){ btn.classList.remove("running"); btn.textContent = row.dataset.done === "true" ? "✓" : "▶"; }
+  }
+
+  // Start / pause one row's count-down. When it reaches 0:00 the row is "done".
+  function startTimeRow(btn){
+    const row = btn.closest(".interval-row");
+    if (row._ivInterval){ stopTimeRow(row); return; }
+    let remaining = timeRowSeconds(row);
+    if (remaining <= 0) return;
+    row.dataset.done = "false";
+    row.classList.remove("done");
+    const clock = row.querySelector(".iv-clock");
+    clock.textContent = fmt(remaining);
+    btn.textContent = "⏸";
+    btn.classList.add("running");
+    row._ivInterval = setInterval(() => {
+      remaining--;
+      if (remaining <= 0){
+        clock.textContent = fmt(0);
+        clearInterval(row._ivInterval); row._ivInterval = null;
+        row.dataset.done = "true";
+        row.classList.add("done");
+        btn.textContent = "✓";
+        btn.classList.remove("running");
+        captureDay(); saveData();
+        return;
+      }
+      clock.textContent = fmt(remaining);
+    }, 1000);
+  }
+
   function toggleDetail(chip, field){
     chip.classList.toggle("on");
     const card = chip.closest(".routine-card");
     const fieldEl = card.querySelector(`.detail-field[data-field="${field}"]`);
     fieldEl.classList.toggle("show");
+    updateCardModes(card);
+  }
+
+  // Card helper classes: show the per-row miles box when Distance is on, and
+  // hide the standalone Distance box while Time rows are in use (miles live there).
+  function updateCardModes(card){
+    const timeOn = card.querySelector('.chip[data-field="time"]').classList.contains("on");
+    const distOn = card.querySelector('.chip[data-field="distance"]').classList.contains("on");
+    card.classList.toggle("time-on", timeOn);
+    card.classList.toggle("dist-on", distOn);
   }
 
   function toggleTimer(input){
@@ -1260,6 +1473,7 @@
     weekData[selectedDay].push(blankRoutine());
     renderRoutines();
   }
+
 
   document.getElementById("selectedDayTitle").textContent = dayTitle(selectedDay);
   renderRoutines();

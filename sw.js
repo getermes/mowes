@@ -1,5 +1,5 @@
 // Service worker: lets the app work offline (e.g. on a walk/run with no signal)
-const CACHE = "mowes-v1";
+const CACHE = "mowes-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -24,14 +24,31 @@ self.addEventListener("activate", e => {
 });
 
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET") return;
-  e.respondWith(
-    caches.match(e.request).then(cached =>
-      cached || fetch(e.request).then(resp => {
+  const req = e.request;
+  if (req.method !== "GET") return;
+
+  // The app page: try the network first so the newest version always loads
+  // when online; fall back to the cached copy when offline.
+  const wantsHtml = req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
+  if (wantsHtml) {
+    e.respondWith(
+      fetch(req).then(resp => {
         const copy = resp.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+        caches.open(CACHE).then(c => c.put("./index.html", copy)).catch(() => {});
         return resp;
       }).catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
+  // Other files (icons, manifest): use cache first for speed/offline.
+  e.respondWith(
+    caches.match(req).then(cached =>
+      cached || fetch(req).then(resp => {
+        const copy = resp.clone();
+        caches.open(CACHE).then(c => c.put(req, copy)).catch(() => {});
+        return resp;
+      }).catch(() => cached)
     )
   );
 });
