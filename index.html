@@ -203,6 +203,11 @@
     font-weight: 700;
     color: #5b6cff;
   }
+  .thought-head-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
   .thought-topics-btn {
     background: #eef0fa;
     border: 1px solid #d6dbf5;
@@ -214,6 +219,30 @@
     cursor: pointer;
   }
   .thought-topics-btn:active { transform: scale(0.96); }
+  .thought-hide {
+    background: transparent;
+    border: none;
+    color: #b9bedb;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .thought-hide:active { transform: scale(0.9); }
+  .thought-show {
+    display: none;
+    margin: 8px auto 4px;
+    background: transparent;
+    border: none;
+    color: #8a8fa3;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .thought-show:active { opacity: 0.7; }
   .thought-text {
     margin: 8px 0 0;
     color: #3a3f54;
@@ -954,9 +983,83 @@
     font-weight: 600;
     color: #2faa6a;
   }
+
+  /* First-time-only ERMES welcome screen */
+  .welcome-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px 18px;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
+  }
+  .welcome-overlay.show { display: flex; }
+  .welcome-box {
+    max-width: 360px; width: 100%;
+    text-align: center;
+  }
+  .welcome-mark {
+    font-size: 38px; font-weight: 800; letter-spacing: 3px;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .welcome-tag {
+    margin-top: 6px; color: #5a6076; font-size: 14.5px; font-weight: 600;
+  }
+  .welcome-emoji { font-size: 46px; margin: 22px 0 10px; }
+  .welcome-title { font-size: 20px; font-weight: 800; color: #2f3550; }
+  .welcome-sub { font-size: 13px; color: #6a7088; margin-top: 3px; }
+  .welcome-desc {
+    margin: 16px auto 4px; max-width: 320px;
+    font-size: 14px; line-height: 1.55; color: #4a5068;
+  }
+  .welcome-promise {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 7px;
+    margin: 18px auto 4px; max-width: 320px;
+  }
+  .welcome-chip {
+    font-size: 12px; color: #5a6076; font-weight: 600;
+    background: rgba(255,255,255,0.7); border: 1px solid #d6dbf5;
+    border-radius: 999px; padding: 6px 11px;
+  }
+  .welcome-btn {
+    display: block; width: 100%; margin-top: 24px;
+    border: none; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff; font-weight: 700; font-size: 16px;
+    padding: 14px; border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(91,108,255,0.28);
+  }
+  .welcome-btn:active { transform: scale(0.99); }
+  .welcome-note { margin-top: 12px; font-size: 12px; color: #8a8fa3; line-height: 1.4; }
 </style>
 </head>
 <body>
+
+  <!-- First-time-only ERMES welcome (shows once, then never again) -->
+  <div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-box">
+      <div class="welcome-mark">ERMES</div>
+      <div class="welcome-tag">Apps that solve real problems</div>
+      <div class="welcome-emoji">💪</div>
+      <div class="welcome-title">Welcome to MOWES</div>
+      <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
+      <p class="welcome-desc">
+        A free, simple workout tracker. Plan your week, track reps, time,
+        weight &amp; distance — with built-in timers. No sign-up, and your
+        data stays on your phone.
+      </p>
+      <div class="welcome-promise">
+        <span class="welcome-chip">🔒 Private</span>
+        <span class="welcome-chip">🛡️ Secure</span>
+        <span class="welcome-chip">🙂 Friendly</span>
+        <span class="welcome-chip">👆 Intuitive</span>
+      </div>
+      <button class="welcome-btn" onclick="dismissWelcome()">Let's go →</button>
+      <p class="welcome-note">Made by Eugenio — the Idea Guy</p>
+    </div>
+  </div>
+
   <div class="app">
     <div class="screen">
       <!-- Sticky header: title + days bar stay on top while you scroll -->
@@ -974,7 +1077,10 @@
       <div class="thought-card" id="thoughtCard">
         <div class="thought-head">
           <span class="thought-label">💭 Thought of the day</span>
-          <button class="thought-topics-btn" onclick="toggleTopicPicker()">Topics</button>
+          <span class="thought-head-actions">
+            <button class="thought-topics-btn" onclick="toggleTopicPicker()">Topics</button>
+            <button class="thought-hide" onclick="hideThought()" title="Hide this">✕</button>
+          </span>
         </div>
         <p class="thought-text" id="thoughtText">—</p>
         <div class="topic-picker" id="topicPicker">
@@ -983,6 +1089,8 @@
           <p class="topic-picker-note">🔒 Your choices never leave this device.</p>
         </div>
       </div>
+      <!-- Small link to bring the thought back if it was hidden -->
+      <button class="thought-show" id="thoughtShow" onclick="showThought()">💭 Show thought of the day</button>
 
       <!-- Routine inputs for the selected day -->
       <div class="routines">
@@ -1916,9 +2024,39 @@
     p.classList.toggle("show");
     if (p.classList.contains("show")) renderTopicChips();
   }
+  const THOUGHT_HIDDEN_KEY = "mowes_thought_hidden_v1";
+  function applyThoughtVisibility(){
+    const hidden = localStorage.getItem(THOUGHT_HIDDEN_KEY) === "1";
+    document.getElementById("thoughtCard").style.display = hidden ? "none" : "";
+    document.getElementById("thoughtShow").style.display = hidden ? "block" : "none";
+  }
+  function hideThought(){
+    localStorage.setItem(THOUGHT_HIDDEN_KEY, "1");
+    document.getElementById("topicPicker").classList.remove("show");
+    applyThoughtVisibility();
+  }
+  function showThought(){
+    localStorage.removeItem(THOUGHT_HIDDEN_KEY);
+    applyThoughtVisibility();
+    renderThought();
+  }
   window.toggleTopicPicker = toggleTopicPicker;
+  window.hideThought = hideThought;
+  window.showThought = showThought;
   renderTopicChips();
   renderThought();
+  applyThoughtVisibility();
+
+  // First-time-only ERMES welcome screen
+  const WELCOME_KEY = "mowes_welcome_seen_v1";
+  function dismissWelcome(){
+    localStorage.setItem(WELCOME_KEY, "1");
+    document.getElementById("welcomeOverlay").classList.remove("show");
+  }
+  window.dismissWelcome = dismissWelcome;
+  if (localStorage.getItem(WELCOME_KEY) !== "1") {
+    document.getElementById("welcomeOverlay").classList.add("show");
+  }
 
   // Auto-save: any typing, toggle, or button tap in the routines saves your work
   const routineListEl = document.getElementById("routineList");
