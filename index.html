@@ -302,6 +302,19 @@
     outline: none;
     border-color: #5b6cff;
   }
+  .routine-delete {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: #fdeaea;
+    color: #e2536b;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .routine-delete:active { transform: scale(0.92); }
 
   /* Detail chips + fields */
   .detail-chips {
@@ -1048,6 +1061,7 @@
         <div class="routine-row">
           <div class="routine-num">${i}</div>
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
+          <button class="routine-delete" title="Delete this routine" onclick="deleteRoutine(this)">✕</button>
         </div>
         <div class="detail-chips">
           ${detailFields.map(f => `<div class="chip" data-field="${f}" onclick="toggleDetail(this,'${f}')">+ ${detailLabels[f]}</div>`).join("")}
@@ -1494,6 +1508,22 @@
     captureDay();
     weekData[selectedDay].push(blankRoutine());
     renderRoutines();
+  }
+
+  function deleteRoutine(btn){
+    const card = btn.closest(".routine-card");
+    const cards = [...document.querySelectorAll("#routineList .routine-card")];
+    const idx = cards.indexOf(card);
+    if (idx < 0) return;
+    captureDay();
+    const r = weekData[selectedDay][idx];
+    // only ask if the card actually has something in it
+    if (!routineIsEmpty(r) && !confirm("Delete this routine? This can't be undone.")) return;
+    weekData[selectedDay].splice(idx, 1);
+    // always keep at least one card so the day is never empty
+    if (weekData[selectedDay].length === 0) weekData[selectedDay].push(blankRoutine());
+    renderRoutines();
+    saveData();
   }
 
 
