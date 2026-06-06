@@ -84,10 +84,47 @@
     box-shadow: 0 4px 14px rgba(0,0,0,0.12);
   }
   .coffee-btn:active { transform: scale(0.98); }
+  .support-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    color: #5b6cff;
+    border: 1.5px solid #c7cdfb;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(91,108,255,0.12);
+  }
+  .like-btn:active { transform: scale(0.98); }
+  .like-count {
+    background: #eef0fa;
+    color: #5b6cff;
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 13px;
+  }
+  .like-count:empty { display: none; }
+  .like-msg {
+    color: #2faa6a;
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 18px;
+    margin-top: 10px;
+  }
   .support-note {
     color: #8a8fa3;
     font-size: 13px;
-    margin-top: 10px;
+    margin-top: 6px;
   }
   .hint {
     text-align: center;
@@ -335,9 +372,9 @@
     cursor: pointer;
   }
   .chip.on {
-    background: #eef0fa;
+    background: #d5dbff;
     border-color: #5b6cff;
-    color: #5b6cff;
+    color: #3a47cc;
   }
   .detail-fields {
     margin-top: 10px;
@@ -425,9 +462,9 @@
   .add-set {
     align-self: flex-start;
     padding: 6px 12px;
-    border: 1px dashed #b9bedb;
+    border: 1px solid #dde2fb;
     border-radius: 10px;
-    background: transparent;
+    background: #f2f3fd;
     color: #5b6cff;
     font-weight: 600;
     font-size: 13px;
@@ -527,9 +564,9 @@
   .add-interval {
     align-self: flex-start;
     padding: 6px 12px;
-    border: 1px dashed #b9bedb;
+    border: 1px solid #dde2fb;
     border-radius: 10px;
-    background: transparent;
+    background: #f2f3fd;
     color: #5b6cff;
     font-weight: 600;
     font-size: 13px;
@@ -670,9 +707,9 @@
   .add-segment {
     align-self: flex-start;
     padding: 6px 12px;
-    border: 1px dashed #b9bedb;
+    border: 1px solid #dde2fb;
     border-radius: 10px;
-    background: transparent;
+    background: #f2f3fd;
     color: #5b6cff;
     font-weight: 600;
     font-size: 13px;
@@ -702,14 +739,16 @@
     margin-top: 6px;
     width: 100%;
     padding: 12px;
-    border: 1px dashed #b9bedb;
+    border: none;
     border-radius: 12px;
-    background: transparent;
-    color: #5b6cff;
-    font-weight: 600;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff;
+    font-weight: 700;
     font-size: 15px;
     cursor: pointer;
+    box-shadow: 0 4px 14px rgba(91,108,255,0.28);
   }
+  .add-routine:active { transform: scale(0.99); }
 
   /* Copy day */
   .routines-header {
@@ -813,7 +852,13 @@
 
       <!-- Support / donation -->
       <div class="support">
-        <a class="coffee-btn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+        <div class="support-actions">
+          <button class="like-btn" id="likeBtn" onclick="likeApp()">
+            <span class="like-heart">❤️</span> I like this app <span class="like-count" id="likeCount"></span>
+          </button>
+          <a class="coffee-btn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+        </div>
+        <div class="like-msg" id="likeMsg"></div>
         <p class="support-note">Made by Eugenio — the Idea Guy</p>
       </div>
     </div>
@@ -974,8 +1019,12 @@
     }
     if (det.time && det.time.on){
       if (det.time.rows){
-        html += '<div class="hist-line">Time: ' + det.time.rows.map(rw =>
-          `${escapeHtml(rw.label || "part")} ${escapeHtml(rw.min || "-")} min${rw.miles ? " / " + escapeHtml(rw.miles) + " mi" : ""}${rw.done ? ' <span class="hist-done">✓</span>' : ""}`).join(" · ") + '</div>';
+        html += '<div class="hist-line">Time: ' + det.time.rows.map(rw => {
+          // count-down rows show "X min"; count-up rows show the recorded mm:ss
+          const dur = (rw.min !== "" && rw.min != null) ? (escapeHtml(rw.min) + " min")
+                    : (rw.elapsed ? fmt(rw.elapsed) : "-");
+          return `${escapeHtml(rw.label || "part")} ${dur}${rw.miles ? " / " + escapeHtml(rw.miles) + " mi" : ""}${rw.done ? ' <span class="hist-done">✓</span>' : ""}`;
+        }).join(" · ") + '</div>';
       } else {
         html += `<div class="hist-line">Time: ${escapeHtml(det.time.val || "-")}</div>`;
       }
@@ -1171,9 +1220,10 @@
             label: row.querySelector(".iv-label").value,
             min: row.querySelector(".iv-min").value,
             miles: row.querySelector(".iv-miles").value,
+            elapsed: parseInt(row.dataset.elapsed) || 0,
             done: row.dataset.done === "true"
           }));
-          if (!r.details.time.rows.length) r.details.time.rows = [{ label:"", min:"", miles:"", done:false }];
+          if (!r.details.time.rows.length) r.details.time.rows = [{ label:"", min:"", miles:"", elapsed:0, done:false }];
         } else {
           r.details[f].on = on;
           r.details[f].val = fe.querySelector(".detail-input").value;
@@ -1275,18 +1325,22 @@
   }
 
   function buildIntervalRow(rw){
-    const mins = parseInt(rw.min) || 0;
+    const targetSec = (parseInt(rw.min) || 0) * 60;
+    const elapsedSec = parseInt(rw.elapsed) || 0;
+    // count-down rows start at the target; count-up rows (no minutes) show their elapsed result
+    const startSec = targetSec > 0 ? targetSec : elapsedSec;
     const row = document.createElement("div");
     row.className = "interval-row" + (rw.done ? " done" : "");
     row.dataset.done = rw.done ? "true" : "false";
+    row.dataset.elapsed = elapsedSec;
     row.innerHTML = `
       <input class="iv-label" type="text" placeholder="Run / Walk">
       <span class="iv-time">
         <input class="iv-min" type="number" min="0" placeholder="min">
-        <span class="iv-clock">${fmt(mins * 60)}</span>
+        <span class="iv-clock">${fmt(startSec)}</span>
       </span>
       <input class="iv-miles" type="number" min="0" step="0.1" placeholder="mi">
-      <button class="iv-start" onclick="startTimeRow(this)">${rw.done ? "✓" : "▶"}</button>
+      <button class="iv-start" title="Start / stop. When green, tap to reset." onclick="startTimeRow(this)">${rw.done ? "✓" : "▶"}</button>
       <button class="iv-remove" onclick="removeInterval(this)">✕</button>
     `;
     row.querySelector(".iv-label").value = rw.label || "";
@@ -1322,34 +1376,85 @@
     if (btn){ btn.classList.remove("running"); btn.textContent = row.dataset.done === "true" ? "✓" : "▶"; }
   }
 
-  // Start / pause one row's count-down. When it reaches 0:00 the row is "done".
+  // Clear a finished row back to its editable state (shows the minutes box again).
+  function resetTimeRow(row){
+    if (row._ivInterval){ clearInterval(row._ivInterval); row._ivInterval = null; }
+    row.dataset.done = "false";
+    row.dataset.elapsed = 0;
+    row.dataset.mode = "";
+    row.classList.remove("done", "running");
+    const btn = row.querySelector(".iv-start");
+    if (btn){ btn.textContent = "▶"; btn.classList.remove("running"); }
+    // reset the clock to the minutes target (it's hidden while editing anyway)
+    row.querySelector(".iv-clock").textContent = fmt(timeRowSeconds(row));
+    captureDay(); saveData();
+  }
+
+  // One box, two modes:
+  //  • minutes typed  -> counts DOWN to 0:00, then the row is "done"
+  //  • minutes blank  -> counts UP like a stopwatch; press again to stop & record
   function startTimeRow(btn){
     const row = btn.closest(".interval-row");
-    if (row._ivInterval){ stopTimeRow(row); return; }
-    let remaining = timeRowSeconds(row);
-    if (remaining <= 0) return;
+    // already running -> pressing again stops it
+    if (row._ivInterval){
+      const wasUp = row.dataset.mode === "up";
+      stopTimeRow(row);
+      if (wasUp) finishTimeUp(row, btn);   // a stopwatch is "done" when you stop it
+      return;
+    }
+    // already finished (green ✓) -> tapping it clears the row back to editable,
+    // so you can type minutes for count-down or leave blank for count-up
+    if (row.dataset.done === "true"){
+      resetTimeRow(row);
+      return;
+    }
+    const clock = row.querySelector(".iv-clock");
     row.dataset.done = "false";
     row.classList.remove("done");
-    const clock = row.querySelector(".iv-clock");
-    clock.textContent = fmt(remaining);
     row.classList.add("running");
     btn.textContent = "⏸";
     btn.classList.add("running");
-    row._ivInterval = setInterval(() => {
-      remaining--;
-      if (remaining <= 0){
-        clock.textContent = fmt(0);
-        clearInterval(row._ivInterval); row._ivInterval = null;
-        row.dataset.done = "true";
-        row.classList.remove("running");
-        row.classList.add("done");
-        btn.textContent = "✓";
-        btn.classList.remove("running");
-        captureDay(); saveData();
-        return;
-      }
+    const target = timeRowSeconds(row);
+    if (target > 0){
+      // ---- count down ----
+      row.dataset.mode = "down";
+      let remaining = target;
       clock.textContent = fmt(remaining);
-    }, 1000);
+      row._ivInterval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0){
+          clock.textContent = fmt(0);
+          clearInterval(row._ivInterval); row._ivInterval = null;
+          row.dataset.done = "true";
+          row.classList.remove("running");
+          row.classList.add("done");
+          btn.textContent = "✓";
+          btn.classList.remove("running");
+          captureDay(); saveData();
+          return;
+        }
+        clock.textContent = fmt(remaining);
+      }, 1000);
+    } else {
+      // ---- count up (stopwatch) ----
+      row.dataset.mode = "up";
+      let elapsed = 0;
+      row.dataset.elapsed = 0;
+      clock.textContent = fmt(elapsed);
+      row._ivInterval = setInterval(() => {
+        elapsed++;
+        row.dataset.elapsed = elapsed;
+        clock.textContent = fmt(elapsed);
+      }, 1000);
+    }
+  }
+
+  // Stopping a count-up records the elapsed time and marks the row done (green).
+  function finishTimeUp(row, btn){
+    row.dataset.done = "true";
+    row.classList.add("done");
+    if (btn){ btn.textContent = "✓"; btn.classList.remove("running"); }
+    captureDay(); saveData();
   }
 
   function toggleDetail(chip, field){
@@ -1529,6 +1634,39 @@
 
   document.getElementById("selectedDayTitle").textContent = dayTitle(selectedDay);
   renderRoutines();
+
+  // ---- "I like this app" button: personal heart count + share to friends ----
+  function refreshLikeCount(){
+    const n = parseInt(localStorage.getItem("mowes_likes")) || 0;
+    document.getElementById("likeCount").textContent = n ? n : "";
+  }
+  function likeApp(){
+    // bump the personal counter (saved on this phone only)
+    const n = (parseInt(localStorage.getItem("mowes_likes")) || 0) + 1;
+    localStorage.setItem("mowes_likes", n);
+    refreshLikeCount();
+    const msg = document.getElementById("likeMsg");
+    const shareData = {
+      title: "My Exercise Sheet",
+      text: "I like this workout app — check it out!",
+      url: "https://ermejia07.github.io/mowes/"
+    };
+    // share to friends (this is what actually helps the app grow)
+    if (navigator.share){
+      navigator.share(shareData).then(() => {
+        msg.textContent = "Thanks for sharing! ❤️";
+      }).catch(() => { msg.textContent = "Thanks for the love! ❤️"; });
+    } else if (navigator.clipboard){
+      navigator.clipboard.writeText(shareData.url).then(() => {
+        msg.textContent = "Link copied — paste it to a friend! ❤️";
+      }).catch(() => { msg.textContent = "Thanks for the love! ❤️"; });
+    } else {
+      msg.textContent = "Thanks for the love! ❤️";
+    }
+    setTimeout(() => { msg.textContent = ""; }, 4000);
+  }
+  window.likeApp = likeApp;
+  refreshLikeCount();
 
   // Auto-save: any typing, toggle, or button tap in the routines saves your work
   const routineListEl = document.getElementById("routineList");
