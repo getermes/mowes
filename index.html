@@ -63,6 +63,29 @@
     cursor: pointer;
   }
   .history-btn:active { transform: scale(0.97); }
+
+  /* Support / Buy me a coffee */
+  .support {
+    text-align: center;
+    padding: 28px 0 12px;
+  }
+  .coffee-btn {
+    display: inline-block;
+    background: #ffdd00;
+    color: #1c1c2e;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 13px 24px;
+    border-radius: 14px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  }
+  .coffee-btn:active { transform: scale(0.98); }
+  .support-note {
+    color: #8a8fa3;
+    font-size: 13px;
+    margin-top: 10px;
+  }
   .hint {
     text-align: center;
     color: #8a8fa3;
@@ -668,6 +691,12 @@
         </div>
         <div id="routineList"></div>
         <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
+      </div>
+
+      <!-- Support / donation -->
+      <div class="support">
+        <a class="coffee-btn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+        <p class="support-note">Made by Eugenio — the Idea Guy</p>
       </div>
     </div>
 
