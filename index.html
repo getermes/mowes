@@ -451,15 +451,30 @@
     background: #fff;
   }
   .iv-label:focus, .iv-min:focus, .iv-miles:focus { outline: none; border-color: #5b6cff; }
+  /* the minutes box and the running clock share one slot: type here, then it
+     turns into the count-down in the same box (no separate timer box) */
+  .iv-time { flex: 0 0 auto; }
+  .iv-time .iv-min { width: 56px; }
   .iv-clock {
-    flex: 0 0 auto;
-    min-width: 42px;
-    font-size: 15px;
+    display: none;
+    box-sizing: border-box;
+    width: 56px;
+    padding: 8px 4px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
     font-weight: 700;
     color: #1c1c2e;
     font-variant-numeric: tabular-nums;
     text-align: center;
+    background: #fff;
   }
+  /* while counting down (or finished) the box shows the clock instead of the input */
+  .interval-row.running .iv-min,
+  .interval-row.done .iv-min { display: none; }
+  .interval-row.running .iv-clock,
+  .interval-row.done .iv-clock { display: inline-block; }
+  .interval-row.running .iv-clock { color: #ff5b6c; border-color: #ff5b6c; }
   .iv-start {
     flex: 0 0 auto;
     width: 34px;
@@ -473,9 +488,8 @@
   }
   .iv-start.running { background: #ff5b6c; }
   .interval-row.done .iv-start { background: #2faa6a; }
-  .interval-row.done .iv-clock { color: #2faa6a; }
+  .interval-row.done .iv-clock { color: #2faa6a; border-color: #2faa6a; }
   .interval-row.done .iv-label,
-  .interval-row.done .iv-min,
   .interval-row.done .iv-miles {
     text-decoration: line-through;
     color: #aab;
@@ -1250,9 +1264,11 @@
     row.dataset.done = rw.done ? "true" : "false";
     row.innerHTML = `
       <input class="iv-label" type="text" placeholder="Run / Walk">
-      <input class="iv-min" type="number" min="0" placeholder="min">
+      <span class="iv-time">
+        <input class="iv-min" type="number" min="0" placeholder="min">
+        <span class="iv-clock">${fmt(mins * 60)}</span>
+      </span>
       <input class="iv-miles" type="number" min="0" step="0.1" placeholder="mi">
-      <span class="iv-clock">${fmt(mins * 60)}</span>
       <button class="iv-start" onclick="startTimeRow(this)">${rw.done ? "✓" : "▶"}</button>
       <button class="iv-remove" onclick="removeInterval(this)">✕</button>
     `;
@@ -1284,6 +1300,7 @@
 
   function stopTimeRow(row){
     if (row._ivInterval){ clearInterval(row._ivInterval); row._ivInterval = null; }
+    row.classList.remove("running");
     const btn = row.querySelector(".iv-start");
     if (btn){ btn.classList.remove("running"); btn.textContent = row.dataset.done === "true" ? "✓" : "▶"; }
   }
@@ -1298,6 +1315,7 @@
     row.classList.remove("done");
     const clock = row.querySelector(".iv-clock");
     clock.textContent = fmt(remaining);
+    row.classList.add("running");
     btn.textContent = "⏸";
     btn.classList.add("running");
     row._ivInterval = setInterval(() => {
@@ -1306,6 +1324,7 @@
         clock.textContent = fmt(0);
         clearInterval(row._ivInterval); row._ivInterval = null;
         row.dataset.done = "true";
+        row.classList.remove("running");
         row.classList.add("done");
         btn.textContent = "✓";
         btn.classList.remove("running");
