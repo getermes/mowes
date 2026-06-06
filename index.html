@@ -1032,6 +1032,61 @@
   }
   .welcome-btn:active { transform: scale(0.99); }
   .welcome-note { margin-top: 12px; font-size: 12px; color: #8a8fa3; line-height: 1.4; }
+
+  /* Cover page (the app's "book cover" — shows every time it opens) */
+  .cover-overlay {
+    position: fixed; inset: 0; z-index: 9000;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 28px 18px;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
+  }
+  .cover-overlay.show { display: flex; }
+  .cover-box { max-width: 380px; width: 100%; text-align: center; }
+  .cover-mark {
+    font-size: 40px; font-weight: 800; letter-spacing: 3px;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cover-tag { margin-top: 6px; color: #5a6076; font-size: 14px; font-weight: 600; }
+  .cover-app {
+    margin-top: 26px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+  .cover-icon {
+    width: 54px; height: 54px; flex: 0 0 auto;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+    box-shadow: 0 4px 12px rgba(91,108,255,0.3);
+  }
+  .cover-app-name { font-size: 20px; font-weight: 800; color: #2f3550; text-align: left; }
+  .cover-app-sub { font-size: 12.5px; color: #6a7088; margin-top: 2px; text-align: left; }
+  .cover-thought-card {
+    margin: 26px auto 0; max-width: 340px;
+    background: rgba(255,255,255,0.78);
+    border: 1px solid #d6dbf5; border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: 0 8px 22px rgba(91,108,255,0.10);
+  }
+  .cover-thought-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+    color: #5b6cff; text-transform: uppercase;
+  }
+  .cover-thought-text {
+    margin-top: 8px; font-size: 15px; line-height: 1.5; color: #4a5068;
+  }
+  .cover-btn {
+    display: block; width: 100%; margin-top: 26px;
+    border: none; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff; font-weight: 700; font-size: 16px;
+    padding: 15px; border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(91,108,255,0.28);
+  }
+  .cover-btn:active { transform: scale(0.99); }
+  .cover-note { margin-top: 12px; font-size: 12px; color: #8a8fa3; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -1057,6 +1112,27 @@
       </div>
       <button class="welcome-btn" onclick="dismissWelcome()">Let's go →</button>
       <p class="welcome-note">Made by Eugenio — the Idea Guy</p>
+    </div>
+  </div>
+
+  <!-- Cover page: the app's "book cover" — shows every time it opens -->
+  <div class="cover-overlay" id="coverOverlay">
+    <div class="cover-box">
+      <div class="cover-mark">ERMES</div>
+      <div class="cover-tag">Apps that solve real problems</div>
+      <div class="cover-app">
+        <div class="cover-icon">💪</div>
+        <div>
+          <div class="cover-app-name">MOWES</div>
+          <div class="cover-app-sub">My Own Weekly Exercise Sheet</div>
+        </div>
+      </div>
+      <div class="cover-thought-card">
+        <div class="cover-thought-label">💭 Today's Thought</div>
+        <p class="cover-thought-text" id="coverThought">—</p>
+      </div>
+      <button class="cover-btn" onclick="openApp()">Open MOWES →</button>
+      <p class="cover-note">Opening your routines… or tap to go now.</p>
     </div>
   </div>
 
@@ -1988,17 +2064,17 @@
     const start = new Date(now.getFullYear(), 0, 0);
     return Math.floor((now - start) / 86400000);
   }
-  function renderThought(){
+  function getTodaysThoughtText(){
     const selected = getSelectedTopics();
     const pool = THOUGHTS.filter(t => selected.includes(t.topic));
-    const el = document.getElementById("thoughtText");
-    if (!pool.length){
-      el.textContent = "Pick a topic above to see a daily thought. 🙂";
-      return;
-    }
+    if (!pool.length) return "Pick a topic in the app to see a daily thought. 🙂";
     // same thought all day, changes day to day
-    const pick = pool[dayOfYear() % pool.length];
-    el.textContent = pick.text;
+    return pool[dayOfYear() % pool.length].text;
+  }
+  function renderThought(){
+    document.getElementById("thoughtText").textContent = getTodaysThoughtText();
+    const coverEl = document.getElementById("coverThought");
+    if (coverEl) coverEl.textContent = getTodaysThoughtText();
   }
   function renderTopicChips(){
     const selected = getSelectedTopics();
@@ -2047,15 +2123,34 @@
   renderThought();
   applyThoughtVisibility();
 
-  // First-time-only ERMES welcome screen
+  // Cover page (shows every time) + first-time-only welcome (shows once, on top)
   const WELCOME_KEY = "mowes_welcome_seen_v1";
+  const COVER_AUTO_OPEN_MS = 4000; // auto-opens the routines after ~4 seconds
+  let coverTimer = null;
+  function startCoverAutoOpen(){
+    if (coverTimer) clearTimeout(coverTimer);
+    coverTimer = setTimeout(openApp, COVER_AUTO_OPEN_MS);
+  }
+  function openApp(){
+    if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
+    document.getElementById("coverOverlay").classList.remove("show");
+  }
   function dismissWelcome(){
     localStorage.setItem(WELCOME_KEY, "1");
     document.getElementById("welcomeOverlay").classList.remove("show");
+    startCoverAutoOpen(); // now the cover is the active screen — begin its countdown
   }
+  window.openApp = openApp;
   window.dismissWelcome = dismissWelcome;
+  // The cover is the app's face — show it on every open
+  document.getElementById("coverThought").textContent = getTodaysThoughtText();
+  document.getElementById("coverOverlay").classList.add("show");
   if (localStorage.getItem(WELCOME_KEY) !== "1") {
+    // Brand-new users: one-time welcome on top first; cover countdown waits for it
     document.getElementById("welcomeOverlay").classList.add("show");
+  } else {
+    // Returning users: cover is active right away, so start the auto-open countdown
+    startCoverAutoOpen();
   }
 
   // Auto-save: any typing, toggle, or button tap in the routines saves your work
