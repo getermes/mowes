@@ -517,6 +517,45 @@
     cursor: pointer;
   }
   .routine-delete:active { transform: scale(0.92); }
+  /* Move a routine up or down to reorder it */
+  .routine-move {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .move-btn {
+    width: 26px;
+    height: 20px;
+    border-radius: 7px;
+    border: 1px solid #e6e8f0;
+    background: #eef0fa;
+    color: #5b6cff;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .move-btn:active { transform: scale(0.92); }
+  .move-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  /* Long-press drag to reorder */
+  .routine-card.dragging {
+    position: fixed;
+    z-index: 1000;
+    box-shadow: 0 14px 30px rgba(91,108,255,0.30);
+    opacity: 0.97;
+    background: #fff;
+    pointer-events: none;
+  }
+  .routine-card.drag-placeholder {
+    background: #e9ecfb;
+    border: 1px dashed #b9c2f5;
+  }
 
   /* Detail chips + fields */
   .detail-chips {
@@ -1314,7 +1353,12 @@
   let weekData = allWeeks[currentWeekKey];
 
   const dayRow = document.getElementById("dayRow");
-  days.forEach(day => {
+  // Show the week rotated so TODAY sits in the middle, wrapping around
+  // (e.g. Saturday → Thu · Fri · SAT · Sun · Mon)
+  const todayIdx = days.indexOf(todayKey);
+  const startIdx = (todayIdx - 3 + 7) % 7;
+  const orderedDays = Array.from({ length: 7 }, (_, k) => days[(startIdx + k) % 7]);
+  orderedDays.forEach(day => {
     const pill = document.createElement("div");
     pill.className = "day-pill"
       + (day === selectedDay ? " active" : "")
@@ -1324,6 +1368,15 @@
     pill.dataset.day = day;
     dayRow.appendChild(pill);
   });
+  // Scroll the row so today is visually centered
+  function centerToday(){
+    const todayPill = dayRow.querySelector(".day-pill.today");
+    if (!todayPill) return;
+    const target = todayPill.offsetLeft - (dayRow.clientWidth - todayPill.clientWidth) / 2;
+    dayRow.scrollLeft = Math.max(0, target);
+  }
+  centerToday();
+  window.addEventListener("load", centerToday);
 
   function dayTitle(day){
     return (day === todayKey ? "Today · " : "") + fullNames[day];
@@ -1453,13 +1506,20 @@
     list.querySelectorAll(".interval-row").forEach(stopTimeRow);
     list.innerHTML = "";
 
+    const routineCount = weekData[selectedDay].length;
     weekData[selectedDay].forEach((r, idx) => {
       const i = idx + 1;
+      const isFirst = idx === 0;
+      const isLast = idx === routineCount - 1;
       const card = document.createElement("div");
       card.className = "routine-card";
       card.innerHTML = `
         <div class="routine-row">
           <div class="routine-num">${i}</div>
+          <div class="routine-move">
+            <button class="move-btn"${isFirst ? " disabled" : ""} title="Move up" onclick="moveRoutine(this,-1)">▲</button>
+            <button class="move-btn"${isLast ? " disabled" : ""} title="Move down" onclick="moveRoutine(this,1)">▼</button>
+          </div>
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
           <button class="routine-delete" title="Delete this routine" onclick="deleteRoutine(this)">✕</button>
         </div>
@@ -1966,6 +2026,23 @@
     renderRoutines();
   }
 
+  // Move a routine up (dir = -1) or down (dir = +1) to reorder the list
+  function moveRoutine(btn, dir){
+    const card = btn.closest(".routine-card");
+    const cards = [...document.querySelectorAll("#routineList .routine-card")];
+    const idx = cards.indexOf(card);
+    if (idx < 0) return;
+    const newIdx = idx + dir;
+    captureDay(); // keep whatever was typed before we reorder (rebuilds the array)
+    const arr = weekData[selectedDay]; // read AFTER captureDay so we have the fresh array
+    if (newIdx < 0 || newIdx >= arr.length) return;
+    const [item] = arr.splice(idx, 1);
+    arr.splice(newIdx, 0, item);
+    renderRoutines();
+    saveData();
+  }
+  window.moveRoutine = moveRoutine;
+
   function deleteRoutine(btn){
     const card = btn.closest(".routine-card");
     const cards = [...document.querySelectorAll("#routineList .routine-card")];
@@ -2134,6 +2211,7 @@
   function openApp(){
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
     document.getElementById("coverOverlay").classList.remove("show");
+    if (typeof centerToday === "function") centerToday();
   }
   function dismissWelcome(){
     localStorage.setItem(WELCOME_KEY, "1");
@@ -2176,12 +2254,93 @@
     }, { passive: true });
     area.addEventListener("touchend", e => {
       if (!tracking) return; tracking = false;
+      if (window.__mowesDragging) return; // a reorder drag just happened — don't change day
       const t = e.changedTouches[0];
       const dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){
         changeDay(dx > 0 ? -1 : 1);
       }
     }, { passive: true });
+  })();
+
+  // Long-press a routine card, then drag it up or down to reorder
+  (function(){
+    const list = document.getElementById("routineList");
+    let dragging = null, placeholder = null, holdTimer = null;
+    let startX = 0, startY = 0, grabOffsetY = 0, cardLeft = 0, cardWidth = 0;
+
+    function onStart(e){
+      if (e.touches.length !== 1) return;
+      const card = e.target.closest(".routine-card");
+      if (!card) return;
+      // don't start a drag when the user is tapping a control (typing, buttons, chips, timer)
+      if (e.target.closest("input, textarea, button, .chip, .toggle, .slider, .mode-btn, .set-row, .interval-row")) return;
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY;
+      holdTimer = setTimeout(() => beginDrag(card, t), 300);
+    }
+    function beginDrag(card, t){
+      holdTimer = null;
+      captureDay(); // preserve typed values before moving cards
+      const rect = card.getBoundingClientRect();
+      cardWidth = rect.width; cardLeft = rect.left;
+      grabOffsetY = startY - rect.top;
+      placeholder = document.createElement("div");
+      placeholder.className = "routine-card drag-placeholder";
+      placeholder.style.height = rect.height + "px";
+      card.parentNode.insertBefore(placeholder, card);
+      card.classList.add("dragging");
+      card.style.width = cardWidth + "px";
+      card.style.left = cardLeft + "px";
+      card.style.top = (t.clientY - grabOffsetY) + "px";
+      dragging = card;
+      window.__mowesDragging = true;
+      if (navigator.vibrate) navigator.vibrate(15);
+    }
+    function onMove(e){
+      if (!dragging){
+        // moved too far before the long-press fired -> it's a scroll, cancel
+        if (holdTimer){
+          const t = e.touches[0];
+          if (Math.abs(t.clientY - startY) > 10 || Math.abs(t.clientX - startX) > 10){
+            clearTimeout(holdTimer); holdTimer = null;
+          }
+        }
+        return;
+      }
+      e.preventDefault(); // stop the page scrolling while dragging
+      const t = e.touches[0];
+      dragging.style.top = (t.clientY - grabOffsetY) + "px";
+      const others = [...list.querySelectorAll(".routine-card:not(.dragging):not(.drag-placeholder)")];
+      let placed = false;
+      for (const c of others){
+        const r = c.getBoundingClientRect();
+        if (t.clientY < r.top + r.height / 2){
+          list.insertBefore(placeholder, c);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) list.appendChild(placeholder);
+    }
+    function onEnd(){
+      if (holdTimer){ clearTimeout(holdTimer); holdTimer = null; }
+      if (!dragging){ return; }
+      list.insertBefore(dragging, placeholder);
+      dragging.classList.remove("dragging");
+      dragging.style.width = ""; dragging.style.left = ""; dragging.style.top = "";
+      placeholder.remove();
+      placeholder = null; dragging = null;
+      captureDay(); // read the new order back into the data
+      saveData();
+      renderRoutines();
+      setTimeout(() => { window.__mowesDragging = false; }, 0);
+    }
+
+    list.addEventListener("touchstart", onStart, { passive: true });
+    list.addEventListener("touchmove", onMove, { passive: false });
+    list.addEventListener("touchend", onEnd, { passive: true });
+    list.addEventListener("touchcancel", onEnd, { passive: true });
   })();
 
   // Register the offline worker (works once the app is on a secure https site)
