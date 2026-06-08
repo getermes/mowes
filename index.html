@@ -152,14 +152,58 @@
   }
   .page-tab:active { transform: scale(0.97); }
 
-  /* Notes page mode: hide the sheet UI, show the notes area */
+  /* Notes / list page mode: hide the sheet UI, show the page's own area */
   .screen.notes-mode .day-row,
   .screen.notes-mode .thought-card,
   .screen.notes-mode .thought-show,
   .screen.notes-mode .routines,
-  .screen.notes-mode .history-btn { display: none !important; }
+  .screen.notes-mode .history-btn,
+  .screen.list-mode .day-row,
+  .screen.list-mode .thought-card,
+  .screen.list-mode .thought-show,
+  .screen.list-mode .routines,
+  .screen.list-mode .history-btn { display: none !important; }
   .notes-view { display: none; margin-top: 8px; }
   .screen.notes-mode .notes-view { display: block; }
+
+  /* Shopping-list page */
+  .list-view { display: none; margin-top: 8px; }
+  .screen.list-mode .list-view { display: block; }
+  .list-add { display: flex; gap: 8px; margin-bottom: 14px; }
+  .list-add input {
+    flex: 1; box-sizing: border-box; padding: 14px;
+    font-size: 16px; font-family: inherit; color: #1c1c2e;
+    background: #fff; border: 1px solid #e6e8f0; border-radius: 14px;
+  }
+  .list-add input:focus { outline: none; border-color: #5b6cff; }
+  .list-add button {
+    flex: 0 0 auto; padding: 0 18px; font-size: 22px; font-weight: 700;
+    color: #fff; background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    border: none; border-radius: 14px; cursor: pointer;
+  }
+  .list-add button:active { transform: scale(0.97); }
+  .list-items { list-style: none; margin: 0; padding: 0; }
+  .list-item {
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; border: 1px solid #e6e8f0; border-radius: 14px;
+    padding: 14px; margin-bottom: 10px;
+  }
+  .list-item .box {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 8px;
+    border: 2px solid #c7cdfb; background: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #fff;
+  }
+  .list-item.done .box { background: #5b6cff; border-color: #5b6cff; }
+  .list-item .label { flex: 1; font-size: 16px; color: #1c1c2e; min-width: 0; word-break: break-word; }
+  .list-item.done .label { text-decoration: line-through; color: #9aa0b5; }
+  .list-item .del {
+    flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+    border: none; background: #fceaea; color: #d23; font-size: 16px;
+    font-weight: 700; cursor: pointer;
+  }
+  .list-item .del:active { transform: scale(0.94); }
+  .list-empty { text-align: center; color: #9aa0b5; font-size: 15px; padding: 24px 10px; }
   .notes-area {
     width: 100%;
     min-height: 60vh;
@@ -1675,6 +1719,15 @@
         <textarea class="notes-area" id="notesArea" placeholder="Write anything here — notes, goals, ideas… Saved on your phone."></textarea>
       </div>
 
+      <!-- Shopping-list page (shown only when the current page is a list page) -->
+      <div class="list-view" id="listView">
+        <div class="list-add">
+          <input type="text" id="listInput" placeholder="Add an item — like Vitamin D" enterkeyhint="done">
+          <button type="button" onclick="addListItem()" title="Add to list">＋</button>
+        </div>
+        <ul class="list-items" id="listItems"></ul>
+      </div>
+
       <!-- Support / donation -->
       <div class="support">
         <p class="support-note">Made by Eugenio — the Idea Guy</p>
@@ -1829,6 +1882,7 @@
           <div class="addpage-types">
             <button class="addpage-type" data-type="sheet" onclick="pickPageType('sheet')">📋 Exercise sheet</button>
             <button class="addpage-type" data-type="notes" onclick="pickPageType('notes')">📝 Notes page</button>
+            <button class="addpage-type" data-type="list" onclick="pickPageType('list')">🛒 Shopping list</button>
           </div>
           <input id="addPageName" class="addpage-name" placeholder="Name it (e.g. Gym, Home, Notes)" />
           <div class="addpage-actions">
@@ -1918,13 +1972,16 @@
   let activePageId = "default"; // the original sheet keeps the legacy storage key
   function sheetKeyFor(id){ return id === "default" ? WEEKS_KEY : WEEKS_KEY + "__" + id; }
   function notesKeyFor(id){ return "mowes_notes_" + id; }
+  function listKeyFor(id){ return "mowes_list_" + id; }
   function currentPage(){ return pages.find(p => p.id === activePageId); }
   function currentPageIsNotes(){ const p = currentPage(); return !!(p && p.type === "notes"); }
+  function currentPageIsList(){ const p = currentPage(); return !!(p && p.type === "list"); }
+  function currentPageIsSheet(){ const p = currentPage(); return !!(p && p.type === "sheet"); }
   function pageName(id){ const p = pages.find(x => x.id === id); return p ? p.name : "My Exercise Sheet"; }
 
   let allWeeks = {};
   function saveData(){
-    if (currentPageIsNotes()) return; // notes pages have no weeks
+    if (!currentPageIsSheet()) return; // only exercise-sheet pages have weeks
     try { localStorage.setItem(sheetKeyFor(activePageId), JSON.stringify(allWeeks)); } catch(e){}
   }
   function loadAllWeeks(){
@@ -2010,19 +2067,34 @@
       if (!localStorage.getItem(EXAMPLES_KEY)){
         localStorage.setItem(EXAMPLES_KEY, "1");
         if (pages.length === 1 && pages[0].id === "default"){
-          pages.push({ id:"p_ex_goals",    type:"notes", name:"Goals" });
+          pages.push({ id:"p_ex_goals",    type:"list",  name:"Goals" });
           pages.push({ id:"p_ex_notes",    type:"notes", name:"Notes" });
-          pages.push({ id:"p_ex_shopping", type:"notes", name:"Shopping List" });
+          pages.push({ id:"p_ex_shopping", type:"list",  name:"Shopping List" });
         }
+      }
+    } catch(e){}
+    // One-time upgrade: the example "Shopping List" and "Goals" pages used to be
+    // plain notes pages. Turn them into real checkable lists for users who were
+    // seeded with the older version (their notes text, if any, is left in place
+    // but the pages now work as checklists).
+    try {
+      if (!localStorage.getItem("mowes_list_upgraded_v2")){
+        localStorage.setItem("mowes_list_upgraded_v2", "1");
+        const sp = pages.find(p => p.id === "p_ex_shopping");
+        if (sp && sp.type === "notes") sp.type = "list";
+        const gp = pages.find(p => p.id === "p_ex_goals");
+        if (gp && gp.type === "notes") gp.type = "list";
       }
     } catch(e){}
     savePagesRegistry();
   }
 
-  // Show the sheet UI or the notes UI
+  // Show the sheet UI, the notes UI, or the shopping-list UI
   function setLayoutMode(type){
     const screen = document.querySelector(".screen");
-    if (screen) screen.classList.toggle("notes-mode", type === "notes");
+    if (!screen) return;
+    screen.classList.toggle("notes-mode", type === "notes");
+    screen.classList.toggle("list-mode", type === "list");
   }
 
   // Load an exercise-sheet page's data and render it
@@ -2055,13 +2127,103 @@
     try { localStorage.setItem(notesKeyFor(activePageId), document.getElementById("notesArea").value); } catch(e){}
   }
 
+  // ---- Shopping-list page ----
+  let listData = []; // array of { text, done }
+  function loadList(id){
+    try { listData = JSON.parse(localStorage.getItem(listKeyFor(id)) || "[]") || []; }
+    catch(e){ listData = []; }
+    if (!Array.isArray(listData)) listData = [];
+  }
+  function saveList(){
+    if (!currentPageIsList()) return;
+    try { localStorage.setItem(listKeyFor(activePageId), JSON.stringify(listData)); } catch(e){}
+  }
+  function activateListPage(id){
+    activePageId = id;
+    loadList(id);
+    renderList();
+    const input = document.getElementById("listInput");
+    if (input){
+      input.value = "";
+      const p = pages.find(x => x.id === id);
+      const nm = (p && p.name ? p.name : "").toLowerCase();
+      input.placeholder = nm.indexOf("goal") >= 0
+        ? "Add a goal — type and press Enter"
+        : "Add an item — type and press Enter";
+    }
+  }
+  function renderList(){
+    const ul = document.getElementById("listItems");
+    if (!ul) return;
+    ul.innerHTML = "";
+    if (!listData.length){
+      const empty = document.createElement("li");
+      empty.className = "list-empty";
+      empty.textContent = "Your list is empty. Type an item above and press Enter.";
+      ul.appendChild(empty);
+      return;
+    }
+    listData.forEach((item, i) => {
+      const li = document.createElement("li");
+      li.className = "list-item" + (item.done ? " done" : "");
+
+      const box = document.createElement("button");
+      box.type = "button";
+      box.className = "box";
+      box.textContent = item.done ? "✓" : "";
+      box.title = "Check off";
+      box.onclick = () => toggleListItem(i);
+
+      const label = document.createElement("span");
+      label.className = "label";
+      label.textContent = item.text;
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "del";
+      del.textContent = "✕";
+      del.title = "Remove from list";
+      del.onclick = () => deleteListItem(i);
+
+      li.appendChild(box);
+      li.appendChild(label);
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+  function addListItem(){
+    const input = document.getElementById("listInput");
+    if (!input) return;
+    const text = (input.value || "").trim();
+    if (!text){ input.focus(); return; }
+    listData.push({ text, done: false });
+    saveList();
+    renderList();
+    input.value = "";
+    input.focus();
+  }
+  function toggleListItem(i){
+    if (!listData[i]) return;
+    listData[i].done = !listData[i].done;
+    saveList();
+    renderList();
+  }
+  function deleteListItem(i){
+    if (i < 0 || i >= listData.length) return;
+    listData.splice(i, 1);
+    saveList();
+    renderList();
+  }
+
   // Flip to another page (saving the current one first)
   function switchToPage(id){
     if (currentPageIsNotes()) saveNotes();
+    else if (currentPageIsList()) saveList();
     else { captureDay(); saveData(); }
     const p = pages.find(x => x.id === id);
     if (!p) return;
     if (p.type === "notes"){ setLayoutMode("notes"); activateNotesPage(id); }
+    else if (p.type === "list"){ setLayoutMode("list"); activateListPage(id); }
     else { setLayoutMode("sheet"); activateSheetPage(id); }
     try { localStorage.setItem(ACTIVE_KEY, id); } catch(e){}
     renderPageTabs();
@@ -2080,7 +2242,7 @@
     pages.forEach(p => {
       const tab = document.createElement("button");
       tab.className = "page-tab" + (p.id === activePageId ? " active" : "");
-      tab.textContent = (p.type === "notes" ? "📝 " : "📋 ") + p.name;
+      tab.textContent = (p.type === "notes" ? "📝 " : p.type === "list" ? "🛒 " : "📋 ") + p.name;
       tab.onclick = () => {
         if (p.id === activePageId) openPageTools(p.id);
         else switchToPage(p.id);
@@ -2121,7 +2283,7 @@
   function closeAddPage(){ document.getElementById("addPageOverlay").classList.remove("open"); }
   function confirmAddPage(){
     let name = (document.getElementById("addPageName").value || "").trim();
-    if (!name) name = (newPageType === "notes" ? "Notes" : "Sheet");
+    if (!name) name = (newPageType === "notes" ? "Notes" : newPageType === "list" ? "Shopping List" : "Sheet");
     const id = "p_" + Date.now().toString(36);
     pages.push({ id, type: newPageType, name });
     savePagesRegistry();
@@ -2155,6 +2317,7 @@
     if (!confirm('Delete "' + p.name + '"? This can\'t be undone.')) return;
     try {
       if (p.type === "notes") localStorage.removeItem(notesKeyFor(p.id));
+      else if (p.type === "list") localStorage.removeItem(listKeyFor(p.id));
       else if (p.id !== "default") localStorage.removeItem(sheetKeyFor(p.id));
     } catch(e){}
     const wasActive = (p.id === activePageId);
@@ -2174,6 +2337,11 @@
     loadPagesRegistry();
     const area = document.getElementById("notesArea");
     if (area) area.addEventListener("input", saveNotes);
+    // Shopping list: press Enter to add the typed item.
+    const listInput = document.getElementById("listInput");
+    if (listInput) listInput.addEventListener("keydown", e => {
+      if (e.key === "Enter"){ e.preventDefault(); addListItem(); }
+    });
     // Swipe left/right across the top area (title + tabs) to flip between pages.
     // Swipe right = previous page, swipe left = next page. A bigger, easy target.
     function attachPageSwipe(el){
@@ -2558,7 +2726,7 @@
 
   // Read the current day's DOM back into weekData
   function captureDay(){
-    if (currentPageIsNotes()) return; // a notes page has no routines to capture
+    if (!currentPageIsSheet()) return; // only exercise-sheet pages have routines to capture
     const cards = document.querySelectorAll("#routineList .routine-card");
     const arr = [];
     cards.forEach(card => {
