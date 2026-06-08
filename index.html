@@ -1093,6 +1093,27 @@
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
   }
   .cover-overlay.show { display: flex; }
+  /* "Turning the page": the cover SLIDES sideways as one solid page, with a
+     thick line on its leading edge. The line is a real border + box-shadow
+     (always painted), so the boundary between the two pages is clearly
+     visible on every device. */
+  /* IN (routines -> cover): cover slides in from the LEFT, moving LEFT -> RIGHT. */
+  @keyframes coverRevealIn {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
+  }
+  /* OUT (cover -> routines): cover slides back out to the LEFT, moving RIGHT -> LEFT. */
+  @keyframes coverWipeOut {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-100%); }
+  }
+  .cover-overlay.reveal,
+  .cover-overlay.wipeout {
+    border-right: 4px solid #2a32a8;
+    box-shadow: 2px 0 0 rgba(255,255,255,0.75), 45px 0 80px 20px rgba(20,26,90,0.42);
+  }
+  .cover-overlay.reveal  { animation: coverRevealIn 1.5s cubic-bezier(0.45,0.05,0.55,0.95) both; }
+  .cover-overlay.wipeout { animation: coverWipeOut 1.5s cubic-bezier(0.45,0.05,0.55,0.95) both; }
   .cover-box { max-width: 380px; width: 100%; text-align: center; }
   .cover-app {
     margin-top: 10px;
@@ -2220,7 +2241,7 @@
 
   // Cover page (shows every time) + first-time-only welcome (shows once, on top)
   const WELCOME_KEY = "mowes_welcome_seen_v1";
-  const COVER_AUTO_OPEN_MS = 5000; // auto-opens the routines after ~5 seconds
+  const COVER_AUTO_OPEN_MS = 2000; // shows the cover for ~2 seconds, then opens the routines
   let coverTimer = null;
   function startCoverAutoOpen(){
     if (coverTimer) clearTimeout(coverTimer);
@@ -2228,16 +2249,32 @@
   }
   function openApp(){
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
-    document.getElementById("coverOverlay").classList.remove("show");
+    const ov = document.getElementById("coverOverlay");
     if (typeof centerToday === "function") centerToday();
+    // Play the sideways page-turn wipe-out, then hide the cover.
+    ov.classList.remove("reveal");
+    ov.classList.add("wipeout");
+    setTimeout(function(){
+      ov.classList.remove("show");
+      ov.classList.remove("wipeout");
+    }, 1500);
   }
   // Tapping the "Thought of the day" brings back the ERMES cover page.
   // No auto-open timer here — the user chose to come here, so let them
   // read it and tap "Open MOWES →" when they're ready to go back.
+  // Play the "turning the page" reveal, then show the cover
+  function revealCover(){
+    const ov = document.getElementById("coverOverlay");
+    ov.classList.add("show");
+    ov.classList.remove("reveal");
+    ov.classList.remove("wipeout");
+    void ov.offsetWidth; // restart the animation each time
+    ov.classList.add("reveal");
+  }
   function showCover(){
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
     document.getElementById("coverThought").textContent = getTodaysThoughtText();
-    document.getElementById("coverOverlay").classList.add("show");
+    revealCover();
   }
   window.showCover = showCover;
   function dismissWelcome(){
@@ -2249,7 +2286,7 @@
   window.dismissWelcome = dismissWelcome;
   // The cover is the app's face — show it on every open
   document.getElementById("coverThought").textContent = getTodaysThoughtText();
-  document.getElementById("coverOverlay").classList.add("show");
+  revealCover();
   if (localStorage.getItem(WELCOME_KEY) !== "1") {
     // Brand-new users: one-time welcome on top first; cover countdown waits for it
     document.getElementById("welcomeOverlay").classList.add("show");
