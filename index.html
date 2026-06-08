@@ -574,6 +574,105 @@
     color: #555;
   }
 
+  /* How-to-use (in-app tutorial) */
+  .help-intro {
+    margin: 0 0 16px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: #5a607a;
+  }
+  .help-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-top: 1px solid #eef0f7;
+  }
+  .help-num {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .help-body { flex: 1 1 auto; min-width: 0; }
+  .help-title {
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #2a2f45;
+    margin-bottom: 4px;
+  }
+  .help-body p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #4a5068;
+  }
+  .help-list {
+    margin: 8px 0 0;
+    padding-left: 18px;
+  }
+  .help-list li {
+    font-size: 13.8px;
+    line-height: 1.5;
+    color: #4a5068;
+    margin-bottom: 5px;
+  }
+  .help-done-btn {
+    display: block;
+    width: 100%;
+    margin: 20px 0 0;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(91,108,255,0.28);
+  }
+  .help-done-btn:active { transform: scale(0.99); }
+  .help-foot {
+    text-align: center;
+    margin: 14px 0 0;
+    font-size: 13px;
+    color: #8a8fa3;
+  }
+  .help-foot a { color: #5b6cff; font-weight: 700; }
+
+  /* "How to use" buttons (cover + footer) */
+  .help-open-btn {
+    display: inline-block;
+    margin: 12px auto 0;
+    padding: 11px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #5b6cff;
+    background: #fff;
+    border: 1.5px solid #c7cdfb;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(91,108,255,0.12);
+  }
+  .help-open-btn:active { transform: scale(0.98); }
+  .help-link {
+    background: none;
+    border: none;
+    color: #5b6cff;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+  }
+
   /* Day selector row (left to right) */
   .day-row {
     display: flex;
@@ -1388,6 +1487,7 @@
       </div>
       <button class="cover-btn" onclick="openApp()">Open MOWES →</button>
       <p class="cover-note">Opening your routines… or tap to go now.</p>
+      <button type="button" class="help-open-btn" onclick="openHelp()">❓ How to use MOWES</button>
       <div class="privacy-note">
         <p class="privacy-text">
           🔒 <strong>Your privacy:</strong> No sign-up, no account, no email.
@@ -1461,6 +1561,9 @@
           💬 Questions or ideas?
           <a href="mailto:get.ermes00@gmail.com?subject=MOWES%20feedback">Contact ERMES</a>
         </p>
+        <p class="contact-note">
+          <button type="button" class="help-link" onclick="openHelp()">❓ How to use MOWES</button>
+        </p>
       </div>
     </div>
 
@@ -1473,6 +1576,108 @@
           <button class="close-btn" onclick="closeHistory()">&times;</button>
         </div>
         <div id="historyBody"></div>
+      </div>
+    </div>
+
+    <!-- How to use popup (in-app tutorial) -->
+    <div class="overlay" id="helpOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>How to use MOWES</h2>
+          <button class="close-btn" onclick="closeHelp()">&times;</button>
+        </div>
+        <p class="help-intro">A quick tour. It's simpler than it looks — tap around and you can't break anything. 🙂</p>
+
+        <div class="help-step">
+          <div class="help-num">1</div>
+          <div class="help-body">
+            <div class="help-title">📅 Pick your day</div>
+            <p>Your week runs across the top. <strong>Today</strong> sits in the middle with a little dot. <strong>Swipe</strong> left or right, or just <strong>tap a day</strong> to jump to it.</p>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">2</div>
+          <div class="help-body">
+            <div class="help-title">➕ Add an exercise</div>
+            <p>Tap <strong>+ Add routine</strong>, then type the name — like <em>Push-ups</em> or <em>Morning walk</em>.</p>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">3</div>
+          <div class="help-body">
+            <div class="help-title">🔢 Track it your way</div>
+            <p>On each exercise, tap a chip to add what you want:</p>
+            <ul class="help-list">
+              <li><strong>+ Reps</strong> — add sets and type your reps. Tap <strong>Done</strong> when a set is finished.</li>
+              <li><strong>+ Time</strong> — gives you a built-in timer (see step 4).</li>
+              <li><strong>+ Weight</strong> — note the weight you used.</li>
+              <li><strong>+ Distance</strong> — add miles (great for runs or walks).</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">4</div>
+          <div class="help-body">
+            <div class="help-title">⏱️ The timer — the star feature</div>
+            <p><strong>Type the minutes</strong> and press <strong>▶</strong> → it <strong>counts down</strong> to 0:00.<br>
+            Leave it <strong>blank</strong> and press <strong>▶</strong> → it <strong>counts up</strong> like a stopwatch.<br>
+            When it's done, the box turns <strong style="color:#1f9d55">green ✓</strong>.</p>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">5</div>
+          <div class="help-body">
+            <div class="help-title">🔁 Copy a day</div>
+            <p>Built today's plan and want it on other days too? Tap <strong>Copy to…</strong>, pick the days, and tap <strong>Copy</strong>.</p>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">6</div>
+          <div class="help-body">
+            <div class="help-title">↕️ Reorder &amp; remove</div>
+            <p>Use the <strong>▲ ▼</strong> arrows, or <strong>press &amp; hold</strong> a card to drag it. Tap the red <strong>✕</strong> to delete an exercise.</p>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">7</div>
+          <div class="help-body">
+            <div class="help-title">📖 Make pages</div>
+            <p>Tap <strong>＋ Page</strong> to add pages like <em>At the Gym</em> or <em>At Home</em>. Tap a page's name to rename it. Swipe the tabs to flip between pages.</p>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">8</div>
+          <div class="help-body">
+            <div class="help-title">🕘 Look back</div>
+            <p>Tap <strong>🕘 History</strong> any time to see past weeks and everything you did.</p>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">9</div>
+          <div class="help-body">
+            <div class="help-title">💾 Saved &amp; private — automatically</div>
+            <p>Everything saves by itself, right on your phone. <strong>No sign-up, no account</strong> — nothing is ever sent anywhere.</p>
+          </div>
+        </div>
+
+        <div class="help-step">
+          <div class="help-num">10</div>
+          <div class="help-body">
+            <div class="help-title">📲 Install it like an app</div>
+            <p>In your phone's browser, tap <strong>Share</strong> → <strong>Add to Home Screen</strong>. Now MOWES opens like a real app — even with no internet.</p>
+          </div>
+        </div>
+
+        <button class="help-done-btn" onclick="closeHelp()">Got it — let's go! →</button>
+        <p class="help-foot">Stuck on anything? <a href="mailto:get.ermes00@gmail.com?subject=MOWES%20help">Contact ERMES</a> — happy to help.</p>
       </div>
     </div>
 
@@ -1922,6 +2127,9 @@
     document.getElementById("historyOverlay").classList.add("open");
   }
   function closeHistory(){ document.getElementById("historyOverlay").classList.remove("open"); }
+
+  function openHelp(){ document.getElementById("helpOverlay").classList.add("open"); }
+  function closeHelp(){ document.getElementById("helpOverlay").classList.remove("open"); }
   function historyBack(){ if (histWeek){ histWeek = null; renderHistoryWeeks(); } }
 
   function renderHistoryWeeks(){
