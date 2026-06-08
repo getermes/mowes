@@ -1635,9 +1635,9 @@
           <div class="title-topbar">
             <button type="button" class="coffee-btn" id="likeBtn" onclick="likeApp()" title="Like the app">🤍 Like app</button>
             <a class="coffee-btn" id="coffeeBtn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" style="display:none;">☕ Coffee</a>
-            <button class="thought-show" id="thoughtShow" onclick="showCover()" title="Today's Thought">💭 Thought</button>
             <button class="history-btn" onclick="openHistory()">🕘 History</button>
             <button class="addpage-btn" onclick="addPage()">＋ Page</button>
+            <button class="thought-show" id="thoughtShow" onclick="showCover()" title="Today's Thought">💭 Thought</button>
           </div>
         </div>
 
@@ -1908,6 +1908,7 @@
   // ---- Pages: the app is a "book" you can add pages to ----
   const PAGES_KEY  = "mowes_pages_v1";
   const ACTIVE_KEY = "mowes_active_page_v1";
+  const EXAMPLES_KEY = "mowes_examples_seeded_v1"; // so example pages are seeded only once
   let pages = [];
   let activePageId = "default"; // the original sheet keeps the legacy storage key
   function sheetKeyFor(id){ return id === "default" ? WEEKS_KEY : WEEKS_KEY + "__" + id; }
@@ -1997,6 +1998,19 @@
     if (!pages.some(p => p.id === "default")){
       pages.unshift({ id:"default", type:"sheet", name:"My Exercise Sheet" });
     }
+    // First run only: seed a few example pages so the tabs row clearly shows
+    // more than one page — making "swipe to find / add your own pages" easy to
+    // discover. Done once; if the user later deletes them, they stay gone.
+    try {
+      if (!localStorage.getItem(EXAMPLES_KEY)){
+        localStorage.setItem(EXAMPLES_KEY, "1");
+        if (pages.length === 1 && pages[0].id === "default"){
+          pages.push({ id:"p_ex_goals",    type:"notes", name:"Goals" });
+          pages.push({ id:"p_ex_notes",    type:"notes", name:"Notes" });
+          pages.push({ id:"p_ex_shopping", type:"notes", name:"Shopping List" });
+        }
+      }
+    } catch(e){}
     savePagesRegistry();
   }
 
