@@ -124,12 +124,15 @@
   /* Page tabs ("book pages" you flip between) */
   .page-tabs {
     display: flex;
+    flex-wrap: nowrap;
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 10px;
     margin-bottom: 4px;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox: hide scrollbar */
   }
+  .page-tabs::-webkit-scrollbar { display: none; } /* Safari/Chrome: hide scrollbar */
   .page-tab {
     flex: 0 0 auto;
     padding: 7px 14px;
@@ -1636,7 +1639,6 @@
             <button class="history-btn" onclick="openHistory()">🕘 History</button>
             <button class="addpage-btn" onclick="addPage()">＋ Page</button>
           </div>
-          <h1 onclick="openPageTools(activePageId)" title="Tap to rename this page"><span class="title-text">My Exercise Sheet</span><span class="title-edit">✎</span></h1>
         </div>
 
         <!-- Pages of the book you can flip between -->
@@ -2018,7 +2020,6 @@
     weekData = allWeeks[currentWeekKey];
     selectedDay = todayKey;
     buildDayRow();
-    document.querySelector(".title-row h1 .title-text").textContent = pageName(id);
     document.getElementById("selectedDayTitle").textContent = dayTitle(selectedDay);
     renderRoutines();
     centerToday();
@@ -2027,7 +2028,6 @@
   // Load a notes page's text and show it
   function activateNotesPage(id){
     activePageId = id;
-    document.querySelector(".title-row h1 .title-text").textContent = pageName(id);
     const area = document.getElementById("notesArea");
     if (area) area.value = localStorage.getItem(notesKeyFor(id)) || "";
   }
@@ -2053,10 +2053,11 @@
     const wrap = document.getElementById("pageTabs");
     if (!wrap) return;
     wrap.innerHTML = "";
-    // With only one page there's nothing to flip to — hide the tab row so the
-    // page name isn't repeated under the title.
-    wrap.style.display = pages.length < 2 ? "none" : "flex";
-    if (pages.length < 2) return;
+    // The page tabs are the single source of the page name now (the old <h1>
+    // title was removed to avoid showing the name twice). Always show the tabs,
+    // even with one page, so the name is visible and tappable to rename.
+    wrap.style.display = "flex";
+    let activeTab = null;
     pages.forEach(p => {
       const tab = document.createElement("button");
       tab.className = "page-tab" + (p.id === activePageId ? " active" : "");
@@ -2066,7 +2067,12 @@
         else switchToPage(p.id);
       };
       wrap.appendChild(tab);
+      if (p.id === activePageId) activeTab = tab;
     });
+    // Slide the selected page into view so it's never hidden off-screen.
+    if (activeTab && pages.length > 1){
+      activeTab.scrollIntoView({ block: "nearest", inline: "center", behavior: "auto" });
+    }
   }
 
   // Flip to the previous/next page in the book (used by swiping the tabs strip).
@@ -2119,7 +2125,6 @@
     if (!p){ closePageTools(); return; }
     const name = (document.getElementById("pageRenameInput").value || "").trim();
     if (name){ p.name = name; savePagesRegistry(); }
-    if (toolsPageId === activePageId) document.querySelector(".title-row h1 .title-text").textContent = pageName(activePageId);
     renderPageTabs();
     closePageTools();
   }
