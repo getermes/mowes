@@ -47,10 +47,42 @@
   }
   .title-row {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
     margin-bottom: 12px;
   }
+  .title-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .title-topbar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 6px;
+  }
+  /* All 4 top buttons share the row equally and stay on one line.
+     Use element selectors (a/button) so this beats the base .coffee-btn /
+     .thought-show rules defined later in the file. */
+  .title-topbar > a,
+  .title-topbar > button {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 8px 4px;
+    border-radius: 11px;
+    white-space: nowrap;
+    text-align: center;
+    box-shadow: none;
+    line-height: 1.2;
+  }
+  /* coffee + thought buttons inherit the shared .title-topbar > * sizing above
+     so all 4 buttons stay equal width on one line */
   h1 {
     font-size: 22px;
     cursor: pointer;
@@ -353,15 +385,17 @@
   }
   .thought-hide:active { transform: scale(0.9); }
   .thought-show {
-    display: none;
-    margin: 8px auto 4px;
-    background: transparent;
-    border: none;
-    color: #8a8fa3;
-    font-size: 12.5px;
-    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #d8dcf0;
+    color: #5b6cff;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 8px 13px;
+    border-radius: 12px;
+    white-space: nowrap;
   }
   .thought-show:active { opacity: 0.7; }
   .thought-text {
@@ -1367,11 +1401,13 @@
       <!-- Sticky header: title + days bar stay on top while you scroll -->
       <div class="screen-top">
         <div class="title-row">
-          <h1 onclick="openPageTools(activePageId)" title="Tap to rename this page"><span class="title-text">My Exercise Sheet</span><span class="title-edit">✎</span></h1>
-          <div class="title-actions">
-            <button class="history-btn" onclick="openHistory()">History</button>
-            <button class="addpage-btn" onclick="addPage()">+ Add page</button>
+          <div class="title-topbar">
+            <a class="coffee-btn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee">☕ Coffee</a>
+            <button class="thought-show" id="thoughtShow" onclick="showCover()" title="Today's Thought">💭 Thought</button>
+            <button class="history-btn" onclick="openHistory()">🕘 History</button>
+            <button class="addpage-btn" onclick="addPage()">＋ Page</button>
           </div>
+          <h1 onclick="openPageTools(activePageId)" title="Tap to rename this page"><span class="title-text">My Exercise Sheet</span><span class="title-edit">✎</span></h1>
         </div>
 
         <!-- Pages of the book you can flip between -->
@@ -1397,9 +1433,6 @@
           <p class="topic-picker-note">🔒 Your choices never leave this device.</p>
         </div>
       </div>
-      <!-- Small link to bring the thought back if it was hidden -->
-      <button class="thought-show" id="thoughtShow" onclick="showThought()">💭 Show thought of the day</button>
-
       <!-- Routine inputs for the selected day -->
       <div class="routines">
         <div class="routines-header">
@@ -1423,13 +1456,6 @@
 
       <!-- Support / donation -->
       <div class="support">
-        <div class="support-actions">
-          <button class="like-btn" id="likeBtn" onclick="likeApp()">
-            <span class="like-heart">❤️</span> I like this app <span class="like-count" id="likeCount"></span>
-          </button>
-          <a class="coffee-btn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener">☕ Buy me a coffee</a>
-        </div>
-        <div class="like-msg" id="likeMsg"></div>
         <p class="support-note">Made by Eugenio — the Idea Guy</p>
         <p class="contact-note">
           💬 Questions or ideas?
@@ -1790,24 +1816,26 @@
     loadPagesRegistry();
     const area = document.getElementById("notesArea");
     if (area) area.addEventListener("input", saveNotes);
-    // Swipe left/right on the tabs strip to flip between pages.
-    // Swipe right = previous page, swipe left = next page.
-    const tabsEl = document.getElementById("pageTabs");
-    if (tabsEl){
+    // Swipe left/right across the top area (title + tabs) to flip between pages.
+    // Swipe right = previous page, swipe left = next page. A bigger, easy target.
+    function attachPageSwipe(el){
+      if (!el) return;
       let tsx = 0, tsy = 0, ttrack = false;
-      tabsEl.addEventListener("touchstart", e => {
+      el.addEventListener("touchstart", e => {
         if (e.touches.length !== 1) { ttrack = false; return; }
         tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; ttrack = true;
       }, { passive: true });
-      tabsEl.addEventListener("touchend", e => {
+      el.addEventListener("touchend", e => {
         if (!ttrack) return; ttrack = false;
         const t = e.changedTouches[0];
         const dx = t.clientX - tsx, dy = t.clientY - tsy;
-        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5){
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2){
           flipPage(dx > 0 ? -1 : 1);
         }
       }, { passive: true });
     }
+    attachPageSwipe(document.getElementById("pageTabs"));
+    attachPageSwipe(document.querySelector(".title-row"));
     let startId = localStorage.getItem(ACTIVE_KEY) || "default";
     if (!pages.some(p => p.id === startId)) startId = "default";
     renderPageTabs();
@@ -2509,38 +2537,6 @@
   // Start the pages system (seeds the first page, restores the last open page)
   initPages();
 
-  // ---- "I like this app" button: personal heart count + share to friends ----
-  function refreshLikeCount(){
-    const n = parseInt(localStorage.getItem("mowes_likes")) || 0;
-    document.getElementById("likeCount").textContent = n ? n : "";
-  }
-  function likeApp(){
-    // bump the personal counter (saved on this phone only)
-    const n = (parseInt(localStorage.getItem("mowes_likes")) || 0) + 1;
-    localStorage.setItem("mowes_likes", n);
-    refreshLikeCount();
-    const msg = document.getElementById("likeMsg");
-    const shareData = {
-      title: "My Exercise Sheet",
-      text: "I like this workout app — check it out!",
-      url: "https://getermes.github.io/mowes/"
-    };
-    // share to friends (this is what actually helps the app grow)
-    if (navigator.share){
-      navigator.share(shareData).then(() => {
-        msg.textContent = "Thanks for sharing! ❤️";
-      }).catch(() => { msg.textContent = "Thanks for the love! ❤️"; });
-    } else if (navigator.clipboard){
-      navigator.clipboard.writeText(shareData.url).then(() => {
-        msg.textContent = "Link copied — paste it to a friend! ❤️";
-      }).catch(() => { msg.textContent = "Thanks for the love! ❤️"; });
-    } else {
-      msg.textContent = "Thanks for the love! ❤️";
-    }
-    setTimeout(() => { msg.textContent = ""; }, 4000);
-  }
-  window.likeApp = likeApp;
-  refreshLikeCount();
 
   // ---- "Thought of the day" — private, topic-based messages ----
   // Taco: to add/change messages, just edit this list and publish.
@@ -2627,7 +2623,8 @@
   function applyThoughtVisibility(){
     const hidden = localStorage.getItem(THOUGHT_HIDDEN_KEY) === "1";
     document.getElementById("thoughtCard").style.display = hidden ? "none" : "";
-    document.getElementById("thoughtShow").style.display = hidden ? "block" : "none";
+    // The top "Thought of the day" button stays visible at all times
+    // (it opens today's thought on the cover); it's only hidden in notes mode via CSS.
   }
   function hideThought(){
     localStorage.setItem(THOUGHT_HIDDEN_KEY, "1");
