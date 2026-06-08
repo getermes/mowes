@@ -248,7 +248,9 @@
     color: #3a3f54;
     font-size: 14.5px;
     line-height: 1.45;
+    cursor: pointer;
   }
+  .thought-text:active { opacity: 0.6; }
   .topic-picker {
     display: none;
     margin-top: 12px;
@@ -1086,34 +1088,40 @@
   .cover-overlay {
     position: fixed; inset: 0; z-index: 9000;
     display: none;
-    align-items: center; justify-content: center;
-    padding: 28px 18px;
+    align-items: flex-start; justify-content: center;
+    padding: 72px 18px 28px;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
   }
   .cover-overlay.show { display: flex; }
   .cover-box { max-width: 380px; width: 100%; text-align: center; }
-  .cover-mark {
-    font-size: 40px; font-weight: 800; letter-spacing: 3px;
+  .cover-app {
+    margin-top: 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .cover-icon {
+    width: 76px; height: 76px; flex: 0 0 auto;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    display: flex; align-items: center; justify-content: center; font-size: 40px;
+    box-shadow: 0 6px 18px rgba(91,108,255,0.35);
+  }
+  .cover-app-name { font-size: 40px; font-weight: 800; letter-spacing: 1px; color: #2f3550; text-align: center; }
+  .cover-app-sub { font-size: 14.5px; color: #6a7088; margin-top: -6px; text-align: center; }
+  /* ERMES brand signature — small, set apart at the bottom of the cover */
+  .cover-brand {
+    margin-top: 90px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(91,108,255,0.18);
+  }
+  .cover-brand-name {
+    display: block; font-size: 15px; font-weight: 800; letter-spacing: 2px;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .cover-tag { margin-top: 6px; color: #5a6076; font-size: 14px; font-weight: 600; }
-  .cover-app {
-    margin-top: 26px;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-  }
-  .cover-icon {
-    width: 54px; height: 54px; flex: 0 0 auto;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #5b6cff, #7a5bff);
-    display: flex; align-items: center; justify-content: center; font-size: 28px;
-    box-shadow: 0 4px 12px rgba(91,108,255,0.3);
-  }
-  .cover-app-name { font-size: 20px; font-weight: 800; color: #2f3550; text-align: left; }
-  .cover-app-sub { font-size: 12.5px; color: #6a7088; margin-top: 2px; text-align: left; }
+  .cover-brand-tag { display: block; font-size: 11px; color: #8a8fa3; margin-top: 2px; }
   .cover-thought-card {
-    margin: 26px auto 0; max-width: 340px;
+    margin: 64px auto 0; max-width: 340px;
     background: rgba(255,255,255,0.78);
     border: 1px solid #d6dbf5; border-radius: 16px;
     padding: 16px 18px;
@@ -1127,7 +1135,7 @@
     margin-top: 8px; font-size: 15px; line-height: 1.5; color: #4a5068;
   }
   .cover-btn {
-    display: block; width: 100%; margin-top: 26px;
+    display: block; width: 100%; margin-top: 80px;
     border: none; cursor: pointer;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     color: #fff; font-weight: 700; font-size: 16px;
@@ -1167,14 +1175,10 @@
   <!-- Cover page: the app's "book cover" — shows every time it opens -->
   <div class="cover-overlay" id="coverOverlay">
     <div class="cover-box">
-      <div class="cover-mark">ERMES</div>
-      <div class="cover-tag">Apps that solve real problems</div>
       <div class="cover-app">
         <div class="cover-icon">💪</div>
-        <div>
-          <div class="cover-app-name">MOWES</div>
-          <div class="cover-app-sub">My Own Weekly Exercise Sheet</div>
-        </div>
+        <div class="cover-app-name">MOWES</div>
+        <div class="cover-app-sub">My Own Weekly Exercise Sheet</div>
       </div>
       <div class="cover-thought-card">
         <div class="cover-thought-label">💭 Today's Thought</div>
@@ -1182,6 +1186,10 @@
       </div>
       <button class="cover-btn" onclick="openApp()">Open MOWES →</button>
       <p class="cover-note">Opening your routines… or tap to go now.</p>
+      <div class="cover-brand">
+        <span class="cover-brand-name">ERMES</span>
+        <span class="cover-brand-tag">Apps that solve real problems</span>
+      </div>
     </div>
   </div>
 
@@ -1207,7 +1215,7 @@
             <button class="thought-hide" onclick="hideThought()" title="Hide this">✕</button>
           </span>
         </div>
-        <p class="thought-text" id="thoughtText">—</p>
+        <p class="thought-text" id="thoughtText" onclick="showCover()" title="Tap to open the ERMES cover">—</p>
         <div class="topic-picker" id="topicPicker">
           <div class="topic-picker-title">Pick what you'd like to see (saved only on your phone):</div>
           <div class="topic-picker-list" id="topicPickerList"></div>
@@ -2223,6 +2231,15 @@
     document.getElementById("coverOverlay").classList.remove("show");
     if (typeof centerToday === "function") centerToday();
   }
+  // Tapping the "Thought of the day" brings back the ERMES cover page.
+  // No auto-open timer here — the user chose to come here, so let them
+  // read it and tap "Open MOWES →" when they're ready to go back.
+  function showCover(){
+    if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
+    document.getElementById("coverThought").textContent = getTodaysThoughtText();
+    document.getElementById("coverOverlay").classList.add("show");
+  }
+  window.showCover = showCover;
   function dismissWelcome(){
     localStorage.setItem(WELCOME_KEY, "1");
     document.getElementById("welcomeOverlay").classList.remove("show");
