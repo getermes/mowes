@@ -854,8 +854,13 @@
     background: #fff;
     border-color: #5b6cff;
     border-width: 2px;
-    box-shadow: 0 14px 34px rgba(91,108,255,0.32);
-    transform: translateY(-5px) scale(1.02);
+    /* Directional shadow falling to the right and bottom so the active card
+       looks physically raised off the page. */
+    box-shadow:
+      0 0 0 3px rgba(91,108,255,0.16),
+      18px 22px 42px rgba(91,108,255,0.40),
+      8px 12px 22px rgba(35,45,85,0.22);
+    transform: translateY(-9px) scale(1.035);
   }
   .routine-row {
     display: flex;
