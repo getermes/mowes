@@ -1170,16 +1170,26 @@
     text-align: center;
   }
   .welcome-mark {
-    font-size: 38px; font-weight: 800; letter-spacing: 3px;
+    font-size: 24px; font-weight: 800; letter-spacing: 2px;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .welcome-tag {
-    margin-top: 6px; color: #5a6076; font-size: 14.5px; font-weight: 600;
+    margin-top: 5px; color: #5a6076; font-size: 13px; font-weight: 600;
   }
   .welcome-emoji { font-size: 46px; margin: 22px 0 10px; }
-  .welcome-title { font-size: 20px; font-weight: 800; color: #2f3550; }
+  .welcome-title { font-weight: 800; }
+  .welcome-greet {
+    display: block; font-size: 15px; font-weight: 700; color: #6a7088;
+    margin-bottom: 2px;
+  }
+  .welcome-name {
+    display: block; font-size: 44px; font-weight: 800; letter-spacing: 1px;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
   .welcome-sub { font-size: 13px; color: #6a7088; margin-top: 3px; }
   .welcome-desc {
     margin: 16px auto 4px; max-width: 320px;
@@ -1298,7 +1308,7 @@
       <div class="welcome-mark">ERMES</div>
       <div class="welcome-tag">Apps that solve real problems</div>
       <div class="welcome-emoji">💪</div>
-      <div class="welcome-title">Welcome to MOWES</div>
+      <div class="welcome-title"><span class="welcome-greet">Welcome to</span><span class="welcome-name">MOWES</span></div>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
       <p class="welcome-desc">
         A free, simple workout tracker. Plan your week, track reps, time,
