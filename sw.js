@@ -1,5 +1,5 @@
 // Service worker: lets the app work offline (e.g. on a walk/run with no signal)
-const CACHE = "mowes-v2";
+const CACHE = "mowes-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -32,7 +32,9 @@ self.addEventListener("fetch", e => {
   const wantsHtml = req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
   if (wantsHtml) {
     e.respondWith(
-      fetch(req).then(resp => {
+      // "no-store" skips the browser's own cache so we always pull the freshest
+      // app page from the network when online (falls back to cache when offline).
+      fetch(req, { cache: "no-store" }).then(resp => {
         const copy = resp.clone();
         caches.open(CACHE).then(c => c.put("./index.html", copy)).catch(() => {});
         return resp;
