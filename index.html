@@ -1630,7 +1630,8 @@
       <div class="screen-top">
         <div class="title-row">
           <div class="title-topbar">
-            <a class="coffee-btn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee">☕ Coffee</a>
+            <button type="button" class="coffee-btn" id="likeBtn" onclick="likeApp()" title="Like the app">🤍 Like app</button>
+            <a class="coffee-btn" id="coffeeBtn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" style="display:none;">☕ Coffee</a>
             <button class="thought-show" id="thoughtShow" onclick="showCover()" title="Today's Thought">💭 Thought</button>
             <button class="history-btn" onclick="openHistory()">🕘 History</button>
             <button class="addpage-btn" onclick="addPage()">＋ Page</button>
@@ -2258,6 +2259,32 @@
 
   function openHelp(){ document.getElementById("helpOverlay").classList.add("open"); }
   function closeHelp(){ document.getElementById("helpOverlay").classList.remove("open"); }
+
+  /* ---- Two-stage Like -> Buy me a Coffee button ---- */
+  function applyLikeState(){
+    var likeBtn = document.getElementById("likeBtn");
+    var coffeeBtn = document.getElementById("coffeeBtn");
+    if (!likeBtn || !coffeeBtn) return;
+    var liked = localStorage.getItem("mowes_liked") === "1";
+    if (liked) {
+      likeBtn.style.display = "none";
+      coffeeBtn.style.display = "";
+    } else {
+      likeBtn.style.display = "";
+      coffeeBtn.style.display = "none";
+    }
+  }
+  function likeApp(){
+    localStorage.setItem("mowes_liked", "1");
+    var likeBtn = document.getElementById("likeBtn");
+    if (likeBtn) {
+      likeBtn.textContent = "❤️ Thanks!";
+      setTimeout(applyLikeState, 900);
+    } else {
+      applyLikeState();
+    }
+  }
+  applyLikeState();
 
   /* ---- Guided "Show me" tour ---- */
   const tourSteps = [
