@@ -546,6 +546,8 @@
     justify-content: center;
   }
   .overlay.open { display: flex; }
+  /* Help can be opened from the cover (z-index 9000), so it must sit above it */
+  #helpOverlay { z-index: 9500; }
 
   .card {
     background: #fff;
@@ -678,6 +680,111 @@
     padding: 0;
     text-decoration: underline;
   }
+
+  /* "Show me" guided tour button */
+  .tour-start-btn {
+    display: block;
+    width: 100%;
+    margin: 0 0 16px;
+    padding: 13px;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #1f9d55, #16b86a);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(31,157,85,0.28);
+  }
+  .tour-start-btn:active { transform: scale(0.99); }
+
+  /* Guided tour spotlight + bubble */
+  #tourBlock {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2999;
+    background: transparent;
+  }
+  #tourBlock.on { display: block; }
+  #tourSpot {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    border-radius: 14px;
+    border: 3px solid #16b86a;
+    box-shadow: 0 0 0 9999px rgba(20,28,46,0.66);
+    pointer-events: none;
+    transition: top .25s ease, left .25s ease, width .25s ease, height .25s ease;
+  }
+  #tourSpot.on { display: block; }
+  #tourPop {
+    display: none;
+    position: fixed;
+    z-index: 3001;
+    width: min(300px, 86vw);
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px 16px 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  #tourPop.on { display: block; }
+  .tour-step-count {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    color: #16b86a;
+    text-transform: uppercase;
+    margin: 0 0 4px;
+  }
+  .tour-pop-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #2a2f45;
+    margin: 0 0 5px;
+  }
+  .tour-pop-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #4a5068;
+    margin: 0 0 14px;
+  }
+  .tour-pop-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tour-skip {
+    background: none;
+    border: none;
+    color: #9499ad;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 2px;
+    margin-right: auto;
+  }
+  .tour-back {
+    background: #eef0f7;
+    border: none;
+    color: #5b6cff;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 11px;
+    padding: 9px 14px;
+    cursor: pointer;
+  }
+  .tour-next {
+    background: linear-gradient(135deg, #1f9d55, #16b86a);
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 11px;
+    padding: 9px 16px;
+    cursor: pointer;
+  }
+  .tour-back:active, .tour-next:active { transform: scale(0.98); }
 
   /* Day selector row (left to right) */
   .day-row {
@@ -1593,6 +1700,7 @@
           <button class="close-btn" onclick="closeHelp()">&times;</button>
         </div>
         <p class="help-intro">A quick tour. It's simpler than it looks — tap around and you can't break anything. 🙂</p>
+        <button type="button" class="tour-start-btn" onclick="startTour()">▶ Show me — walk me through it</button>
 
         <div class="help-step">
           <div class="help-num">1</div>
@@ -1683,7 +1791,21 @@
         </div>
 
         <button class="help-done-btn" onclick="closeHelp()">Got it — let's go! →</button>
-        <p class="help-foot">Stuck on anything? <a href="mailto:get.ermes00@gmail.com?subject=MOWES%20help">Contact ERMES</a> — happy to help.</p>
+        <p class="help-foot"><a href="guide.html" target="_blank" rel="noopener">📖 Open the printable guide</a> · <a href="mailto:get.ermes00@gmail.com?subject=MOWES%20help">Contact ERMES</a></p>
+      </div>
+    </div>
+
+    <!-- Guided "Show me" tour layer -->
+    <div id="tourBlock"></div>
+    <div id="tourSpot"></div>
+    <div id="tourPop">
+      <p class="tour-step-count" id="tourCount">Step 1</p>
+      <p class="tour-pop-title" id="tourTitle"></p>
+      <p class="tour-pop-text" id="tourText"></p>
+      <div class="tour-pop-btns">
+        <button class="tour-skip" onclick="endTour()">Skip</button>
+        <button class="tour-back" id="tourBack" onclick="tourPrev()">Back</button>
+        <button class="tour-next" id="tourNext" onclick="tourNext()">Next →</button>
       </div>
     </div>
 
@@ -2136,6 +2258,98 @@
 
   function openHelp(){ document.getElementById("helpOverlay").classList.add("open"); }
   function closeHelp(){ document.getElementById("helpOverlay").classList.remove("open"); }
+
+  /* ---- Guided "Show me" tour ---- */
+  const tourSteps = [
+    { sel: "#dayRow",        title: "Your week",            text: "Here's every day. Swipe sideways, or tap a day to plan it. Today sits in the middle." },
+    { sel: ".routine-input", title: "Name your exercise",   text: "Type what you're doing here — like Push-ups or Morning walk." },
+    { sel: ".detail-chips",  title: "Track it your way",    text: "Tap a chip to add Reps, a Time/timer, Weight, or Distance. Use one, or all of them." },
+    { sel: ".add-routine",   title: "Add more exercises",   text: "Tap here to add another exercise to this day." },
+    { sel: ".copy-btn",      title: "Copy a day",           text: "Built a good day? Copy it to your other days in one tap." },
+    { sel: ".history-btn",   title: "Look back",            text: "History shows your past weeks and everything you did." },
+    { sel: ".addpage-btn",   title: "Make pages",           text: "Add pages like 'At the Gym' or 'At Home', and rename them anytime." },
+    { sel: ".thought-show",  title: "Thought of the day",   text: "Tap here any time for the cover and a little daily thought." }
+  ];
+  let tourIdx = 0;
+
+  function startTour(){
+    closeHelp();
+    // reveal the app instantly (skip the cover's slow page-turn animation)
+    const cover = document.getElementById("coverOverlay");
+    const welcome = document.getElementById("welcomeOverlay");
+    if (welcome) welcome.classList.remove("show");
+    if (cover) cover.classList.remove("show", "reveal", "wipeout");
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    if (typeof centerToday === "function") centerToday();
+    // make sure at least one routine exists so its parts can be highlighted
+    if (!document.querySelector(".routine-input") && typeof addRoutine === "function") addRoutine();
+    tourIdx = 0;
+    document.getElementById("tourBlock").classList.add("on");
+    showTourStep();
+    window.addEventListener("resize", positionTour);
+    window.addEventListener("scroll", positionTour, true);
+  }
+
+  function showTourStep(){
+    const step = tourSteps[tourIdx];
+    // skip any step whose target isn't on screen right now
+    if (!document.querySelector(step.sel)){
+      if (tourIdx < tourSteps.length - 1){ tourIdx++; return showTourStep(); }
+      return endTour();
+    }
+    document.getElementById("tourCount").textContent = "Step " + (tourIdx + 1) + " of " + tourSteps.length;
+    document.getElementById("tourTitle").textContent = step.title;
+    document.getElementById("tourText").textContent = step.text;
+    document.getElementById("tourBack").style.visibility = tourIdx === 0 ? "hidden" : "visible";
+    document.getElementById("tourNext").textContent = tourIdx === tourSteps.length - 1 ? "Done ✓" : "Next →";
+    const el = document.querySelector(step.sel);
+    el.scrollIntoView({ block: "center", behavior: "auto" });
+    document.getElementById("tourSpot").classList.add("on");
+    document.getElementById("tourPop").classList.add("on");
+    // wait two frames so the scroll has settled, then place spotlight + bubble
+    requestAnimationFrame(function(){ requestAnimationFrame(positionTour); });
+  }
+
+  function positionTour(){
+    const step = tourSteps[tourIdx];
+    const el = step && document.querySelector(step.sel);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const pad = 8;
+    const spot = document.getElementById("tourSpot");
+    spot.style.top    = (r.top - pad) + "px";
+    spot.style.left   = (r.left - pad) + "px";
+    spot.style.width  = (r.width + pad * 2) + "px";
+    spot.style.height = (r.height + pad * 2) + "px";
+    const pop = document.getElementById("tourPop");
+    const ph = pop.offsetHeight || 150;
+    const pw = pop.offsetWidth || 280;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    // place below the target if there's room, otherwise above
+    let top = r.bottom + 14;
+    if (top + ph > vh - 12) top = r.top - ph - 14;
+    if (top < 12) top = 12;
+    let left = r.left + r.width / 2 - pw / 2;
+    left = Math.max(12, Math.min(left, vw - pw - 12));
+    pop.style.top = top + "px";
+    pop.style.left = left + "px";
+  }
+
+  function tourNext(){
+    if (tourIdx >= tourSteps.length - 1) return endTour();
+    tourIdx++; showTourStep();
+  }
+  function tourPrev(){
+    if (tourIdx === 0) return;
+    tourIdx--; showTourStep();
+  }
+  function endTour(){
+    document.getElementById("tourBlock").classList.remove("on");
+    document.getElementById("tourSpot").classList.remove("on");
+    document.getElementById("tourPop").classList.remove("on");
+    window.removeEventListener("resize", positionTour);
+    window.removeEventListener("scroll", positionTour, true);
+  }
   function historyBack(){ if (histWeek){ histWeek = null; renderHistoryWeeks(); } }
 
   function renderHistoryWeeks(){
