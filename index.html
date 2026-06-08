@@ -1322,6 +1322,10 @@
   .cover-thought-text {
     margin-top: 8px; font-size: 15px; line-height: 1.5; color: #4a5068;
   }
+  .cover-topics {
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid #e6e8f5; text-align: left;
+  }
   .cover-btn {
     display: block; width: 100%; margin-top: 80px;
     border: none; cursor: pointer;
@@ -1371,6 +1375,11 @@
       <div class="cover-thought-card">
         <div class="cover-thought-label">💭 Today's Thought</div>
         <p class="cover-thought-text" id="coverThought">—</p>
+        <div class="cover-topics">
+          <div class="topic-picker-title">Pick what you'd like to see (saved only on your phone):</div>
+          <div class="topic-picker-list" id="topicPickerList"></div>
+          <p class="topic-picker-note">🔒 Your choices never leave this device.</p>
+        </div>
       </div>
       <button class="cover-btn" onclick="openApp()">Open MOWES →</button>
       <p class="cover-note">Opening your routines… or tap to go now.</p>
@@ -1417,22 +1426,7 @@
         <div class="day-row" id="dayRow"></div>
       </div>
 
-      <!-- Thought of the day (updates when you open the app; choice stays on your phone) -->
-      <div class="thought-card" id="thoughtCard">
-        <div class="thought-head">
-          <span class="thought-label">💭 Thought of the day</span>
-          <span class="thought-head-actions">
-            <button class="thought-topics-btn" onclick="toggleTopicPicker()">Topics</button>
-            <button class="thought-hide" onclick="hideThought()" title="Hide this">✕</button>
-          </span>
-        </div>
-        <p class="thought-text" id="thoughtText" onclick="showCover()" title="Tap to open the ERMES cover">—</p>
-        <div class="topic-picker" id="topicPicker">
-          <div class="topic-picker-title">Pick what you'd like to see (saved only on your phone):</div>
-          <div class="topic-picker-list" id="topicPickerList"></div>
-          <p class="topic-picker-note">🔒 Your choices never leave this device.</p>
-        </div>
-      </div>
+      <!-- The thought of the day now lives only on the cover (tap "💭 Thought" up top) -->
       <!-- Routine inputs for the selected day -->
       <div class="routines">
         <div class="routines-header">
@@ -2591,7 +2585,6 @@
     return pool[dayOfYear() % pool.length].text;
   }
   function renderThought(){
-    document.getElementById("thoughtText").textContent = getTodaysThoughtText();
     const coverEl = document.getElementById("coverThought");
     if (coverEl) coverEl.textContent = getTodaysThoughtText();
   }
@@ -2614,34 +2607,9 @@
       list.appendChild(chip);
     });
   }
-  function toggleTopicPicker(){
-    const p = document.getElementById("topicPicker");
-    p.classList.toggle("show");
-    if (p.classList.contains("show")) renderTopicChips();
-  }
-  const THOUGHT_HIDDEN_KEY = "mowes_thought_hidden_v1";
-  function applyThoughtVisibility(){
-    const hidden = localStorage.getItem(THOUGHT_HIDDEN_KEY) === "1";
-    document.getElementById("thoughtCard").style.display = hidden ? "none" : "";
-    // The top "Thought of the day" button stays visible at all times
-    // (it opens today's thought on the cover); it's only hidden in notes mode via CSS.
-  }
-  function hideThought(){
-    localStorage.setItem(THOUGHT_HIDDEN_KEY, "1");
-    document.getElementById("topicPicker").classList.remove("show");
-    applyThoughtVisibility();
-  }
-  function showThought(){
-    localStorage.removeItem(THOUGHT_HIDDEN_KEY);
-    applyThoughtVisibility();
-    renderThought();
-  }
-  window.toggleTopicPicker = toggleTopicPicker;
-  window.hideThought = hideThought;
-  window.showThought = showThought;
+  // Topics now live on the cover and are always visible — no hide/toggle needed.
   renderTopicChips();
   renderThought();
-  applyThoughtVisibility();
 
   // Cover page (shows every time) + first-time-only welcome (shows once, on top)
   const WELCOME_KEY = "mowes_welcome_seen_v1";
