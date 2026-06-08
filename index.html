@@ -1745,10 +1745,10 @@
     };
   }
 
-  // A fresh week = 7 days, each with 3 blank routines
+  // A fresh week = 7 days, each starting with 1 blank routine
   function blankWeek(){
     const w = {};
-    days.forEach(d => { w[d] = [blankRoutine(), blankRoutine(), blankRoutine()]; });
+    days.forEach(d => { w[d] = [blankRoutine()]; });
     return w;
   }
   // Copy a week's plan but wipe all the "done" checkmarks (for a fresh new week)
