@@ -66,6 +66,111 @@
     cursor: pointer;
   }
   .history-btn:active { transform: scale(0.97); }
+  .title-actions { flex: 0 0 auto; display: flex; gap: 8px; }
+  .addpage-btn {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #5b6cff;
+    background: #fff;
+    border: 1px solid #d8dcf0;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .addpage-btn:active { transform: scale(0.97); }
+
+  /* Page tabs ("book pages" you flip between) */
+  .page-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .page-tab {
+    flex: 0 0 auto;
+    padding: 7px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #5b6cff;
+    background: #fff;
+    border: 1px solid #d8dcf0;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .page-tab.active {
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff;
+    border-color: transparent;
+  }
+  .page-tab:active { transform: scale(0.97); }
+
+  /* Notes page mode: hide the sheet UI, show the notes area */
+  .screen.notes-mode .day-row,
+  .screen.notes-mode .thought-card,
+  .screen.notes-mode .thought-show,
+  .screen.notes-mode .routines,
+  .screen.notes-mode .history-btn { display: none !important; }
+  .notes-view { display: none; margin-top: 8px; }
+  .screen.notes-mode .notes-view { display: block; }
+  .notes-area {
+    width: 100%;
+    min-height: 60vh;
+    box-sizing: border-box;
+    padding: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #1c1c2e;
+    background: #fff;
+    border: 1px solid #e6e8f0;
+    border-radius: 16px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  .notes-area:focus { outline: none; border-color: #5b6cff; }
+
+  /* Add-page dialog */
+  .addpage-q { color: #555; font-size: 14px; margin: 0 0 10px; }
+  .addpage-types { display: flex; gap: 10px; margin-bottom: 16px; }
+  .addpage-type {
+    flex: 1;
+    padding: 16px 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1c1c2e;
+    background: #f7f8fc;
+    border: 2px solid #e6e8f0;
+    border-radius: 14px;
+    cursor: pointer;
+  }
+  .addpage-type.sel { border-color: #5b6cff; background: #fff; box-shadow: 0 6px 18px rgba(91,108,255,0.18); }
+  .addpage-name {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    font-size: 16px;
+    border: 1px solid #e6e8f0;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    font-family: inherit;
+  }
+  .addpage-name:focus { outline: none; border-color: #5b6cff; }
+  .addpage-actions { display: flex; gap: 10px; }
+  .addpage-cancel, .addpage-create {
+    flex: 1; padding: 14px; font-size: 16px; font-weight: 700;
+    border-radius: 14px; cursor: pointer; border: none;
+  }
+  .addpage-cancel { background: #eceef5; color: #555; }
+  .addpage-create { background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; }
+  .page-tab-tools { display: flex; gap: 10px; margin-top: 4px; }
+  .page-tab-tool {
+    flex: 1; padding: 12px; font-size: 15px; font-weight: 600;
+    border-radius: 12px; cursor: pointer; border: 1px solid #e6e8f0; background: #f7f8fc; color: #1c1c2e;
+  }
+  .page-tab-tool.danger { color: #d23; }
 
   /* Support / Buy me a coffee */
   .support {
@@ -153,6 +258,8 @@
   .privacy-note strong {
     color: #5b6cff;
   }
+  .privacy-note .privacy-text { margin: 0; }
+  .privacy-note .trust-badges { margin-top: 12px; }
   .trust-badges {
     max-width: 380px;
     margin: 14px auto 0;
@@ -185,6 +292,11 @@
     display: block;
     line-height: 1.35;
   }
+  /* Cover badges: show only the title; tap to reveal the description */
+  .trust-badge { cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+  .trust-badge .tb-desc { display: none; margin-top: 3px; }
+  .trust-badge.open .tb-desc { display: block; }
+  .trust-badge.open { background: rgba(255,255,255,0.85); }
   .thought-card {
     background: rgba(255,255,255,0.7);
     border: 1px solid #d6dbf5;
@@ -1090,6 +1202,8 @@
     display: none;
     align-items: flex-start; justify-content: center;
     padding: 72px 18px 28px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
   }
   .cover-overlay.show { display: flex; }
@@ -1207,6 +1321,21 @@
       </div>
       <button class="cover-btn" onclick="openApp()">Open MOWES →</button>
       <p class="cover-note">Opening your routines… or tap to go now.</p>
+      <div class="privacy-note">
+        <p class="privacy-text">
+          🔒 <strong>Your privacy:</strong> No sign-up, no account, no email.
+          Everything you type stays on your phone — it's never sent anywhere,
+          and I never see it. Free, and works offline.
+        </p>
+        <div class="trust-badges">
+          <button type="button" class="trust-badge" onclick="this.classList.toggle('open')"><span class="tb-emoji">🔒</span><span class="tb-text"><strong>Private</strong><span class="tb-desc">Your data stays on your device.</span></span></button>
+          <button type="button" class="trust-badge" onclick="this.classList.toggle('open')"><span class="tb-emoji">🛡️</span><span class="tb-text"><strong>Secure</strong><span class="tb-desc">No accounts, nothing to leak.</span></span></button>
+          <button type="button" class="trust-badge" onclick="this.classList.toggle('open')"><span class="tb-emoji">🙂</span><span class="tb-text"><strong>Friendly</strong><span class="tb-desc">Built for real people.</span></span></button>
+          <button type="button" class="trust-badge" onclick="this.classList.toggle('open')"><span class="tb-emoji">👆</span><span class="tb-text"><strong>Intuitive</strong><span class="tb-desc">No manual needed.</span></span></button>
+          <button type="button" class="trust-badge" onclick="this.classList.toggle('open')"><span class="tb-emoji">✨</span><span class="tb-text"><strong>Unique</strong><span class="tb-desc">A fresh idea, not a copy.</span></span></button>
+          <button type="button" class="trust-badge" onclick="this.classList.toggle('open')"><span class="tb-emoji">💡</span><span class="tb-text"><strong>Problem solver</strong><span class="tb-desc">Makes life easier.</span></span></button>
+        </div>
+      </div>
       <div class="cover-brand">
         <span class="cover-brand-name">ERMES</span>
         <span class="cover-brand-tag">Apps that solve real problems</span>
@@ -1220,8 +1349,14 @@
       <div class="screen-top">
         <div class="title-row">
           <h1>My Exercise Sheet</h1>
-          <button class="history-btn" onclick="openHistory()">History</button>
+          <div class="title-actions">
+            <button class="history-btn" onclick="openHistory()">History</button>
+            <button class="addpage-btn" onclick="addPage()">+ Add page</button>
+          </div>
         </div>
+
+        <!-- Pages of the book you can flip between -->
+        <div class="page-tabs" id="pageTabs"></div>
 
         <!-- Days across the top, left to right -->
         <div class="day-row" id="dayRow"></div>
@@ -1262,6 +1397,11 @@
         <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
       </div>
 
+      <!-- Notes page (shown only when the current page is a notes page) -->
+      <div class="notes-view" id="notesView">
+        <textarea class="notes-area" id="notesArea" placeholder="Write anything here — notes, goals, ideas… Saved on your phone."></textarea>
+      </div>
+
       <!-- Support / donation -->
       <div class="support">
         <div class="support-actions">
@@ -1276,19 +1416,6 @@
           💬 Questions or ideas?
           <a href="mailto:get.ermes00@gmail.com?subject=MOWES%20feedback">Contact ERMES</a>
         </p>
-        <p class="privacy-note">
-          🔒 <strong>Your privacy:</strong> No sign-up, no account, no email.
-          Everything you type stays on your phone — it's never sent anywhere,
-          and I never see it. Free, and works offline.
-        </p>
-        <div class="trust-badges">
-          <div class="trust-badge"><span class="tb-emoji">🔒</span><span class="tb-text"><strong>Private</strong>Your data stays on your device.</span></div>
-          <div class="trust-badge"><span class="tb-emoji">🛡️</span><span class="tb-text"><strong>Secure</strong>No accounts, nothing to leak.</span></div>
-          <div class="trust-badge"><span class="tb-emoji">🙂</span><span class="tb-text"><strong>Friendly</strong>Built for real people.</span></div>
-          <div class="trust-badge"><span class="tb-emoji">👆</span><span class="tb-text"><strong>Intuitive</strong>No manual needed.</span></div>
-          <div class="trust-badge"><span class="tb-emoji">✨</span><span class="tb-text"><strong>Unique</strong>A fresh idea, not a copy.</span></div>
-          <div class="trust-badge"><span class="tb-emoji">💡</span><span class="tb-text"><strong>Problem solver</strong>Makes life easier.</span></div>
-        </div>
       </div>
     </div>
 
@@ -1301,6 +1428,43 @@
           <button class="close-btn" onclick="closeHistory()">&times;</button>
         </div>
         <div id="historyBody"></div>
+      </div>
+    </div>
+
+    <!-- Add a page dialog -->
+    <div class="overlay" id="addPageOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2 id="addPageTitle">Add a page</h2>
+          <button class="close-btn" onclick="closeAddPage()">&times;</button>
+        </div>
+        <div id="addPageMain">
+          <p class="addpage-q">What kind of page?</p>
+          <div class="addpage-types">
+            <button class="addpage-type" data-type="sheet" onclick="pickPageType('sheet')">📋 Exercise sheet</button>
+            <button class="addpage-type" data-type="notes" onclick="pickPageType('notes')">📝 Notes page</button>
+          </div>
+          <input id="addPageName" class="addpage-name" placeholder="Name it (e.g. Gym, Home, Notes)" />
+          <div class="addpage-actions">
+            <button class="addpage-cancel" onclick="closeAddPage()">Cancel</button>
+            <button class="addpage-create" onclick="confirmAddPage()">Create page</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page options dialog (rename / delete) -->
+    <div class="overlay" id="pageToolsOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2 id="pageToolsTitle">Page options</h2>
+          <button class="close-btn" onclick="closePageTools()">&times;</button>
+        </div>
+        <input id="pageRenameInput" class="addpage-name" placeholder="Page name" />
+        <div class="page-tab-tools">
+          <button class="page-tab-tool" onclick="confirmRenamePage()">Save name</button>
+          <button class="page-tab-tool danger" onclick="confirmDeletePage()">Delete page</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1359,21 +1523,37 @@
   // ---- Saving to this device (so work survives a refresh/close) ----
   const WEEKS_KEY = "mowes_weeks_v1";
   const OLD_KEY = "mowes_week_v1";
+
+  // ---- Pages: the app is a "book" you can add pages to ----
+  const PAGES_KEY  = "mowes_pages_v1";
+  const ACTIVE_KEY = "mowes_active_page_v1";
+  let pages = [];
+  let activePageId = "default"; // the original sheet keeps the legacy storage key
+  function sheetKeyFor(id){ return id === "default" ? WEEKS_KEY : WEEKS_KEY + "__" + id; }
+  function notesKeyFor(id){ return "mowes_notes_" + id; }
+  function currentPage(){ return pages.find(p => p.id === activePageId); }
+  function currentPageIsNotes(){ const p = currentPage(); return !!(p && p.type === "notes"); }
+  function pageName(id){ const p = pages.find(x => x.id === id); return p ? p.name : "My Exercise Sheet"; }
+
   let allWeeks = {};
   function saveData(){
-    try { localStorage.setItem(WEEKS_KEY, JSON.stringify(allWeeks)); } catch(e){}
+    if (currentPageIsNotes()) return; // notes pages have no weeks
+    try { localStorage.setItem(sheetKeyFor(activePageId), JSON.stringify(allWeeks)); } catch(e){}
   }
   function loadAllWeeks(){
+    allWeeks = {};
     try {
-      const raw = localStorage.getItem(WEEKS_KEY);
+      const raw = localStorage.getItem(sheetKeyFor(activePageId));
       if (raw){ allWeeks = JSON.parse(raw) || {}; return; }
-      // Migrate older single-week save into the current week
-      const old = localStorage.getItem(OLD_KEY);
-      if (old){
-        const parsed = JSON.parse(old);
-        const w = blankWeek();
-        days.forEach(d => { if (Array.isArray(parsed[d])) w[d] = parsed[d]; });
-        allWeeks[currentWeekKey] = w;
+      // Migrate the older single-week save — only for the original page
+      if (activePageId === "default"){
+        const old = localStorage.getItem(OLD_KEY);
+        if (old){
+          const parsed = JSON.parse(old);
+          const w = blankWeek();
+          days.forEach(d => { if (Array.isArray(parsed[d])) w[d] = parsed[d]; });
+          allWeeks[currentWeekKey] = w;
+        }
       }
     } catch(e){ allWeeks = {}; }
   }
@@ -1397,16 +1577,20 @@
   const todayIdx = days.indexOf(todayKey);
   const startIdx = (todayIdx - 3 + 7) % 7;
   const orderedDays = Array.from({ length: 7 }, (_, k) => days[(startIdx + k) % 7]);
-  orderedDays.forEach(day => {
-    const pill = document.createElement("div");
-    pill.className = "day-pill"
-      + (day === selectedDay ? " active" : "")
-      + (day === todayKey ? " today" : "");
-    pill.innerHTML = day + (day === todayKey ? ' <span class="today-dot"></span>' : "");
-    pill.onclick = () => selectDay(day);
-    pill.dataset.day = day;
-    dayRow.appendChild(pill);
-  });
+  function buildDayRow(){
+    dayRow.innerHTML = "";
+    orderedDays.forEach(day => {
+      const pill = document.createElement("div");
+      pill.className = "day-pill"
+        + (day === selectedDay ? " active" : "")
+        + (day === todayKey ? " today" : "");
+      pill.innerHTML = day + (day === todayKey ? ' <span class="today-dot"></span>' : "");
+      pill.onclick = () => selectDay(day);
+      pill.dataset.day = day;
+      dayRow.appendChild(pill);
+    });
+  }
+  buildDayRow();
   // Scroll the row so today is visually centered
   function centerToday(){
     const todayPill = dayRow.querySelector(".day-pill.today");
@@ -1416,6 +1600,177 @@
   }
   centerToday();
   window.addEventListener("load", centerToday);
+
+  // ================= PAGES (the "book" with flippable pages) =================
+  function savePagesRegistry(){
+    try { localStorage.setItem(PAGES_KEY, JSON.stringify(pages)); } catch(e){}
+  }
+  function loadPagesRegistry(){
+    try {
+      const raw = localStorage.getItem(PAGES_KEY);
+      if (raw) pages = JSON.parse(raw) || [];
+    } catch(e){ pages = []; }
+    if (!Array.isArray(pages) || !pages.length){
+      pages = [{ id:"default", type:"sheet", name:"My Exercise Sheet" }];
+    }
+    if (!pages.some(p => p.id === "default")){
+      pages.unshift({ id:"default", type:"sheet", name:"My Exercise Sheet" });
+    }
+    savePagesRegistry();
+  }
+
+  // Show the sheet UI or the notes UI
+  function setLayoutMode(type){
+    const screen = document.querySelector(".screen");
+    if (screen) screen.classList.toggle("notes-mode", type === "notes");
+  }
+
+  // Load an exercise-sheet page's data and render it
+  function activateSheetPage(id){
+    activePageId = id;
+    loadAllWeeks();
+    if (!allWeeks[currentWeekKey]){
+      const past = Object.keys(allWeeks).filter(k => k < currentWeekKey).sort();
+      allWeeks[currentWeekKey] = past.length
+        ? clearDoneInWeek(allWeeks[past[past.length - 1]])
+        : blankWeek();
+      saveData();
+    }
+    weekData = allWeeks[currentWeekKey];
+    selectedDay = todayKey;
+    buildDayRow();
+    document.querySelector(".title-row h1").textContent = pageName(id);
+    document.getElementById("selectedDayTitle").textContent = dayTitle(selectedDay);
+    renderRoutines();
+    centerToday();
+  }
+
+  // Load a notes page's text and show it
+  function activateNotesPage(id){
+    activePageId = id;
+    document.querySelector(".title-row h1").textContent = pageName(id);
+    const area = document.getElementById("notesArea");
+    if (area) area.value = localStorage.getItem(notesKeyFor(id)) || "";
+  }
+  function saveNotes(){
+    if (!currentPageIsNotes()) return;
+    try { localStorage.setItem(notesKeyFor(activePageId), document.getElementById("notesArea").value); } catch(e){}
+  }
+
+  // Flip to another page (saving the current one first)
+  function switchToPage(id){
+    if (currentPageIsNotes()) saveNotes();
+    else { captureDay(); saveData(); }
+    const p = pages.find(x => x.id === id);
+    if (!p) return;
+    if (p.type === "notes"){ setLayoutMode("notes"); activateNotesPage(id); }
+    else { setLayoutMode("sheet"); activateSheetPage(id); }
+    try { localStorage.setItem(ACTIVE_KEY, id); } catch(e){}
+    renderPageTabs();
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+
+  function renderPageTabs(){
+    const wrap = document.getElementById("pageTabs");
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    // With only one page there's nothing to flip to — hide the tab row so the
+    // page name isn't repeated under the title.
+    wrap.style.display = pages.length < 2 ? "none" : "flex";
+    if (pages.length < 2) return;
+    pages.forEach(p => {
+      const tab = document.createElement("button");
+      tab.className = "page-tab" + (p.id === activePageId ? " active" : "");
+      tab.textContent = (p.type === "notes" ? "📝 " : "📋 ") + p.name;
+      tab.onclick = () => {
+        if (p.id === activePageId) openPageTools(p.id);
+        else switchToPage(p.id);
+      };
+      wrap.appendChild(tab);
+    });
+  }
+
+  // ---- Add a page ----
+  let newPageType = "sheet";
+  function addPage(){
+    newPageType = "sheet";
+    document.querySelectorAll(".addpage-type").forEach(b => b.classList.toggle("sel", b.dataset.type === "sheet"));
+    document.getElementById("addPageName").value = "";
+    document.getElementById("addPageOverlay").classList.add("open");
+    setTimeout(() => document.getElementById("addPageName").focus(), 50);
+  }
+  function pickPageType(t){
+    newPageType = t;
+    document.querySelectorAll(".addpage-type").forEach(b => b.classList.toggle("sel", b.dataset.type === t));
+  }
+  function closeAddPage(){ document.getElementById("addPageOverlay").classList.remove("open"); }
+  function confirmAddPage(){
+    let name = (document.getElementById("addPageName").value || "").trim();
+    if (!name) name = (newPageType === "notes" ? "Notes" : "Sheet");
+    const id = "p_" + Date.now().toString(36);
+    pages.push({ id, type: newPageType, name });
+    savePagesRegistry();
+    closeAddPage();
+    switchToPage(id);
+  }
+
+  // ---- Rename / delete a page ----
+  let toolsPageId = null;
+  function openPageTools(id){
+    toolsPageId = id;
+    const p = pages.find(x => x.id === id);
+    document.getElementById("pageToolsTitle").textContent = "Page: " + (p ? p.name : "");
+    document.getElementById("pageRenameInput").value = p ? p.name : "";
+    document.getElementById("pageToolsOverlay").classList.add("open");
+  }
+  function closePageTools(){ document.getElementById("pageToolsOverlay").classList.remove("open"); }
+  function confirmRenamePage(){
+    const p = pages.find(x => x.id === toolsPageId);
+    if (!p){ closePageTools(); return; }
+    const name = (document.getElementById("pageRenameInput").value || "").trim();
+    if (name){ p.name = name; savePagesRegistry(); }
+    if (toolsPageId === activePageId) document.querySelector(".title-row h1").textContent = pageName(activePageId);
+    renderPageTabs();
+    closePageTools();
+  }
+  function confirmDeletePage(){
+    if (pages.length <= 1){ alert("You need at least one page in your book."); return; }
+    const idx = pages.findIndex(x => x.id === toolsPageId);
+    if (idx < 0){ closePageTools(); return; }
+    const p = pages[idx];
+    if (!confirm('Delete "' + p.name + '"? This can\'t be undone.')) return;
+    try {
+      if (p.type === "notes") localStorage.removeItem(notesKeyFor(p.id));
+      else if (p.id !== "default") localStorage.removeItem(sheetKeyFor(p.id));
+    } catch(e){}
+    const wasActive = (p.id === activePageId);
+    pages.splice(idx, 1);
+    savePagesRegistry();
+    closePageTools();
+    if (wasActive){
+      const next = pages[Math.max(0, idx - 1)];
+      switchToPage(next.id);
+    } else {
+      renderPageTabs();
+    }
+  }
+
+  // ---- Start the pages system ----
+  function initPages(){
+    loadPagesRegistry();
+    const area = document.getElementById("notesArea");
+    if (area) area.addEventListener("input", saveNotes);
+    let startId = localStorage.getItem(ACTIVE_KEY) || "default";
+    if (!pages.some(p => p.id === startId)) startId = "default";
+    renderPageTabs();
+    if (startId === "default"){
+      // The original sheet is already loaded & rendered by the startup code above.
+      setLayoutMode("sheet");
+      activePageId = "default";
+    } else {
+      switchToPage(startId);
+    }
+  }
 
   function dayTitle(day){
     return (day === todayKey ? "Today · " : "") + fullNames[day];
@@ -1648,6 +2003,7 @@
 
   // Read the current day's DOM back into weekData
   function captureDay(){
+    if (currentPageIsNotes()) return; // a notes page has no routines to capture
     const cards = document.querySelectorAll("#routineList .routine-card");
     const arr = [];
     cards.forEach(card => {
@@ -2101,6 +2457,9 @@
 
   document.getElementById("selectedDayTitle").textContent = dayTitle(selectedDay);
   renderRoutines();
+
+  // Start the pages system (seeds the first page, restores the last open page)
+  initPages();
 
   // ---- "I like this app" button: personal heart count + share to friends ----
   function refreshLikeCount(){
