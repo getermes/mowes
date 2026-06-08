@@ -1709,6 +1709,17 @@
     });
   }
 
+  // Flip to the previous/next page in the book (used by swiping the tabs strip).
+  // Stops at the ends instead of wrapping around.
+  function flipPage(offset){
+    if (pages.length < 2) return;
+    const idx = pages.findIndex(p => p.id === activePageId);
+    if (idx < 0) return;
+    const ni = idx + offset;
+    if (ni < 0 || ni >= pages.length) return;
+    switchToPage(pages[ni].id);
+  }
+
   // ---- Add a page ----
   let newPageType = "sheet";
   function addPage(){
@@ -1779,6 +1790,24 @@
     loadPagesRegistry();
     const area = document.getElementById("notesArea");
     if (area) area.addEventListener("input", saveNotes);
+    // Swipe left/right on the tabs strip to flip between pages.
+    // Swipe right = previous page, swipe left = next page.
+    const tabsEl = document.getElementById("pageTabs");
+    if (tabsEl){
+      let tsx = 0, tsy = 0, ttrack = false;
+      tabsEl.addEventListener("touchstart", e => {
+        if (e.touches.length !== 1) { ttrack = false; return; }
+        tsx = e.touches[0].clientX; tsy = e.touches[0].clientY; ttrack = true;
+      }, { passive: true });
+      tabsEl.addEventListener("touchend", e => {
+        if (!ttrack) return; ttrack = false;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - tsx, dy = t.clientY - tsy;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5){
+          flipPage(dx > 0 ? -1 : 1);
+        }
+      }, { passive: true });
+    }
     let startId = localStorage.getItem(ACTIVE_KEY) || "default";
     if (!pages.some(p => p.id === startId)) startId = "default";
     renderPageTabs();
