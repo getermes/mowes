@@ -53,6 +53,15 @@
   }
   h1 {
     font-size: 22px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  h1 .title-edit {
+    font-size: 13px;
+    color: #9aa0bf;
+    flex: 0 0 auto;
   }
   .history-btn {
     flex: 0 0 auto;
@@ -1348,7 +1357,7 @@
       <!-- Sticky header: title + days bar stay on top while you scroll -->
       <div class="screen-top">
         <div class="title-row">
-          <h1>My Exercise Sheet</h1>
+          <h1 onclick="openPageTools(activePageId)" title="Tap to rename this page"><span class="title-text">My Exercise Sheet</span><span class="title-edit">✎</span></h1>
           <div class="title-actions">
             <button class="history-btn" onclick="openHistory()">History</button>
             <button class="addpage-btn" onclick="addPage()">+ Add page</button>
@@ -1639,7 +1648,7 @@
     weekData = allWeeks[currentWeekKey];
     selectedDay = todayKey;
     buildDayRow();
-    document.querySelector(".title-row h1").textContent = pageName(id);
+    document.querySelector(".title-row h1 .title-text").textContent = pageName(id);
     document.getElementById("selectedDayTitle").textContent = dayTitle(selectedDay);
     renderRoutines();
     centerToday();
@@ -1648,7 +1657,7 @@
   // Load a notes page's text and show it
   function activateNotesPage(id){
     activePageId = id;
-    document.querySelector(".title-row h1").textContent = pageName(id);
+    document.querySelector(".title-row h1 .title-text").textContent = pageName(id);
     const area = document.getElementById("notesArea");
     if (area) area.value = localStorage.getItem(notesKeyFor(id)) || "";
   }
@@ -1729,7 +1738,7 @@
     if (!p){ closePageTools(); return; }
     const name = (document.getElementById("pageRenameInput").value || "").trim();
     if (name){ p.name = name; savePagesRegistry(); }
-    if (toolsPageId === activePageId) document.querySelector(".title-row h1").textContent = pageName(activePageId);
+    if (toolsPageId === activePageId) document.querySelector(".title-row h1 .title-text").textContent = pageName(activePageId);
     renderPageTabs();
     closePageTools();
   }
