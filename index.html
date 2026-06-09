@@ -2304,8 +2304,11 @@
       tab.className = "page-tab" + (p.id === activePageId ? " active" : "");
       tab.textContent = (p.type === "notes" ? "📝 " : p.type === "list" ? "🛒 " : "📋 ") + p.name;
       tab.onclick = () => {
-        if (p.id === activePageId) openPageTools(p.id);
-        else switchToPage(p.id);
+        if (p.id === activePageId) { openPageTools(p.id); return; }
+        // Sweep in the direction of the tapped tab (right = next, left = prev).
+        const ci = pages.findIndex(x => x.id === activePageId);
+        const ti = pages.findIndex(x => x.id === p.id);
+        transitionToPage(p.id, ti >= ci ? 1 : -1);
       };
       wrap.appendChild(tab);
       if (p.id === activePageId) activeTab = tab;
@@ -2324,7 +2327,7 @@
     if (idx < 0) return;
     const ni = idx + offset;
     if (ni < 0 || ni >= pages.length) return;
-    switchToPage(pages[ni].id);
+    transitionToPage(pages[ni].id, offset);
   }
 
   // ---- Add a page ----
@@ -3342,19 +3345,33 @@
     playDotTrace();
   }
 
-  // Page-change dots, both starting at the bottom-right corner of the phone column:
-  //  DOT A: runs along the BOTTOM edge to the bottom-left corner.
-  //  DOT B: runs UP the right edge to the top-right corner, then LEFT across the
-  //         top to the top-left corner. Same total time, so both land on the left
-  //         side together.
-  // reverse = true runs the WHOLE thing backwards (1st page -> cover): the dots
-  //   run from the left back to the bottom-right and the cover re-covers the page.
-  function playDotTrace(reverse, onEnd){
+  // The glowing-dot page sweep. Two dots run the phone-column border while a
+  // moving line between them peels one layer (the "overlay") away to reveal the
+  // page underneath. Used for cover<->page AND page<->page transitions.
+  //
+  // opts:
+  //   overlay     - the element being clipped/peeled (defaults to the cover).
+  //   reverse     - play backwards in time (cover re-covers the page).
+  //   mirror      - flip the sweep horizontally (used for "go back / previous").
+  //   keepCovered - leave the overlay fully shown at the end (default: reverse).
+  //   onEnd       - callback when the sweep finishes (e.g. remove a snapshot).
+  //
+  // Forward geometry: DOT A runs the bottom edge right->left; DOT B runs up the
+  // right edge then left across the top. Same duration, so they land together.
+  function playDotTrace(opts){
+    opts = opts || {};
+    const reverse = !!opts.reverse;
+    const mirror  = !!opts.mirror;
+    const coverEl = document.getElementById("coverOverlay");
+    const overlay = opts.overlay || coverEl;
+    const isCover = (overlay === coverEl);
+    const keepCovered = (opts.keepCovered !== undefined) ? opts.keepCovered : reverse;
+    const onEnd = opts.onEnd;
+
     const wrap = document.getElementById("dotTrace");
     const dotA = document.getElementById("dotA");
     const dotB = document.getElementById("dotB");
-    const cover = document.getElementById("coverOverlay");
-    if (!wrap || !dotA || !dotB) return;
+    if (!wrap || !dotA || !dotB || !overlay) return;
     const winW = window.innerWidth, winH = window.innerHeight, i = 6;
     const appEl = document.querySelector(".app");
     const r = appEl ? appEl.getBoundingClientRect() : { left: 0, right: winW };
@@ -3365,17 +3382,18 @@
     const DUR = 1.4; // seconds, total run
     const vLen = B - T, hLen = R - L, total = vLen + hLen;
 
-    // For the REVERSE run the page is showing, so the cover is hidden right now.
-    // We must show it BEFORE measuring its box, otherwise a hidden element
-    // measures 0,0 and the clip-path lands in the wrong place (cover invisible).
-    if (cover && reverse) cover.classList.add("show");
+    // The cover is hidden between uses, so show it BEFORE measuring its box —
+    // a hidden element measures 0,0 and the clip-path lands in the wrong place.
+    if (isCover) overlay.classList.add("show");
 
-    // Cover box: the clip-path coordinates are relative to the cover's OWN box,
-    // so we offset screen coords by the cover's top-left corner.
-    const cRect = cover ? cover.getBoundingClientRect() : { left: 0, top: 0 };
-    const ox = cRect.left, oy = cRect.top;
+    // The clip-path coordinates are relative to the overlay's OWN box, so we
+    // offset screen coords by the overlay's top-left corner.
+    const oRect = overlay.getBoundingClientRect();
+    const ox = oRect.left, oy = oRect.top;
     function cx(x){ return (x - ox) + "px"; }
     function cy(y){ return (y - oy) + "px"; }
+    // Mirror the geometry horizontally for "go back" (dots run the other way).
+    function mx(x){ return mirror ? (L + R - x) : x; }
 
     // The trailing LINES live in the SVG; we draw them by hand each frame.
     const svgWrap = document.getElementById("pageTrace");
@@ -3387,8 +3405,8 @@
       svg.setAttribute("viewBox", "0 0 " + winW + " " + winH);
       svg.setAttribute("width", winW);
       svg.setAttribute("height", winH);
-      pb.setAttribute("d", "M " + R + " " + B + " L " + L + " " + B);
-      pt.setAttribute("d", "M " + R + " " + B + " L " + R + " " + T + " L " + L + " " + T);
+      pb.setAttribute("d", "M " + mx(R) + " " + B + " L " + mx(L) + " " + B);
+      pt.setAttribute("d", "M " + mx(R) + " " + B + " L " + mx(R) + " " + T + " L " + mx(L) + " " + T);
       lenB = pb.getTotalLength(); lenT = pt.getTotalLength();
       [[pb, lenB], [pt, lenT]].forEach(function(pair){
         pair[0].style.transition = "none";
@@ -3399,59 +3417,50 @@
       svgWrap.classList.add("play");
     }
     wrap.classList.add("play");
-    if (cover) cover.style.animation = "none"; // we drive the cover by clip-path here
+    overlay.style.animation = "none"; // we drive the overlay by clip-path here
 
     const start = performance.now();
     function frame(now){
       let prog = (now - start) / (DUR * 1000);
       if (prog > 1) prog = 1;
-      // Forward runs p 0 -> 1 (cover peels away); reverse runs p 1 -> 0 (cover re-covers).
+      // Forward runs p 0 -> 1 (overlay peels away); reverse runs p 1 -> 0.
       const p = reverse ? (1 - prog) : prog;
 
-      // DOT A: along the bottom, right -> left.
+      // DOT A: along the bottom, right -> left (mirrored = left -> right).
       const ax = R + (L - R) * p;
-      dotA.style.transform = "translate(" + ax + "px, " + B + "px)";
+      dotA.style.transform = "translate(" + mx(ax) + "px, " + B + "px)";
 
       // DOT B: up the right edge, then left across the top (constant speed).
       const along = p * total;
       let bx, by;
       if (along <= vLen){ bx = R; by = B - along; }          // climbing the right edge
       else { bx = R - (along - vLen); by = T; }              // sliding across the top
-      dotB.style.transform = "translate(" + bx + "px, " + by + "px)";
+      dotB.style.transform = "translate(" + mx(bx) + "px, " + by + "px)";
 
       // The trailing lines: reveal up to each dot.
       if (lenB) pb.style.strokeDashoffset = (lenB * (1 - p));
       if (lenT) pt.style.strokeDashoffset = (lenT * (1 - p));
 
-      // Peel the COVER: it stays only on the LEFT/TOP side of the moving line.
-      if (cover){
-        let poly;
-        if (along <= vLen){
-          // Phase 1: only a triangle in the bottom-right is revealed.
-          poly = "polygon(" + cx(L) + " " + cy(T) + ", " + cx(R) + " " + cy(T) + ", " +
-                 cx(R) + " " + cy(by) + ", " + cx(ax) + " " + cy(B) + ", " + cx(L) + " " + cy(B) + ")";
-        } else {
-          // Phase 2: cover is the left chunk bounded by the dot-to-dot line.
-          poly = "polygon(" + cx(L) + " " + cy(T) + ", " + cx(bx) + " " + cy(T) + ", " +
-                 cx(ax) + " " + cy(B) + ", " + cx(L) + " " + cy(B) + ")";
-        }
-        cover.style.clipPath = poly;
-        cover.style.webkitClipPath = poly;
+      // Peel the OVERLAY: it stays only on the LEFT/TOP side of the moving line.
+      let poly;
+      if (along <= vLen){
+        // Phase 1: only a triangle in the bottom-right is revealed.
+        poly = "polygon(" + cx(mx(L)) + " " + cy(T) + ", " + cx(mx(R)) + " " + cy(T) + ", " +
+               cx(mx(R)) + " " + cy(by) + ", " + cx(mx(ax)) + " " + cy(B) + ", " + cx(mx(L)) + " " + cy(B) + ")";
+      } else {
+        // Phase 2: overlay is the left chunk bounded by the dot-to-dot line.
+        poly = "polygon(" + cx(mx(L)) + " " + cy(T) + ", " + cx(mx(bx)) + " " + cy(T) + ", " +
+               cx(mx(ax)) + " " + cy(B) + ", " + cx(mx(L)) + " " + cy(B) + ")";
       }
+      overlay.style.clipPath = poly;
+      overlay.style.webkitClipPath = poly;
 
       if (prog < 1){ requestAnimationFrame(frame); }
       else {
-        if (cover){
-          if (reverse){
-            // Done going back: the cover fully covers the page again — keep it shown.
-            cover.classList.remove("wipeout", "reveal");
-            cover.classList.add("show");
-            cover.style.clipPath = ""; cover.style.webkitClipPath = ""; cover.style.animation = "";
-          } else {
-            // Done going forward: hide the cover so the Routines page is fully shown.
-            cover.classList.remove("show", "wipeout", "reveal");
-            cover.style.clipPath = ""; cover.style.webkitClipPath = ""; cover.style.animation = "";
-          }
+        overlay.style.clipPath = ""; overlay.style.webkitClipPath = ""; overlay.style.animation = "";
+        if (isCover){
+          if (keepCovered){ overlay.classList.remove("wipeout", "reveal"); overlay.classList.add("show"); }
+          else { overlay.classList.remove("show", "wipeout", "reveal"); }
         }
         wrap.classList.remove("play");
         if (svgWrap){
@@ -3462,6 +3471,64 @@
       }
     }
     requestAnimationFrame(frame);
+  }
+
+  // Take a frozen, opaque picture of the current page so we can peel it away to
+  // reveal the page we're switching to. (No screenshot library needed — we clone
+  // the live DOM and copy any typed-in values, then strip ids to avoid clashes.)
+  function snapshotApp(){
+    const appEl = document.querySelector(".app");
+    if (!appEl) return null;
+    const r = appEl.getBoundingClientRect();
+    const snap = document.createElement("div");
+    snap.style.position = "fixed";
+    snap.style.left = r.left + "px";
+    snap.style.top = "0px";
+    snap.style.width = r.width + "px";
+    snap.style.height = window.innerHeight + "px";
+    snap.style.zIndex = "9000";       // same layer as the cover (below dots/lines)
+    snap.style.overflow = "hidden";
+    snap.style.pointerEvents = "none";
+    // Opaque background that matches the app so nothing shows through.
+    snap.style.background = "linear-gradient(180deg,#d3ddfb 0%,#dadcf6 55%,#d6def9 100%)";
+    const clone = appEl.cloneNode(true);
+    // cloneNode doesn't capture typed text — copy live field values over.
+    const origFields = appEl.querySelectorAll("input, textarea, select");
+    const cloneFields = clone.querySelectorAll("input, textarea, select");
+    for (let i = 0; i < origFields.length; i++){
+      const o = origFields[i], c = cloneFields[i];
+      if (!c) continue;
+      if (o.type === "checkbox" || o.type === "radio") c.checked = o.checked;
+      else c.value = o.value;
+    }
+    // Remove ids so duplicate ids never confuse getElementById during the sweep.
+    clone.removeAttribute("id");
+    clone.querySelectorAll("[id]").forEach(function(e){ e.removeAttribute("id"); });
+    clone.style.margin = "0";
+    clone.style.width = r.width + "px";
+    clone.style.minHeight = window.innerHeight + "px";
+    snap.appendChild(clone);
+    document.body.appendChild(snap);
+    return snap;
+  }
+
+  // Switch pages WITH the glowing-dot sweep. dir > 0 = next page (forward sweep),
+  // dir < 0 = previous page (mirrored sweep). Falls back to an instant switch if
+  // a sweep is already running.
+  let pageSweeping = false;
+  function transitionToPage(id, dir){
+    if (pageSweeping){ switchToPage(id); return; }
+    window.scrollTo({ top: 0 });          // sweep looks right from the top
+    const snap = snapshotApp();           // freeze the old page on top
+    switchToPage(id);                     // render the new page underneath
+    if (!snap){ return; }
+    pageSweeping = true;
+    playDotTrace({
+      overlay: snap,
+      mirror: (dir < 0),                  // going back = sweep the other way
+      keepCovered: false,
+      onEnd: function(){ snap.remove(); pageSweeping = false; }
+    });
   }
 
   // Two glowing dots draw the page outline as the Routines page arrives.
@@ -3529,7 +3596,7 @@
     document.getElementById("coverThought").textContent = getTodaysThoughtText();
     // Going back a page: run the dot-trace in REVERSE so the dots sweep back to the
     // bottom-right and the cover re-covers the Routines page.
-    playDotTrace(true);
+    playDotTrace({ reverse: true });
   }
   window.showCover = showCover;
   function dismissWelcome(){
