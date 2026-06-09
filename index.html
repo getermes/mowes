@@ -1050,6 +1050,7 @@
   .set-row {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
   }
   .set-num {
@@ -1059,7 +1060,7 @@
     color: #6a6f85;
   }
   .set-reps {
-    width: 72px;
+    width: 64px;
     padding: 8px;
     border: 1px solid #e6e8f0;
     border-radius: 10px;
@@ -1068,6 +1069,39 @@
     background: #fff;
   }
   .set-reps:focus { outline: none; border-color: #5b6cff; }
+  /* Per-set weight: a small "+ weight" button that swaps to a text box on tap */
+  .set-weight {
+    width: 70px;
+    padding: 8px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    text-align: center;
+    background: #fff;
+  }
+  .set-weight:focus { outline: none; border-color: #5b6cff; }
+  .set-unit {
+    padding: 8px 6px;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+    color: #2a2d3a;
+    cursor: pointer;
+  }
+  .set-unit:focus { outline: none; border-color: #5b6cff; }
+  .set-addwt {
+    padding: 7px 11px;
+    border-radius: 20px;
+    border: 1px dashed #c3c8e0;
+    background: #fff;
+    color: #8a8fa3;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .set-row.done .set-weight { text-decoration: line-through; color: #aab; }
   .set-done {
     padding: 7px 14px;
     border-radius: 20px;
@@ -1980,7 +2014,7 @@
     return {
       name: "",
       details: {
-        reps:     { on:false, sets:[ {reps:"", done:false} ] },
+        reps:     { on:false, sets:[ {reps:"", weight:"", unit:"lbs", done:false} ] },
         time:     { on:false, rows:[ {label:"", min:"", miles:"", done:false} ] },
         weight:   { on:false, val:"" },
         distance: { on:false, val:"" }
@@ -2477,8 +2511,10 @@
     const det = r.details || {};
     if (det.reps && det.reps.on){
       const sets = det.reps.sets || [];
-      html += '<div class="hist-line">Reps: ' + sets.map((s, i) =>
-        `Set ${i+1}: ${escapeHtml(s.reps || "-")}${s.done ? ' <span class="hist-done">✓</span>' : ""}`).join(" · ") + '</div>';
+      html += '<div class="hist-line">Reps: ' + sets.map((s, i) => {
+        const wt = (s.weight != null && String(s.weight) !== "") ? ` @ ${escapeHtml(s.weight)} ${escapeHtml(s.unit || "lbs")}` : "";
+        return `Set ${i+1}: ${escapeHtml(s.reps || "-")}${wt}${s.done ? ' <span class="hist-done">✓</span>' : ""}`;
+      }).join(" · ") + '</div>';
     }
     if (det.time && det.time.on){
       if (det.time.rows){
@@ -2801,11 +2837,17 @@
         const on = chip.classList.contains("on");
         if (f === "reps"){
           r.details.reps.on = on;
-          r.details.reps.sets = [...fe.querySelectorAll(".set-row")].map(row => ({
-            reps: row.querySelector(".set-reps").value,
-            done: row.dataset.done === "true"
-          }));
-          if (!r.details.reps.sets.length) r.details.reps.sets = [{ reps:"", done:false }];
+          r.details.reps.sets = [...fe.querySelectorAll(".set-row")].map(row => {
+            const wEl = row.querySelector(".set-weight");
+            const uEl = row.querySelector(".set-unit");
+            return {
+              reps: row.querySelector(".set-reps").value,
+              weight: wEl ? wEl.value : "",
+              unit: uEl ? uEl.value : "lbs",
+              done: row.dataset.done === "true"
+            };
+          });
+          if (!r.details.reps.sets.length) r.details.reps.sets = [{ reps:"", weight:"", unit:"lbs", done:false }];
         } else if (f === "time"){
           r.details.time.on = on;
           r.details.time.rows = [...fe.querySelectorAll(".interval-row")].map(row => ({
@@ -2867,27 +2909,54 @@
   function renderSets(fieldEl, sets){
     const listWrap = fieldEl.querySelector(".sets-list");
     listWrap.innerHTML = "";
-    const data = (sets && sets.length) ? sets : [{ reps:"", done:false }];
-    data.forEach((s, i) => listWrap.appendChild(buildSetRow(i + 1, s.reps, s.done)));
+    const data = (sets && sets.length) ? sets : [{ reps:"", weight:"", unit:"lbs", done:false }];
+    data.forEach((s, i) => listWrap.appendChild(buildSetRow(i + 1, s.reps, s.weight, s.unit, s.done)));
   }
 
-  function buildSetRow(num, reps, done){
+  // The weight number box + its lbs/kg picker (shown once a set has a weight).
+  function weightControlsHtml(){
+    return `<input class="set-weight" type="number" min="0" step="any" inputmode="decimal" placeholder="weight">`
+         + `<select class="set-unit"><option value="lbs">lbs</option><option value="kg">kg</option></select>`;
+  }
+
+  function buildSetRow(num, reps, weight, unit, done){
     const row = document.createElement("div");
     row.className = "set-row" + (done ? " done" : "");
     row.dataset.done = done ? "true" : "false";
+    // Weight starts hidden behind a "+ weight" button; it shows once it has a
+    // value (or the user taps to add it) so a different weight per set is easy.
+    const hasWt = (weight != null && String(weight) !== "");
+    const wtHtml = hasWt
+      ? weightControlsHtml()
+      : `<button class="set-addwt" onclick="addSetWeight(this)">+ weight</button>`;
     row.innerHTML = `
       <span class="set-num">Set ${num}</span>
       <input class="set-reps" type="number" min="0" placeholder="reps">
+      ${wtHtml}
       <button class="set-done" onclick="toggleSetDone(this)">${done ? "✓ Done" : "Done"}</button>
       <button class="set-remove" onclick="removeSet(this)">✕</button>
     `;
     row.querySelector(".set-reps").value = reps == null ? "" : reps;
+    const wEl = row.querySelector(".set-weight");
+    if (wEl) wEl.value = hasWt ? weight : "";
+    const uEl = row.querySelector(".set-unit");
+    if (uEl) uEl.value = (unit === "kg") ? "kg" : "lbs";
     return row;
+  }
+
+  // Swap a set's "+ weight" button for the weight number box + lbs/kg picker.
+  function addSetWeight(btn){
+    const tmp = document.createElement("span");
+    tmp.innerHTML = weightControlsHtml();
+    const input = tmp.querySelector(".set-weight");
+    const sel = tmp.querySelector(".set-unit");
+    btn.replaceWith(input, sel);
+    input.focus();
   }
 
   function addSet(btn){
     const listWrap = btn.closest(".detail-field").querySelector(".sets-list");
-    listWrap.appendChild(buildSetRow(listWrap.children.length + 1, "", false));
+    listWrap.appendChild(buildSetRow(listWrap.children.length + 1, "", "", "lbs", false));
   }
 
   function removeSet(btn){
