@@ -3362,6 +3362,7 @@
     opts = opts || {};
     const reverse = !!opts.reverse;
     const mirror  = !!opts.mirror;
+    const peelAway = !!opts.peelAway; // keep the RIGHT/BOTTOM side (go-back peel)
     const coverEl = document.getElementById("coverOverlay");
     const overlay = opts.overlay || coverEl;
     const isCover = (overlay === coverEl);
@@ -3441,16 +3442,32 @@
       if (lenB) pb.style.strokeDashoffset = (lenB * (1 - p));
       if (lenT) pt.style.strokeDashoffset = (lenT * (1 - p));
 
-      // Peel the OVERLAY: it stays only on the LEFT/TOP side of the moving line.
+      // Peel the OVERLAY. Normally it stays on the LEFT/TOP side of the moving
+      // line (cover open + page-forward). For "go back a page" (peelAway) we
+      // keep the RIGHT/BOTTOM complement instead, so the old page peels away
+      // while the dots sweep top-left -> across the top -> down to bottom-right
+      // (the same direction as going back to the cover).
       let poly;
       if (along <= vLen){
-        // Phase 1: only a triangle in the bottom-right is revealed.
-        poly = "polygon(" + cx(mx(L)) + " " + cy(T) + ", " + cx(mx(R)) + " " + cy(T) + ", " +
-               cx(mx(R)) + " " + cy(by) + ", " + cx(mx(ax)) + " " + cy(B) + ", " + cx(mx(L)) + " " + cy(B) + ")";
+        if (peelAway){
+          // Phase 1: keep the bottom-right triangle ahead of the sweep.
+          poly = "polygon(" + cx(mx(R)) + " " + cy(by) + ", " + cx(mx(R)) + " " + cy(B) + ", " +
+                 cx(mx(ax)) + " " + cy(B) + ")";
+        } else {
+          // Phase 1: only a triangle in the bottom-right is revealed.
+          poly = "polygon(" + cx(mx(L)) + " " + cy(T) + ", " + cx(mx(R)) + " " + cy(T) + ", " +
+                 cx(mx(R)) + " " + cy(by) + ", " + cx(mx(ax)) + " " + cy(B) + ", " + cx(mx(L)) + " " + cy(B) + ")";
+        }
       } else {
-        // Phase 2: overlay is the left chunk bounded by the dot-to-dot line.
-        poly = "polygon(" + cx(mx(L)) + " " + cy(T) + ", " + cx(mx(bx)) + " " + cy(T) + ", " +
-               cx(mx(ax)) + " " + cy(B) + ", " + cx(mx(L)) + " " + cy(B) + ")";
+        if (peelAway){
+          // Phase 2: keep the right chunk bounded by the dot-to-dot line.
+          poly = "polygon(" + cx(mx(bx)) + " " + cy(T) + ", " + cx(mx(R)) + " " + cy(T) + ", " +
+                 cx(mx(R)) + " " + cy(B) + ", " + cx(mx(ax)) + " " + cy(B) + ")";
+        } else {
+          // Phase 2: overlay is the left chunk bounded by the dot-to-dot line.
+          poly = "polygon(" + cx(mx(L)) + " " + cy(T) + ", " + cx(mx(bx)) + " " + cy(T) + ", " +
+                 cx(mx(ax)) + " " + cy(B) + ", " + cx(mx(L)) + " " + cy(B) + ")";
+        }
       }
       overlay.style.clipPath = poly;
       overlay.style.webkitClipPath = poly;
@@ -3536,7 +3553,8 @@
     const safety = setTimeout(cleanup, 2500); // longer than the ~1.4s sweep
     playDotTrace({
       overlay: snap,
-      mirror: (dir < 0),                  // going back = sweep the other way
+      reverse:  (dir < 0),                // going back = sweep top-left -> bottom-right
+      peelAway: (dir < 0),                // ...peeling the old page away (same as back-to-cover)
       keepCovered: false,
       onEnd: function(){ clearTimeout(safety); cleanup(); }
     });
