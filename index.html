@@ -3523,11 +3523,22 @@
     switchToPage(id);                     // render the new page underneath
     if (!snap){ return; }
     pageSweeping = true;
+    // Cleanup runs exactly once. Two things can trigger it: the sweep finishing
+    // normally (onEnd), OR a safety timer — so a frozen snapshot can never get
+    // stuck on screen even if the animation is interrupted.
+    let cleaned = false;
+    function cleanup(){
+      if (cleaned) return;
+      cleaned = true;
+      if (snap && snap.parentNode) snap.remove();
+      pageSweeping = false;
+    }
+    const safety = setTimeout(cleanup, 2500); // longer than the ~1.4s sweep
     playDotTrace({
       overlay: snap,
       mirror: (dir < 0),                  // going back = sweep the other way
       keepCovered: false,
-      onEnd: function(){ snap.remove(); pageSweeping = false; }
+      onEnd: function(){ clearTimeout(safety); cleanup(); }
     });
   }
 
