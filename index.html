@@ -1513,9 +1513,43 @@
   .welcome-btn:active { transform: scale(0.99); }
   .welcome-note { margin-top: 12px; font-size: 12px; color: #8a8fa3; line-height: 1.4; }
 
+  /* Page-border trace animation (cover -> Routines) */
+  .page-trace {
+    position: fixed; inset: 0; z-index: 9300; /* above the cover so the line is the visible divider */
+    pointer-events: none; display: none;
+  }
+  .page-trace.play { display: block; }
+  .page-trace svg { width: 100%; height: 100%; display: block; }
+  .page-trace path {
+    fill: none;
+    stroke: url(#traceGrad);
+    stroke-width: 4;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 7px rgba(91,108,255,0.9));
+  }
+  .page-trace.fade { opacity: 0; transition: opacity 0.45s ease; }
+
+  /* Glowing dots that travel around the phone column during a page change. */
+  .dot-trace {
+    position: fixed; inset: 0; z-index: 9500;
+    pointer-events: none; display: none;
+  }
+  .dot-trace.play { display: block; }
+  .dot-trace .dot {
+    position: absolute; top: 0; left: 0;
+    width: 16px; height: 16px; margin: -8px 0 0 -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, #fff 0%, #7a8bff 40%, #5b6cff 100%);
+    box-shadow: 0 0 10px 3px rgba(91,108,255,0.95), 0 0 22px 8px rgba(122,91,255,0.6);
+  }
+
   /* Cover page (the app's "book cover" — shows every time it opens) */
   .cover-overlay {
     position: fixed; inset: 0; z-index: 9000;
+    /* Keep the "book cover" the same phone-shaped column as the app, so on a
+       computer the page-turn happens inside the phone shape (matching the
+       border trace) instead of sweeping across the whole monitor. */
+    max-width: 480px; margin: 0 auto;
     display: none;
     align-items: flex-start; justify-content: center;
     padding: 72px 18px 28px;
@@ -1524,24 +1558,26 @@
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
   }
   .cover-overlay.show { display: flex; }
-  /* "Turning the page": the cover SLIDES sideways as one solid page, with a
-     thick line on its leading edge. The line is a real border + box-shadow
-     (always painted), so the boundary between the two pages is clearly
-     visible on every device. */
-  /* IN (routines -> cover): cover slides in from the LEFT, moving LEFT -> RIGHT. */
-  @keyframes coverRevealIn {
-    from { transform: translateX(-100%); }
-    to   { transform: translateX(0); }
-  }
-  /* OUT (cover -> routines): cover slides back out to the LEFT, moving RIGHT -> LEFT. */
+  /* "Opening like a curtain": the cover stays in place and is REVEALED AWAY
+     from the bottom up (your routines appear underneath), then the thin strip
+     left at the top SLIDES off to the left. A glowing blue line rides the
+     rising edge — that's the boundary between the two pages. */
+  /* OUT (cover -> routines): wipe up from the bottom, then slide the top strip left. */
   @keyframes coverWipeOut {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-100%); }
+    0%   { clip-path: inset(0 0 0% 0);  transform: translateX(0); }
+    62%  { clip-path: inset(0 0 88% 0); transform: translateX(0); }
+    100% { clip-path: inset(0 0 88% 0); transform: translateX(-115%); }
+  }
+  /* IN (routines -> cover): exact reverse — strip slides in from the left, then drops down to fill. */
+  @keyframes coverRevealIn {
+    0%   { clip-path: inset(0 0 88% 0); transform: translateX(-115%); }
+    38%  { clip-path: inset(0 0 88% 0); transform: translateX(0); }
+    100% { clip-path: inset(0 0 0% 0);  transform: translateX(0); }
   }
   .cover-overlay.reveal,
   .cover-overlay.wipeout {
-    border-right: 4px solid #2a32a8;
-    box-shadow: 2px 0 0 rgba(255,255,255,0.75), 45px 0 80px 20px rgba(20,26,90,0.42);
+    /* drop-shadow follows the clipped edge, so the rising boundary glows blue */
+    filter: drop-shadow(0 0 9px rgba(91,108,255,0.95)) drop-shadow(0 2px 1px rgba(91,108,255,0.9));
   }
   .cover-overlay.reveal  { animation: coverRevealIn 1.5s cubic-bezier(0.45,0.05,0.55,0.95) both; }
   .cover-overlay.wipeout { animation: coverWipeOut 1.5s cubic-bezier(0.45,0.05,0.55,0.95) both; }
@@ -1674,6 +1710,30 @@
         <a class="cover-brand-link" href="https://ermejia07.github.io" target="_blank" rel="noopener">See all ERMES apps →</a>
       </div>
     </div>
+  </div>
+
+  <!-- Page-border "trace": two glowing dots draw the page outline when the
+       cover hands off to the Routines page. Bottom dot runs along the bottom
+       edge (slow); top dot runs up the right edge and across the top (fast).
+       They start together at the bottom-right corner and finish together on
+       the left side. -->
+  <div class="page-trace" id="pageTrace" aria-hidden="true">
+    <svg id="pageTraceSvg" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="traceGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#5b6cff"/>
+          <stop offset="1" stop-color="#7a5bff"/>
+        </linearGradient>
+      </defs>
+      <path id="traceBottom"></path>
+      <path id="traceTop"></path>
+    </svg>
+  </div>
+
+  <!-- Page-transition dots: glowing dots that travel around the phone column. -->
+  <div class="dot-trace" id="dotTrace" aria-hidden="true">
+    <span class="dot" id="dotA"></span>
+    <span class="dot" id="dotB"></span>
   </div>
 
   <div class="app">
@@ -3276,30 +3336,200 @@
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
     const ov = document.getElementById("coverOverlay");
     if (typeof centerToday === "function") centerToday();
-    // Play the sideways page-turn wipe-out, then hide the cover.
-    ov.classList.remove("reveal");
-    ov.classList.add("wipeout");
+    // The two dots sweep the border; their moving line peels the cover away to
+    // reveal the routines underneath. playDotTrace hides the cover when it ends.
+    ov.classList.remove("reveal", "wipeout");
+    playDotTrace();
+  }
+
+  // Page-change dots, both starting at the bottom-right corner of the phone column:
+  //  DOT A: runs along the BOTTOM edge to the bottom-left corner.
+  //  DOT B: runs UP the right edge to the top-right corner, then LEFT across the
+  //         top to the top-left corner. Same total time, so both land on the left
+  //         side together.
+  // reverse = true runs the WHOLE thing backwards (1st page -> cover): the dots
+  //   run from the left back to the bottom-right and the cover re-covers the page.
+  function playDotTrace(reverse, onEnd){
+    const wrap = document.getElementById("dotTrace");
+    const dotA = document.getElementById("dotA");
+    const dotB = document.getElementById("dotB");
+    const cover = document.getElementById("coverOverlay");
+    if (!wrap || !dotA || !dotB) return;
+    const winW = window.innerWidth, winH = window.innerHeight, i = 6;
+    const appEl = document.querySelector(".app");
+    const r = appEl ? appEl.getBoundingClientRect() : { left: 0, right: winW };
+    const L = r.left + i;                        // left edge of the phone column
+    const R = Math.min(r.right, winW) - i;       // right edge of the phone column
+    const T = i;                                 // top of the screen
+    const B = winH - i;                          // bottom of the screen
+    const DUR = 1.4; // seconds, total run
+    const vLen = B - T, hLen = R - L, total = vLen + hLen;
+
+    // For the REVERSE run the page is showing, so the cover is hidden right now.
+    // We must show it BEFORE measuring its box, otherwise a hidden element
+    // measures 0,0 and the clip-path lands in the wrong place (cover invisible).
+    if (cover && reverse) cover.classList.add("show");
+
+    // Cover box: the clip-path coordinates are relative to the cover's OWN box,
+    // so we offset screen coords by the cover's top-left corner.
+    const cRect = cover ? cover.getBoundingClientRect() : { left: 0, top: 0 };
+    const ox = cRect.left, oy = cRect.top;
+    function cx(x){ return (x - ox) + "px"; }
+    function cy(y){ return (y - oy) + "px"; }
+
+    // The trailing LINES live in the SVG; we draw them by hand each frame.
+    const svgWrap = document.getElementById("pageTrace");
+    const svg = document.getElementById("pageTraceSvg");
+    const pb  = document.getElementById("traceBottom"); // line behind dot A
+    const pt  = document.getElementById("traceTop");    // line behind dot B
+    let lenB = 0, lenT = 0;
+    if (svgWrap && svg && pb && pt) {
+      svg.setAttribute("viewBox", "0 0 " + winW + " " + winH);
+      svg.setAttribute("width", winW);
+      svg.setAttribute("height", winH);
+      pb.setAttribute("d", "M " + R + " " + B + " L " + L + " " + B);
+      pt.setAttribute("d", "M " + R + " " + B + " L " + R + " " + T + " L " + L + " " + T);
+      lenB = pb.getTotalLength(); lenT = pt.getTotalLength();
+      [[pb, lenB], [pt, lenT]].forEach(function(pair){
+        pair[0].style.transition = "none";
+        pair[0].style.strokeDasharray = pair[1];
+        pair[0].style.strokeDashoffset = pair[1];
+      });
+      svgWrap.classList.remove("fade");
+      svgWrap.classList.add("play");
+    }
+    wrap.classList.add("play");
+    if (cover) cover.style.animation = "none"; // we drive the cover by clip-path here
+
+    const start = performance.now();
+    function frame(now){
+      let prog = (now - start) / (DUR * 1000);
+      if (prog > 1) prog = 1;
+      // Forward runs p 0 -> 1 (cover peels away); reverse runs p 1 -> 0 (cover re-covers).
+      const p = reverse ? (1 - prog) : prog;
+
+      // DOT A: along the bottom, right -> left.
+      const ax = R + (L - R) * p;
+      dotA.style.transform = "translate(" + ax + "px, " + B + "px)";
+
+      // DOT B: up the right edge, then left across the top (constant speed).
+      const along = p * total;
+      let bx, by;
+      if (along <= vLen){ bx = R; by = B - along; }          // climbing the right edge
+      else { bx = R - (along - vLen); by = T; }              // sliding across the top
+      dotB.style.transform = "translate(" + bx + "px, " + by + "px)";
+
+      // The trailing lines: reveal up to each dot.
+      if (lenB) pb.style.strokeDashoffset = (lenB * (1 - p));
+      if (lenT) pt.style.strokeDashoffset = (lenT * (1 - p));
+
+      // Peel the COVER: it stays only on the LEFT/TOP side of the moving line.
+      if (cover){
+        let poly;
+        if (along <= vLen){
+          // Phase 1: only a triangle in the bottom-right is revealed.
+          poly = "polygon(" + cx(L) + " " + cy(T) + ", " + cx(R) + " " + cy(T) + ", " +
+                 cx(R) + " " + cy(by) + ", " + cx(ax) + " " + cy(B) + ", " + cx(L) + " " + cy(B) + ")";
+        } else {
+          // Phase 2: cover is the left chunk bounded by the dot-to-dot line.
+          poly = "polygon(" + cx(L) + " " + cy(T) + ", " + cx(bx) + " " + cy(T) + ", " +
+                 cx(ax) + " " + cy(B) + ", " + cx(L) + " " + cy(B) + ")";
+        }
+        cover.style.clipPath = poly;
+        cover.style.webkitClipPath = poly;
+      }
+
+      if (prog < 1){ requestAnimationFrame(frame); }
+      else {
+        if (cover){
+          if (reverse){
+            // Done going back: the cover fully covers the page again — keep it shown.
+            cover.classList.remove("wipeout", "reveal");
+            cover.classList.add("show");
+            cover.style.clipPath = ""; cover.style.webkitClipPath = ""; cover.style.animation = "";
+          } else {
+            // Done going forward: hide the cover so the Routines page is fully shown.
+            cover.classList.remove("show", "wipeout", "reveal");
+            cover.style.clipPath = ""; cover.style.webkitClipPath = ""; cover.style.animation = "";
+          }
+        }
+        wrap.classList.remove("play");
+        if (svgWrap){
+          svgWrap.classList.add("fade");
+          setTimeout(function(){ svgWrap.classList.remove("play", "fade"); }, 480);
+        }
+        if (typeof onEnd === "function") onEnd();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // Two glowing dots draw the page outline as the Routines page arrives.
+  // Both start at the bottom-right corner: the BOTTOM dot runs along the bottom
+  // edge (short path = slower feel), the TOP dot runs up the right edge then
+  // across the top (long path = ~2.5x faster). Same duration, so they finish
+  // together on the left side.
+  function playPageTrace(){
+    const wrap = document.getElementById("pageTrace");
+    const svg  = document.getElementById("pageTraceSvg");
+    const pb   = document.getElementById("traceBottom");
+    const pt   = document.getElementById("traceTop");
+    if (!wrap || !svg || !pb || !pt) return;
+    const winW = window.innerWidth, winH = window.innerHeight, i = 4;
+    // Trace the APP's phone-shaped column, not the whole monitor. On a phone the
+    // app fills the screen (so it looks the same); on a computer it's a centered
+    // narrow column, so we read its left/right edges and use the screen height.
+    const appEl = document.querySelector(".app");
+    const r = appEl ? appEl.getBoundingClientRect() : { left: 0, right: winW };
+    const L = r.left + i;                       // left edge of the phone column
+    const R = Math.min(r.right, winW) - i;      // right edge of the phone column
+    const T = i;                                // top of the visible screen
+    const B = winH - i;                         // bottom of the visible screen
+    svg.setAttribute("viewBox", "0 0 " + winW + " " + winH);
+    svg.setAttribute("width", winW);
+    svg.setAttribute("height", winH);
+    // Bottom dot: bottom-right -> bottom-left (the bottom edge).
+    pb.setAttribute("d", "M " + R + " " + B + " L " + L + " " + B);
+    // Top dot: bottom-right -> up the right edge -> across the top to top-left.
+    pt.setAttribute("d", "M " + R + " " + B + " L " + R + " " + T + " L " + L + " " + T);
+    const Lb = pb.getTotalLength(), Lt = pt.getTotalLength();
+    [[pb, Lb], [pt, Lt]].forEach(function(pair){
+      const p = pair[0], L = pair[1];
+      p.style.transition = "none";
+      p.style.strokeDasharray = L;
+      p.style.strokeDashoffset = L;
+    });
+    wrap.classList.remove("fade");
+    wrap.classList.add("play");
+    void svg.getBoundingClientRect(); // flush the hidden state so the draw animates
+    const DUR = 1.5; // seconds — matches the cover page-turn so they run together
+    [pb, pt].forEach(function(p){
+      p.style.transition = "stroke-dashoffset " + DUR + "s linear";
+      p.style.strokeDashoffset = "0";
+    });
     setTimeout(function(){
-      ov.classList.remove("show");
-      ov.classList.remove("wipeout");
-    }, 1500);
+      wrap.classList.add("fade");
+      setTimeout(function(){ wrap.classList.remove("play", "fade"); }, 480);
+    }, DUR * 1000 + 150);
   }
   // Tapping the "Thought of the day" brings back the ERMES cover page.
   // No auto-open timer here — the user chose to come here, so let them
   // read it and tap "Open MOWES →" when they're ready to go back.
   // Play the "turning the page" reveal, then show the cover
   function revealCover(){
+    // The cover simply appears in place — no "block dropping in from the top."
+    // The dot-trace does all the revealing when you open the app.
     const ov = document.getElementById("coverOverlay");
+    ov.classList.remove("reveal", "wipeout");
+    ov.style.clipPath = ""; ov.style.webkitClipPath = ""; ov.style.animation = "";
     ov.classList.add("show");
-    ov.classList.remove("reveal");
-    ov.classList.remove("wipeout");
-    void ov.offsetWidth; // restart the animation each time
-    ov.classList.add("reveal");
   }
   function showCover(){
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
     document.getElementById("coverThought").textContent = getTodaysThoughtText();
-    revealCover();
+    // Going back a page: run the dot-trace in REVERSE so the dots sweep back to the
+    // bottom-right and the cover re-covers the Routines page.
+    playDotTrace(true);
   }
   window.showCover = showCover;
   function dismissWelcome(){
