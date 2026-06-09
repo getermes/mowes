@@ -300,11 +300,16 @@ phone. Free. If it helps you, please Like and Subscribe!
 =========================================================
 PUBLISHED VIDEO (live)
 =========================================================
-Title: MY Own Weekly Exercise Sheet - free workout app (no sign up!)
+PUBLIC video (use this one):
+Title: I made a FREE workout app (no sign-up, works offline)
 Channel: Eugenio Mejia (@eugeniomejia2860)
-Video (Short): https://youtube.com/shorts/JNxtjCXQFFk
+Video (Short): https://youtube.com/shorts/ygt9Qml94N0
 App link: https://getermes.github.io/mowes/
-Published: 2026-06-07 (Public)
+Published: 2026-06-07 (Public) - title/description refreshed 2026-06-09
+
+NOTE: the older link https://youtube.com/shorts/JNxtjCXQFFk is the duplicate
+clip set to PRIVATE on 2026-06-09 (red recording light visible). Do not share.
+The live public clip is ygt9Qml94N0 (the "works offline" version).
 
 
 =========================================================
@@ -365,3 +370,12 @@ BEST HASHTAGS & SEARCH WORDS
 Put 3-5 on the title, the rest in the description:
 #shorts #workout #fitnessapp #freeapp #exercise #fitness #nosignup
 #gymtracker #workoutplanner #homeworkout #fitnessmotivation #offlineapp
+
+-------------------------------------------
+TAGS / SEARCH KEYWORDS (paste in Studio > edit > "Show more" > Tags)
+-------------------------------------------
+Comma-separated, paste the whole line:
+workout app, free workout app, workout planner, weekly workout planner,
+exercise tracker, fitness app, free fitness app, workout tracker, gym
+tracker, home workout, no sign up app, offline workout app, workout
+schedule, fitness planner, workout timer, MOWES, exercise sheet, private app
