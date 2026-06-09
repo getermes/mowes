@@ -1,0 +1,367 @@
+MY OWN WEEKLY EXERCISE SHEET — YOUTUBE VIDEO KIT
+(For recording your demo video. This file stays on your computer.)
+
+=========================================================
+YOUTUBE TITLE (pick one)
+=========================================================
+- My Own Weekly Exercise Sheet — a free, simple workout tracker
+- I built a free workout app you can use on your phone (no sign-up!)
+- Plan your whole week of workouts — free app demo
+
+
+=========================================================
+VIDEO SCRIPT (~45–60 seconds)
+=========================================================
+
+[Shot 1 — Open the app]
+SAY: "Hey! This is My Own Weekly Exercise Sheet — a free app I made to
+     plan and track my workouts, right from my phone."
+SHOW: the app open on "Today," days of the week across the top.
+
+[Shot 2 — Swipe through days]
+SAY: "Every day of the week is here. Just swipe to move between days."
+SHOW: swipe left/right across Mon → Tue → Wed.
+
+[Shot 3 — Add a routine]
+SAY: "Add any exercise — like Push-ups — and tap what you want to track:
+     reps, time, weight, or distance."
+SHOW: type "Push-ups," tap + Reps, add a set; tap + Time.
+
+[Shot 4 — The timer (the star feature!)]
+SAY: "Each exercise has its own timer. Type the minutes and it counts
+     down… or leave it blank and it counts up like a stopwatch. When it's
+     done, it turns green."
+SHOW: type "1" min → press play (counts down); then a blank one → press
+      play (counts up).
+
+[Shot 5 — Copy & History]
+SAY: "Copy a day to the rest of your week, and check your History anytime
+     to see what you've done."
+SHOW: tap "Copy to…", then open "History."
+
+[Shot 6 — Close / call to action]
+SAY: "It works offline, installs like a real app, and it's totally free.
+     Link's in the description — and if you like it, hit Like and Subscribe!"
+SHOW: the "I like this app" button, then your channel.
+
+
+=========================================================
+YOUTUBE DESCRIPTION (copy-paste)
+=========================================================
+My Own Weekly Exercise Sheet is a free, simple workout tracker you can use
+right from your phone — no sign-up, works offline.
+
+Try it free: https://getermes.github.io/mowes/
+
+What you can do:
+- Plan every day of your week
+- Track reps, time, weight, and distance
+- Built-in timers that count up OR down
+- Copy a day to your whole week
+- See your full History
+
+Made by Eugenio — the Idea Guy. If this helps you, please Like and Subscribe!
+
+#workout #fitnessapp #freeapp #exercise #fitness
+
+
+=========================================================
+SHORT SOCIAL POST (for sharing)
+=========================================================
+I built a free workout app!
+Plan your whole week, track reps & time, with built-in timers — right from
+your phone, no sign-up.
+Try it: getermes.github.io/mowes
+Watch the demo: [your YouTube link]
+
+
+=========================================================
+RECORDING TIPS
+=========================================================
+- Keep it short (30–60 sec). People decide fast.
+- Record your phone screen: iPhone has a built-in Screen Recorder
+  (Settings > Control Center > add "Screen Recording," then swipe down
+  and tap the record circle).
+- Do a quick practice run first so the taps feel smooth.
+- In the video description, paste the app link so viewers can jump right in.
+
+
+=========================================================
+VIDEO SERIES — 4 SHORT VIDEOS (V1–V4)
+=========================================================
+Idea: a small series. Each video is short and covers ONE thing.
+Always end every video with: "No sign-up, your data stays on your phone. Free."
+Channel/email: get.ermes00@gmail.com  |  App: getermes.github.io/mowes
+
+-------------------------------------------
+V1 — THE SECURITY / PRIVACY ONE
+-------------------------------------------
+GOAL: Make people feel 100% safe.
+SAY (talking points):
+  - "Before you try it, let me tell you how safe this is."
+  - "No sign-up. No account. No email. Nothing to download from a store."
+  - "Everything you type stays on YOUR phone. It's never sent anywhere —
+     I never see it."
+  - "There's no server holding your info, so there's nothing to hack or leak."
+  - "It works offline, and it's free. That's the whole promise."
+SHOW: the privacy card + the 6 trust badges at the bottom of the app.
+
+-------------------------------------------
+V2 — PHILOSOPHY & MISSION
+-------------------------------------------
+GOAL: Show the heart behind ERMES.
+SAY (talking points):
+  - "When I see a problem, I find a way to overcome it. Then I ask —
+     does this hurt others too? If it does, I build the solution to help them."
+  - "I'm not a big company chasing your data. I'm one person solving real
+     problems — starting with my own."
+  - "Every app I make follows the same promise: private, secure, friendly,
+     simple, and actually useful."
+SHOW: you talking to camera, then the app + the badges.
+
+-------------------------------------------
+V3 — APP PRESENTATION / HOW TO DEMO
+-------------------------------------------
+GOAL: Show how it works (use the main 6-shot script above).
+  Open app → swipe days → add a routine → the timer (count up & down)
+  → copy a day + History → close with the free/offline/no-sign-up line.
+
+-------------------------------------------
+V4 — THE PERSONAL STORY (the WHY behind MOWES)
+-------------------------------------------
+GOAL: The real, human story. This is the one that connects.
+SAY (in your own words — here's a guide):
+  - "A turn in my health pushed me to start a new chapter in life — and to
+     start building apps."
+  - "My wife exercises every day. She needed a way to keep her daily and
+     weekly plan and track her progress."
+  - "She was using pen and paper — but it kept getting misplaced, or lost."
+  - "So I thought: let me help her with an app. It had to be simple, and
+     it had to adapt to HER own plan — not force her into someone else's."
+  - "That's when I started building it... and — wallah — 'My Own Weekly
+     Exercise Sheet,' MOWES."
+  - "If it helped her, maybe it helps you too. That's why it's free, and
+     why your data stays with you."
+SHOW: you talking, a glimpse of the app, end on the app link.
+
+=========================================================
+FULL "HOW TO USE MOWES" WALKTHROUGH (the show) — ~2–3 min
+=========================================================
+This is the complete tour (longer than the 60-sec demo above).
+It matches the in-app "❓ How to use MOWES" tutorial step-by-step.
+Record your phone screen and read the SAY lines in your own words.
+On-screen [CAPTION] = a short text you can add on top of the video.
+
+-------------------------------------------
+INTRO (0:00)
+-------------------------------------------
+SAY: "Hey, I'm Eugenio. Let me show you how to use MOWES — My Own
+     Weekly Exercise Sheet. It's free, there's no sign-up, and your
+     stuff stays on your phone. Let's go."
+SHOW: open the app on the cover screen, then tap "Open MOWES →".
+[CAPTION] MOWES — free, no sign-up
+
+-------------------------------------------
+STEP 1 — PICK YOUR DAY
+-------------------------------------------
+SAY: "Your whole week is right across the top. Today sits in the
+     middle with a little dot. Just swipe — or tap a day — to move
+     around your week."
+SHOW: swipe the day bar left/right, tap Mon, tap Wed.
+[CAPTION] Swipe or tap to change days
+
+-------------------------------------------
+STEP 2 — ADD AN EXERCISE
+-------------------------------------------
+SAY: "To add something, tap 'Add routine,' and type the name — like
+     Push-ups."
+SHOW: tap "+ Add routine", type "Push-ups".
+[CAPTION] + Add routine
+
+-------------------------------------------
+STEP 3 — TRACK IT YOUR WAY
+-------------------------------------------
+SAY: "Now pick how you want to track it. Tap Reps to count sets, Time
+     for a timer, Weight for how heavy, or Distance for miles. Use one,
+     or all of them — it's your sheet."
+SHOW: tap "+ Reps", add a set, type a number, tap "Done".
+     Then tap "+ Weight" and type "20 lbs".
+[CAPTION] + Reps · + Time · + Weight · + Distance
+
+-------------------------------------------
+STEP 4 — THE TIMER (the star)
+-------------------------------------------
+SAY: "Here's my favorite part — the timer. Type the minutes and press
+     play, and it counts DOWN. Leave it blank, press play, and it
+     counts UP like a stopwatch. When it's done, it turns green."
+SHOW: add "+ Time"; type "1" and press ▶ (counts down);
+     add another, leave blank, press ▶ (counts up).
+[CAPTION] Type minutes = countdown · Blank = stopwatch
+
+-------------------------------------------
+STEP 5 — COPY A DAY
+-------------------------------------------
+SAY: "Built a good day and want it on other days too? Tap 'Copy to,'
+     pick the days, and tap Copy. Done."
+SHOW: tap "Copy to…", check Tue + Thu, tap "Copy".
+[CAPTION] Copy one day to your whole week
+
+-------------------------------------------
+STEP 6 — REORDER & REMOVE
+-------------------------------------------
+SAY: "Want to reorder? Use the little up-down arrows, or press and hold
+     to drag. To remove something, tap the red X."
+SHOW: tap ▲ / ▼ on a card; press-hold-drag one; tap the red ✕.
+[CAPTION] Drag to reorder · Red ✕ to remove
+
+-------------------------------------------
+STEP 7 — MAKE PAGES
+-------------------------------------------
+SAY: "You can also keep separate pages — like one for the gym and one
+     for home. Tap 'Page' to add one, and tap its name to rename it."
+SHOW: tap "＋ Page", create one, rename it "At the Gym".
+[CAPTION] ＋ Page — At the Gym, At Home…
+
+-------------------------------------------
+STEP 8 — LOOK BACK (HISTORY)
+-------------------------------------------
+SAY: "Every week you finish is saved. Tap History any time to look back
+     at what you did."
+SHOW: tap "🕘 History", open a past week, open a day.
+[CAPTION] 🕘 History — see past weeks
+
+-------------------------------------------
+STEP 9 — SAVED & PRIVATE
+-------------------------------------------
+SAY: "You never have to hit save — it saves by itself, right on your
+     phone. No account, no sign-up, nothing sent anywhere. It's yours."
+SHOW: the privacy card + the 6 trust badges on the cover.
+[CAPTION] Auto-saved · 100% private
+
+-------------------------------------------
+STEP 10 — INSTALL IT LIKE AN APP
+-------------------------------------------
+SAY: "And you can install it like a real app — tap Share, then 'Add to
+     Home Screen.' Now it opens from your home screen and even works
+     with no internet."
+SHOW: phone Share menu → "Add to Home Screen" → the MOWES icon.
+[CAPTION] Add to Home Screen — works offline
+
+-------------------------------------------
+CLOSE / CALL TO ACTION
+-------------------------------------------
+SAY: "That's MOWES. It's free, it's private, and it adapts to YOUR
+     plan. The link's in the description — give it a try, and if it
+     helps you, hit Like and Subscribe."
+SHOW: tap the "❓ How to use MOWES" button (so viewers know it's in the
+     app too), then end on your channel / the app link.
+[CAPTION] getermes.github.io/mowes — Free · No sign-up
+
+REMINDER LINE (end every video): "No sign-up, your data stays on your
+phone. Free."
+
+
+=========================================================
+HOW-TO VIDEO — TITLE & DESCRIPTION (copy-paste)
+=========================================================
+TITLE (pick one):
+- How to use MOWES — full walkthrough (free workout planner)
+- MOWES tutorial: plan your whole week in 2 minutes
+- How to use my free workout app (step by step, no sign-up)
+
+DESCRIPTION:
+A full walkthrough of MOWES — My Own Weekly Exercise Sheet. A free,
+private workout planner you use right from your phone. No sign-up,
+works offline.
+
+Try it free: https://getermes.github.io/mowes/
+
+In this video:
+0:00 Intro
+- Pick your day (swipe the week)
+- Add an exercise
+- Track reps, time, weight & distance
+- The built-in timer (counts up OR down)
+- Copy a day to your whole week
+- Reorder & remove
+- Separate pages (Gym / Home)
+- History — see past weeks
+- Auto-saved & 100% private
+- Install it like a real app
+
+There's also a "❓ How to use MOWES" button right inside the app.
+
+Made by Eugenio — the Idea Guy. No sign-up, your data stays on your
+phone. Free. If it helps you, please Like and Subscribe!
+
+#workout #fitnessapp #freeapp #exercise #tutorial #howto
+
+
+=========================================================
+PUBLISHED VIDEO (live)
+=========================================================
+Title: MY Own Weekly Exercise Sheet - free workout app (no sign up!)
+Channel: Eugenio Mejia (@eugeniomejia2860)
+Video (Short): https://youtube.com/shorts/JNxtjCXQFFk
+App link: https://getermes.github.io/mowes/
+Published: 2026-06-07 (Public)
+
+
+=========================================================
+IMPROVED PROMO COPY FOR THE LIVE SHORT (paste-ready)
+=========================================================
+How to update on your phone: open YouTube > your video > the pencil/Edit
+button > paste the new Title and Description. For the pinned comment, post
+the comment, then tap the "..." on it and choose "Pin".
+
+-------------------------------------------
+NEW TITLE (pick one — shorter is better for Shorts)
+-------------------------------------------
+- Free workout planner app — no sign-up! 💪 #shorts
+- I made a FREE workout app (no sign-up, works offline) #shorts
+- Plan your whole week of workouts — free app, no account #shorts
+
+(Tip: keep the strongest words — FREE, no sign-up — near the front.)
+
+-------------------------------------------
+NEW DESCRIPTION (copy-paste all of it)
+-------------------------------------------
+Try it free 👉 https://getermes.github.io/mowes/
+
+MOWES — My Own Weekly Exercise Sheet. A free, simple workout planner you
+use right from your phone. No sign-up, no account, no email. Your data
+stays on YOUR phone — it's never sent anywhere. Free, and works offline.
+
+What you can do:
+✅ Plan every day of your week
+✅ Track reps, time, weight & distance
+✅ Built-in timers that count UP or DOWN
+✅ Copy one day to your whole week
+✅ See your full History
+✅ Install it like a real app
+
+Made by Eugenio — the Idea Guy. I build simple, private apps that solve
+real problems. If this helps you, please Like and Subscribe! 🙏
+
+#workout #fitnessapp #freeapp #exercise #fitness #nosignup #shorts
+
+-------------------------------------------
+NEW PINNED COMMENT (post it, then pin it)
+-------------------------------------------
+Thanks for watching! 🙌 Try MOWES free here 👉
+https://getermes.github.io/mowes/
+
+No sign-up, no account, no email. Your data stays on your phone — it's
+never sent anywhere. Free, and works offline.
+
+To install it like an app: open the link, tap Share, then "Add to Home
+Screen."
+
+Question for you 👇 What's the ONE exercise you do every single week?
+
+-------------------------------------------
+BEST HASHTAGS & SEARCH WORDS
+-------------------------------------------
+Put 3-5 on the title, the rest in the description:
+#shorts #workout #fitnessapp #freeapp #exercise #fitness #nosignup
+#gymtracker #workoutplanner #homeworkout #fitnessmotivation #offlineapp
