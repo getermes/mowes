@@ -273,13 +273,19 @@
   /* Pictures page */
   .pics-view { display: none; margin-top: 8px; }
   .screen.pics-mode .pics-view { display: block; }
+  .pics-actions { display: flex; gap: 8px; margin-bottom: 14px; }
   .pics-add {
-    display: block; width: 100%; margin-bottom: 14px;
+    flex: 1 1 0; display: block; width: 100%;
     border: none; cursor: pointer;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     color: #fff; font-weight: 700; font-size: 15px;
-    padding: 12px; border-radius: 14px;
+    padding: 12px 8px; border-radius: 14px;
     box-shadow: 0 6px 16px rgba(91,108,255,0.28);
+    white-space: nowrap;
+  }
+  .pics-add.pics-add-alt {
+    background: #fff; color: #5b6cff; border: 1px solid #d8dcf0;
+    box-shadow: none;
   }
   .pics-add:active { transform: scale(0.99); }
   .pics-empty { text-align: center; color: #8a8fa3; font-size: 13px; line-height: 1.5; margin: 24px 8px; }
@@ -2144,9 +2150,13 @@
 
       <!-- Pictures page (shown only when the current page is a pictures page) -->
       <div class="pics-view" id="picsView">
-        <button type="button" class="pics-add" onclick="document.getElementById('picsInput').click()">＋ Add photos</button>
+        <div class="pics-actions">
+          <button type="button" class="pics-add" onclick="document.getElementById('picsCam').click()">📷 Take a photo</button>
+          <button type="button" class="pics-add pics-add-alt" onclick="document.getElementById('picsInput').click()">🖼️ From phone</button>
+        </div>
+        <input type="file" id="picsCam" accept="image/*" capture="environment" style="display:none" onchange="addPics(this)">
         <input type="file" id="picsInput" accept="image/*" multiple style="display:none" onchange="addPics(this)">
-        <p class="pics-empty" id="picsEmpty">No photos yet. Tap “＋ Add photos” to add some — they stay on your phone. 🔒</p>
+        <p class="pics-empty" id="picsEmpty">No photos yet. Take a photo or add one from your phone — they stay on your device. 🔒</p>
         <div class="pics-grid" id="picsGrid"></div>
       </div>
 
