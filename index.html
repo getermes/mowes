@@ -1788,6 +1788,43 @@
     color: #2faa6a;
   }
 
+  /* Today's Plan page (2nd page) */
+  .plan-overlay {
+    position: fixed; inset: 0; z-index: 9600;
+    display: none;
+    align-items: flex-start; justify-content: center;
+    padding: 56px 20px 40px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
+  }
+  .plan-overlay.show { display: flex; }
+  .plan-box { max-width: 380px; width: 100%; }
+  .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
+  .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
+  .plan-group {
+    background: #fff; border-radius: 16px; padding: 14px 16px; margin-bottom: 12px;
+    box-shadow: 0 6px 18px rgba(40,50,120,0.08);
+  }
+  .plan-group-title { font-weight: 800; color: #3a4066; font-size: 15px; margin-bottom: 6px; }
+  .plan-item { display: flex; align-items: baseline; gap: 10px; padding: 8px 0; border-top: 1px solid #f0f2fb; }
+  .plan-item:first-of-type { border-top: none; }
+  .plan-item-name { font-weight: 600; color: #3a4066; font-size: 15px; }
+  .plan-item-detail { color: #8a90ac; font-size: 13px; margin-left: auto; white-space: nowrap; }
+  .plan-empty {
+    text-align: center; color: #6a7088; font-size: 14px; line-height: 1.55;
+    background: #fff; border-radius: 16px; padding: 26px 22px;
+    box-shadow: 0 6px 18px rgba(40,50,120,0.08);
+  }
+  .plan-next {
+    display: block; width: 100%; margin-top: 8px;
+    border: none; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff; font-weight: 700; font-size: 16px;
+    padding: 14px; border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(91,108,255,0.28);
+  }
+  .plan-next:active { transform: scale(0.99); }
+
   /* First-time-only ERMES welcome screen */
   .welcome-overlay {
     position: fixed; inset: 0; z-index: 9999;
@@ -2044,6 +2081,16 @@
     </div>
   </div>
 
+  <!-- Today's Plan: 2nd page (after the Cover) — auto-lists today's workouts -->
+  <div class="plan-overlay" id="planOverlay">
+    <div class="plan-box">
+      <div class="plan-mark">📋 Today's Plan</div>
+      <div class="plan-day" id="planDay">Today</div>
+      <div class="plan-list" id="planList"></div>
+      <button class="plan-next" onclick="planNext()">Next →</button>
+    </div>
+  </div>
+
   <!-- Cover page: the app's "book cover" — shows every time it opens -->
   <div class="cover-overlay" id="coverOverlay">
     <div class="cover-box">
@@ -2063,7 +2110,7 @@
       </div>
       <button class="cover-btn" onclick="openApp()">Open MOWES →</button>
       <p class="cover-note">Opening your routines… or tap to go now.</p>
-      <button type="button" class="help-open-btn" onclick="openHelp()">❓ How to use MOWES</button>
+      <button type="button" class="help-open-btn" onclick="openHelp()">How to use MOWES ❓</button>
       <div class="privacy-note">
         <p class="privacy-text">
           🔒 <strong>Your privacy:</strong> No sign-up, no account, no email.
@@ -2170,7 +2217,7 @@
           <a class="coffee-btn" id="coffeeBtn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"><svg class="cup-icon" viewBox="0 0 48 48" aria-hidden="true"><g class="cup-steam" stroke="#9b7a5a" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M16 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M22 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M28 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/></g><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linejoin="round" d="M8 19 h26 v7 a13 13 0 0 1 -13 13 a13 13 0 0 1 -13 -13 z"/><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linecap="round" d="M34 21 h5 a6 6 0 0 1 0 12 h-4"/></svg></a>
         </div>
         <p class="contact-note" style="text-align:center; margin-top:16px;">
-          <button type="button" class="help-link" onclick="openHelp()">❓ How to use MOWES</button>
+          <button type="button" class="help-link" onclick="openHelp()">How to use MOWES ❓</button>
         </p>
       </div>
 
@@ -4438,9 +4485,8 @@
   }
   window.showCover = showCover;
   function dismissWelcome(){
-    localStorage.setItem(WELCOME_KEY, "1");
     document.getElementById("welcomeOverlay").classList.remove("show");
-    startCoverAutoOpen(); // now the cover is the active screen — begin its countdown
+    showPlan(); // the Cover hands off to Today's Plan (the 2nd page)
   }
   window.openApp = openApp;
   window.dismissWelcome = dismissWelcome;
@@ -4450,6 +4496,82 @@
     document.getElementById("welcomeOverlay").classList.add("show");
   }
   window.showWelcome = showWelcome;
+
+  // ---- Today's Plan page (2nd page): auto-lists today's workouts ----
+  const PLAN_PAGES = [
+    { id: "default",      icon: "💪" },
+    { id: "p_ex_walkrun", icon: "🚶" }
+  ];
+  function todaysRoutinesFor(pageId){
+    let allWeeks = {};
+    try { allWeeks = JSON.parse(localStorage.getItem(sheetKeyFor(pageId)) || "{}") || {}; } catch(e){}
+    let week = allWeeks[currentWeekKey];
+    if (!week){
+      const past = Object.keys(allWeeks).filter(k => k < currentWeekKey).sort();
+      week = past.length ? allWeeks[past[past.length - 1]] : null;
+    }
+    const routines = week ? (week[todayKey] || []) : [];
+    return routines.filter(r => r && r.name && String(r.name).trim());
+  }
+  function planRoutineSummary(r){
+    const d = r.details || {};
+    if (d.reps && d.reps.on){
+      const sets = (d.reps.sets || []).filter(s => s && (s.reps || s.weight || s.time || s.distance));
+      if (sets.length) return sets.length + (sets.length === 1 ? " set" : " sets");
+    }
+    if (d.time && d.time.on){
+      const rows = (d.time.rows || []).filter(x => x && (x.min || x.miles || x.label));
+      if (rows.length) return rows.length + (rows.length === 1 ? " item" : " items");
+    }
+    if (d.weight && d.weight.on && d.weight.val) return String(d.weight.val);
+    if (d.distance && d.distance.on && d.distance.val) return String(d.distance.val);
+    return "";
+  }
+  function renderPlan(){
+    const dayEl = document.getElementById("planDay");
+    if (dayEl) dayEl.textContent = dayTitle(todayKey);
+    const list = document.getElementById("planList");
+    if (!list) return;
+    list.innerHTML = "";
+    let anything = false;
+    PLAN_PAGES.forEach(pg => {
+      const routines = todaysRoutinesFor(pg.id);
+      if (!routines.length) return;
+      anything = true;
+      const group = document.createElement("div"); group.className = "plan-group";
+      const title = document.createElement("div"); title.className = "plan-group-title";
+      title.textContent = pg.icon + " " + pageName(pg.id);
+      group.appendChild(title);
+      routines.forEach(r => {
+        const item = document.createElement("div"); item.className = "plan-item";
+        const nm = document.createElement("span"); nm.className = "plan-item-name"; nm.textContent = r.name;
+        item.appendChild(nm);
+        const sum = planRoutineSummary(r);
+        if (sum){ const s = document.createElement("span"); s.className = "plan-item-detail"; s.textContent = sum; item.appendChild(s); }
+        group.appendChild(item);
+      });
+      list.appendChild(group);
+    });
+    if (!anything){
+      const empty = document.createElement("div"); empty.className = "plan-empty";
+      empty.textContent = "Nothing planned for today yet. Add exercises on your Weight Routine or Walk & Running pages and they'll show up here. 💪";
+      list.appendChild(empty);
+    }
+  }
+  function showPlan(){
+    if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
+    renderPlan();
+    document.getElementById("planOverlay").classList.add("show");
+  }
+  function hidePlan(){ document.getElementById("planOverlay").classList.remove("show"); }
+  function planNext(){
+    hidePlan();
+    document.getElementById("coverThought").textContent = getTodaysThoughtText();
+    startCoverAutoOpen(); // Today's Thought is already revealed; begin its countdown to the app
+  }
+  window.showPlan = showPlan;
+  window.planNext = planNext;
+
   // The cover is the app's face — show it on every open
   document.getElementById("coverThought").textContent = getTodaysThoughtText();
   revealCover();
@@ -4472,10 +4594,12 @@
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) cb(dx < 0 ? "fwd" : "back");
     }, { passive: true });
   }
-  // Cover: swipe left = forward to the Introduction page
+  // Cover: swipe left = forward to Today's Plan
   onBookSwipe(document.getElementById("welcomeOverlay"), dir => { if (dir === "fwd") dismissWelcome(); });
-  // Introduction: swipe left = into the workspace, swipe right = back to the Cover
-  onBookSwipe(document.getElementById("coverOverlay"), dir => { if (dir === "fwd") openApp(); else showWelcome(); });
+  // Today's Plan: swipe left = on to Today's Thought, swipe right = back to the Cover
+  onBookSwipe(document.getElementById("planOverlay"), dir => { if (dir === "fwd") planNext(); else showWelcome(); });
+  // Today's Thought: swipe left = into the workspace, swipe right = back to Today's Plan
+  onBookSwipe(document.getElementById("coverOverlay"), dir => { if (dir === "fwd") openApp(); else showPlan(); });
 
   // Auto-save: any typing, toggle, or button tap in the routines saves your work
   const routineListEl = document.getElementById("routineList");
