@@ -247,21 +247,26 @@
      then collapses so everything slides back up when it closes. */
   .thought-pop {
     max-height: 0; overflow: hidden; opacity: 0;
-    transition: max-height 0.5s ease, opacity 0.4s ease, margin-bottom 0.5s ease;
+    /* base transition = the SLOW drift-away exit (content follows up gently) */
+    transition: max-height 2.8s ease, opacity 0.4s ease, margin-bottom 2.8s ease;
   }
-  .thought-pop.show { max-height: 340px; opacity: 1; margin-bottom: 6px; }
-  /* On close: the space collapses (content slides up) while the cloud drifts
-     up toward the top-right corner and fades away. */
-  .thought-pop.leaving { overflow: visible; }
+  .thought-pop.show {
+    max-height: 340px; opacity: 1; margin-bottom: 6px;
+    /* snappier entrance */
+    transition: max-height 0.5s ease, opacity 0.35s ease, margin-bottom 0.5s ease;
+  }
+  /* On close: the space collapses (content slides up) while the cloud slowly
+     drifts up toward the top-right corner and fades away over ~3 seconds. */
+  .thought-pop.leaving { overflow: visible; opacity: 1; }
   .thought-pop-card {
     position: relative; margin: 8px auto 0;
     max-width: 320px; width: 100%;
     background: transparent; box-shadow: none;
-    padding: 38px 38px 44px;
-    transition: transform 0.55s cubic-bezier(0.4,0,0.6,1), opacity 0.5s ease;
+    padding: 38px 38px 44px 44px;
+    transition: transform 3s ease-out, opacity 2.7s ease;
   }
   .thought-pop.leaving .thought-pop-card {
-    transform: translate(58%, -155%) scale(0.5) rotate(6deg);
+    transform: translate(72%, -185%) scale(0.55) rotate(8deg);
     opacity: 0;
   }
   .thought-cloud {
@@ -270,13 +275,13 @@
   }
   .thought-pop-label, .thought-pop-text { position: relative; z-index: 1; }
   .thought-pop-x {
-    position: absolute; top: 16px; right: 20px; z-index: 2;
+    position: absolute; top: 16px; left: 20px; z-index: 2;
     width: 30px; height: 30px; border: none; border-radius: 50%;
     background: #eef1fd; color: #5b6cff; font-size: 14px; cursor: pointer;
   }
   .thought-pop-x:active { transform: scale(0.92); }
-  .thought-pop-label { color: #5b6cff; font-weight: 800; font-size: 12px; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .thought-pop-text { color: #3a4066; font-size: 16px; line-height: 1.5; font-weight: 600; margin: 0; padding-right: 20px; }
+  .thought-pop-label { color: #5b6cff; font-weight: 800; font-size: 12px; letter-spacing: 0.5px; margin-bottom: 8px; padding-left: 38px; }
+  .thought-pop-text { color: #3a4066; font-size: 16px; line-height: 1.5; font-weight: 600; margin: 0; }
 
   /* Pictures page */
   .pics-view { display: none; margin-top: 8px; }
@@ -4142,9 +4147,9 @@
     const el = document.getElementById("thoughtPop");
     if (!el) return;
     if (thoughtPopTimer){ clearTimeout(thoughtPopTimer); thoughtPopTimer = null; }
-    el.classList.add("leaving");   // cloud drifts up-right and fades
+    el.classList.add("leaving");   // cloud slowly drifts up-right and fades (~3s)
     el.classList.remove("show");   // space collapses, page follows up
-    setTimeout(() => { el.classList.remove("leaving"); }, 600);
+    setTimeout(() => { el.classList.remove("leaving"); }, 3200);
   }
   window.showThoughtPop = showThoughtPop;
   window.hideThoughtPop = hideThoughtPop;
