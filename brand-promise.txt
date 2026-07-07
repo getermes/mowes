@@ -1,0 +1,65 @@
+THE EUGENIO STANDARD — BRAND PROMISE
+(Copy-paste this into any app, video, description, or post.)
+
+=========================================================
+THE MISSION (the WHY behind every app)
+=========================================================
+"When I see a problem, I find a way to overcome it. Then I ask whether
+it hurts others too — and if it does, I build the solution to help them."
+
+Ways to say it:
+- Short (tagline):  "I solve my own problems — then share the fix with you."
+- Warm (videos/about): "I build these because I hit the problem myself. And I
+  figured — if it bugged me, it probably bugs you too. So here's the fix."
+- One-liner for posts: "Made by someone who had the same problem you do."
+
+Why it matters: people don't fall in love with apps — they fall in love with
+a person who genuinely wanted to help them. This is the most trustworthy thing
+we can tell people, and it makes the privacy promise even stronger: not a
+company chasing data, just one person solving real problems.
+
+=========================================================
+WHAT EVERY EUGENIO APP STANDS FOR
+=========================================================
+🔒 Private      — Your data stays on your device. No tracking, no selling, no spying.
+🛡️ Secure       — No accounts to hack, no passwords to steal, nothing to leak.
+🙂 Friendly     — Warm, simple, and welcoming. Built for real people.
+👆 Intuitive    — If you can use a phone, you can use it. No manual needed.
+✨ Unique       — Made with a fresh idea, not a copy of everyone else.
+💡 Problem solver — It exists to make one real thing in your life easier.
+
+
+=========================================================
+TAGLINES (pick one per app)
+=========================================================
+- Private by design. Simple by heart.
+- Your data. Your device. Your app.
+- Built to solve, not to spy.
+- No sign-up. No tracking. Just help.
+
+
+=========================================================
+THE TRUST LINE (say it in every video, put it in every description)
+=========================================================
+"No sign-up, no account, no email. Your data stays on your phone —
+it's never sent anywhere. Free, and works offline."
+
+
+=========================================================
+HOW TO PROMOTE IT (every app, every time)
+=========================================================
+1. In each app — a small "Your Privacy" trust card at the bottom.
+2. On YouTube — say the trust line out loud in every video.
+3. In every description & social post — lead with the badges (🔒🛡️🙂).
+4. As your signature — every app shares the same promise, so people learn:
+   "If Eugenio made it, it's safe and simple."
+
+
+=========================================================
+THE IN-APP PRIVACY CARD (HTML snippet, reuse in any app)
+=========================================================
+<p class="privacy-note">
+  🔒 <strong>Your privacy:</strong> No sign-up, no account, no email.
+  Everything you type stays on your phone — it's never sent anywhere,
+  and I never see it. Free, and works offline.
+</p>

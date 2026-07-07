@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "4600", "--directory", "."],
       "port": 4600
+    },
+    {
+      "name": "ermes-site",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4700", "--directory", "/Users/papamejia/ERMES-website"],
+      "port": 4700
     }
   ]
 }

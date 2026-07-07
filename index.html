@@ -1670,19 +1670,20 @@
   .welcome-tag {
     margin-top: 5px; color: #5a6076; font-size: 13px; font-weight: 600;
   }
-  .welcome-emoji { font-size: 46px; margin: 22px 0 10px; }
+  .welcome-emoji { font-size: 46px; margin: 160px 0 10px; }
   .welcome-title { font-weight: 800; }
   .welcome-greet {
     display: block; font-size: 15px; font-weight: 700; color: #6a7088;
     margin-bottom: 2px;
   }
   .welcome-name {
-    display: block; font-size: 44px; font-weight: 800; letter-spacing: 1px;
+    display: block; font-size: 60px; font-weight: 800; letter-spacing: 1px;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .welcome-sub { font-size: 13px; color: #6a7088; margin-top: 3px; }
+  .welcome-sub { font-size: 13px; color: #5b6cff; margin-top: -34px; }
+  .welcome-barbell { display: block; position: relative; left: 50%; transform: translateX(-50%); width: 98vw; max-width: 460px; height: auto; margin: -26px 0 0; }
   .welcome-desc {
     margin: 16px auto 4px; max-width: 320px;
     font-size: 14px; line-height: 1.55; color: #4a5068;
@@ -1697,7 +1698,7 @@
     border-radius: 999px; padding: 6px 11px;
   }
   .welcome-btn {
-    display: block; width: 100%; margin-top: 24px;
+    display: block; width: 100%; margin-top: 160px;
     border: none; cursor: pointer;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     color: #fff; font-weight: 700; font-size: 16px;
@@ -1705,7 +1706,7 @@
     box-shadow: 0 6px 16px rgba(91,108,255,0.28);
   }
   .welcome-btn:active { transform: scale(0.99); }
-  .welcome-note { margin-top: 12px; font-size: 12px; color: #8a8fa3; line-height: 1.4; }
+  .welcome-note { position: fixed; left: 0; right: 0; bottom: 16px; margin: 0; text-align: center; font-size: 12px; color: #8a8fa3; line-height: 1.4; }
 
   /* Page-border trace animation (cover -> Routines) */
   .page-trace {
@@ -1843,21 +1844,34 @@
   <div class="welcome-overlay" id="welcomeOverlay">
     <div class="welcome-box">
       <div class="welcome-mark">ERMES</div>
-      <div class="welcome-tag">Apps that solve real problems</div>
+      <div class="welcome-tag">Apps to solve real problems</div>
       <div class="welcome-emoji">💪</div>
-      <div class="welcome-title"><span class="welcome-greet">Welcome to</span><span class="welcome-name">MOWES</span></div>
+      <div class="welcome-title"><span class="welcome-name">MOWES</span></div>
+      <svg class="welcome-barbell" viewBox="0 0 460 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="bbBar" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#F0A32E"/>
+            <stop offset="0.5" stop-color="#FBC13D"/>
+            <stop offset="1" stop-color="#F0A32E"/>
+          </linearGradient>
+          <linearGradient id="bbPlate" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#7a5bff"/>
+            <stop offset="1" stop-color="#5b6cff"/>
+          </linearGradient>
+        </defs>
+        <!-- bar -->
+        <rect x="18" y="56" width="424" height="8" rx="4" fill="url(#bbBar)"/>
+        <!-- left plates -->
+        <rect x="62" y="26" width="16" height="68" rx="7" fill="url(#bbPlate)"/>
+        <rect x="40" y="13" width="18" height="95" rx="9" fill="url(#bbPlate)"/>
+        <!-- right plates -->
+        <rect x="382" y="26" width="16" height="68" rx="7" fill="url(#bbPlate)"/>
+        <rect x="402" y="13" width="18" height="95" rx="9" fill="url(#bbPlate)"/>
+        <!-- end caps -->
+        <rect x="11" y="52" width="8" height="16" rx="3" fill="#F0A32E"/>
+        <rect x="441" y="52" width="8" height="16" rx="3" fill="#F0A32E"/>
+      </svg>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
-      <p class="welcome-desc">
-        A free, simple workout tracker. Plan your week, track reps, time,
-        weight &amp; distance — with built-in timers. No sign-up, and your
-        data stays on your phone.
-      </p>
-      <div class="welcome-promise">
-        <span class="welcome-chip">🔒 Private</span>
-        <span class="welcome-chip">🛡️ Secure</span>
-        <span class="welcome-chip">🙂 Friendly</span>
-        <span class="welcome-chip">👆 Intuitive</span>
-      </div>
       <button class="welcome-btn" onclick="dismissWelcome()">Let's go →</button>
       <p class="welcome-note">Made by Eugenio — the Idea Guy</p>
     </div>
@@ -1900,7 +1914,7 @@
       </div>
       <div class="cover-brand">
         <span class="cover-brand-name">ERMES</span>
-        <span class="cover-brand-tag">Apps that solve real problems</span>
+        <span class="cover-brand-tag">Apps to solve real problems</span>
         <a class="cover-brand-link" href="https://ermejia07.github.io" target="_blank" rel="noopener">See all ERMES apps →</a>
       </div>
     </div>
