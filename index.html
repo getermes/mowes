@@ -243,6 +243,32 @@
   .notes-view { display: none; margin-top: 8px; }
   .screen.notes-mode .notes-view { display: block; }
 
+  /* Today's Thought pop-up */
+  .thought-pop {
+    position: fixed; inset: 0; z-index: 10001; display: none;
+    align-items: flex-start; justify-content: center;
+    padding: 66px 18px 0; pointer-events: none;
+  }
+  .thought-pop.show { display: flex; }
+  .thought-pop-card {
+    pointer-events: auto; position: relative;
+    max-width: 340px; width: 100%;
+    background: #fff; border-radius: 18px; padding: 20px 22px 22px;
+    box-shadow: 0 16px 44px rgba(40,50,120,0.24);
+    animation: thoughtPopIn 0.32s cubic-bezier(0.2,0.8,0.3,1) both;
+  }
+  @keyframes thoughtPopIn { from { opacity: 0; transform: translateY(-16px) scale(0.97); } to { opacity: 1; transform: none; } }
+  .thought-pop.hiding .thought-pop-card { animation: thoughtPopOut 0.32s ease both; }
+  @keyframes thoughtPopOut { to { opacity: 0; transform: translateY(-16px) scale(0.97); } }
+  .thought-pop-x {
+    position: absolute; top: 10px; right: 10px;
+    width: 30px; height: 30px; border: none; border-radius: 50%;
+    background: #eef1fd; color: #5b6cff; font-size: 14px; cursor: pointer;
+  }
+  .thought-pop-x:active { transform: scale(0.92); }
+  .thought-pop-label { color: #5b6cff; font-weight: 800; font-size: 12px; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .thought-pop-text { color: #3a4066; font-size: 16px; line-height: 1.5; font-weight: 600; margin: 0; padding-right: 20px; }
+
   /* Pictures page */
   .pics-view { display: none; margin-top: 8px; }
   .screen.pics-mode .pics-view { display: block; }
@@ -1763,9 +1789,9 @@
     -webkit-text-fill-color: transparent;
   }
   .welcome-tag {
-    margin-top: 165px; color: #E0941A; font-size: 13px; font-weight: 700;
+    margin-top: 5px; color: #E0941A; font-size: 13px; font-weight: 700;
   }
-  .welcome-dumbbell { display: block; width: 104px; height: auto; margin: 30px auto 0; transform: translateY(-12px); }
+  .welcome-dumbbell { display: block; width: 104px; height: auto; margin: 190px auto 0; transform: translateY(-12px); }
   .welcome-emoji { font-size: 46px; margin: -42px 0 0; position: relative; z-index: 2; }
   .welcome-title { font-weight: 800; }
   .welcome-greet {
@@ -1994,7 +2020,7 @@
       </svg>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
       <button class="welcome-btn" onclick="dismissWelcome()">Pick me UP →</button>
-      <p class="welcome-note">Made with <span class="wn-heart">💛</span> by <span class="wn-name">Eugenio</span> — the Idea Guy</p>
+      <p class="welcome-note">Made with <span class="wn-heart">💛</span> by <span class="wn-name">eUgenio</span> — the Idea Guy</p>
     </div>
   </div>
 
@@ -2069,12 +2095,6 @@
     <div class="screen">
       <!-- Sticky header: title + days bar stay on top while you scroll -->
       <div class="screen-top">
-        <div class="title-row">
-          <div class="title-topbar">
-            <button class="thought-show" id="thoughtShow" onclick="showCover()" title="Today's Thought">💭 Thought</button>
-          </div>
-        </div>
-
         <!-- Pages of the book you can flip between -->
         <div class="page-tabs" id="pageTabs"></div>
 
@@ -2129,9 +2149,18 @@
         <div class="pics-grid" id="picsGrid"></div>
       </div>
 
+      <!-- Today's Thought pop-up: appears when you open the app, closes on ✕ or after 15s -->
+      <div class="thought-pop" id="thoughtPop" aria-hidden="true">
+        <div class="thought-pop-card">
+          <button class="thought-pop-x" onclick="hideThoughtPop()" aria-label="Close">✕</button>
+          <div class="thought-pop-label">💭 Today's Thought</div>
+          <p class="thought-pop-text" id="thoughtPopText">—</p>
+        </div>
+      </div>
+
       <!-- Support / donation -->
       <div class="support">
-        <p class="support-note">Made by Eugenio — the Idea Guy</p>
+        <p class="support-note">Made by eUgenio — the Idea Guy</p>
         <p class="contact-note">
           <a href="mailto:get.ermes00@gmail.com?subject=MOWES%20feedback">Contact ERMES</a>
         </p>
@@ -4056,7 +4085,31 @@
     // reveal the routines underneath. playDotTrace hides the cover when it ends.
     ov.classList.remove("reveal", "wipeout");
     playDotTrace();
+    // Show today's thought as a quick pop-up the first time you enter the app.
+    if (!thoughtPopShown){ thoughtPopShown = true; setTimeout(showThoughtPop, 1700); }
   }
+
+  // ---- Today's Thought pop-up (open on app entry; ✕ or auto-close in 15s) ----
+  let thoughtPopShown = false, thoughtPopTimer = null;
+  function showThoughtPop(){
+    const el = document.getElementById("thoughtPop");
+    const txt = document.getElementById("thoughtPopText");
+    if (!el || !txt) return;
+    txt.textContent = getTodaysThoughtText();
+    el.classList.remove("hiding");
+    el.classList.add("show");
+    if (thoughtPopTimer) clearTimeout(thoughtPopTimer);
+    thoughtPopTimer = setTimeout(hideThoughtPop, 15000); // ~time to read, then gone
+  }
+  function hideThoughtPop(){
+    const el = document.getElementById("thoughtPop");
+    if (!el) return;
+    if (thoughtPopTimer){ clearTimeout(thoughtPopTimer); thoughtPopTimer = null; }
+    el.classList.add("hiding");
+    setTimeout(() => { el.classList.remove("show", "hiding"); }, 340);
+  }
+  window.showThoughtPop = showThoughtPop;
+  window.hideThoughtPop = hideThoughtPop;
 
   // The glowing-dot page sweep. Two dots run the phone-column border while a
   // moving line between them peels one layer (the "overlay") away to reveal the
