@@ -4498,10 +4498,8 @@
   window.showWelcome = showWelcome;
 
   // ---- Today's Plan page (2nd page): auto-lists today's workouts ----
-  const PLAN_PAGES = [
-    { id: "default",      icon: "💪" },
-    { id: "p_ex_walkrun", icon: "🚶" }
-  ];
+  // Pulls from EVERY weekly routine (exercise-sheet) page, for the current day.
+  function planIcon(id){ return id === "default" ? "💪" : id === "p_ex_walkrun" ? "🚶" : "📋"; }
   function todaysRoutinesFor(pageId){
     let allWeeks = {};
     try { allWeeks = JSON.parse(localStorage.getItem(sheetKeyFor(pageId)) || "{}") || {}; } catch(e){}
@@ -4534,13 +4532,13 @@
     if (!list) return;
     list.innerHTML = "";
     let anything = false;
-    PLAN_PAGES.forEach(pg => {
+    pages.filter(p => p.type === "sheet").forEach(pg => {
       const routines = todaysRoutinesFor(pg.id);
       if (!routines.length) return;
       anything = true;
       const group = document.createElement("div"); group.className = "plan-group";
       const title = document.createElement("div"); title.className = "plan-group-title";
-      title.textContent = pg.icon + " " + pageName(pg.id);
+      title.textContent = planIcon(pg.id) + " " + pageName(pg.id);
       group.appendChild(title);
       routines.forEach(r => {
         const item = document.createElement("div"); item.className = "plan-item";
