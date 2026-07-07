@@ -160,7 +160,6 @@
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 10px;
-    margin-top: 52px; /* reserved space at the top of the page for something later */
     margin-bottom: 4px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none; /* Firefox: hide scrollbar */
@@ -244,25 +243,34 @@
   .notes-view { display: none; margin-top: 8px; }
   .screen.notes-mode .notes-view { display: block; }
 
-  /* Today's Thought pop-up */
+  /* Today's Thought cloud: sits at the top, pushes content down while open,
+     then collapses so everything slides back up when it closes. */
   .thought-pop {
-    position: fixed; inset: 0; z-index: 10001; display: none;
-    align-items: flex-start; justify-content: center;
-    padding: 66px 18px 0; pointer-events: none;
+    max-height: 0; overflow: hidden; opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.4s ease, margin-bottom 0.5s ease;
   }
-  .thought-pop.show { display: flex; }
+  .thought-pop.show { max-height: 340px; opacity: 1; margin-bottom: 6px; }
+  /* On close: the space collapses (content slides up) while the cloud drifts
+     up toward the top-right corner and fades away. */
+  .thought-pop.leaving { overflow: visible; }
   .thought-pop-card {
-    pointer-events: auto; position: relative;
-    max-width: 340px; width: 100%;
-    background: #fff; border-radius: 18px; padding: 20px 22px 22px;
-    box-shadow: 0 16px 44px rgba(40,50,120,0.24);
-    animation: thoughtPopIn 0.32s cubic-bezier(0.2,0.8,0.3,1) both;
+    position: relative; margin: 8px auto 0;
+    max-width: 320px; width: 100%;
+    background: transparent; box-shadow: none;
+    padding: 38px 38px 44px;
+    transition: transform 0.55s cubic-bezier(0.4,0,0.6,1), opacity 0.5s ease;
   }
-  @keyframes thoughtPopIn { from { opacity: 0; transform: translateY(-16px) scale(0.97); } to { opacity: 1; transform: none; } }
-  .thought-pop.hiding .thought-pop-card { animation: thoughtPopOut 0.32s ease both; }
-  @keyframes thoughtPopOut { to { opacity: 0; transform: translateY(-16px) scale(0.97); } }
+  .thought-pop.leaving .thought-pop-card {
+    transform: translate(58%, -155%) scale(0.5) rotate(6deg);
+    opacity: 0;
+  }
+  .thought-cloud {
+    position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
+    filter: drop-shadow(0 12px 26px rgba(40,50,120,0.18));
+  }
+  .thought-pop-label, .thought-pop-text { position: relative; z-index: 1; }
   .thought-pop-x {
-    position: absolute; top: 10px; right: 10px;
+    position: absolute; top: 16px; right: 20px; z-index: 2;
     width: 30px; height: 30px; border: none; border-radius: 50%;
     background: #eef1fd; color: #5b6cff; font-size: 14px; cursor: pointer;
   }
@@ -2100,6 +2108,33 @@
 
   <div class="app">
     <div class="screen">
+      <!-- Today's Thought cloud: sits at the top and pushes everything down while
+           it's open; when it closes, the space collapses and content slides back up. -->
+      <div class="thought-pop" id="thoughtPop" aria-hidden="true">
+        <div class="thought-pop-card">
+          <svg class="thought-cloud" viewBox="0 0 260 150" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="#fff">
+              <rect x="26" y="44" width="208" height="64" rx="28"/>
+              <circle cx="54" cy="50" r="30"/>
+              <circle cx="98" cy="39" r="37"/>
+              <circle cx="148" cy="43" r="33"/>
+              <circle cx="192" cy="49" r="31"/>
+              <circle cx="223" cy="63" r="26"/>
+              <circle cx="34" cy="66" r="26"/>
+              <circle cx="40" cy="90" r="24"/>
+              <circle cx="60" cy="107" r="30"/>
+              <circle cx="104" cy="115" r="35"/>
+              <circle cx="154" cy="110" r="32"/>
+              <circle cx="199" cy="103" r="28"/>
+              <circle cx="228" cy="86" r="24"/>
+            </g>
+          </svg>
+          <button class="thought-pop-x" onclick="hideThoughtPop()" aria-label="Close">✕</button>
+          <div class="thought-pop-label">💭 Today's Thought</div>
+          <p class="thought-pop-text" id="thoughtPopText">—</p>
+        </div>
+      </div>
+
       <!-- Sticky header: title + days bar stay on top while you scroll -->
       <div class="screen-top">
         <!-- Pages of the book you can flip between -->
@@ -2161,14 +2196,6 @@
       </div>
 
       <!-- Today's Thought pop-up: appears when you open the app, closes on ✕ or after 15s -->
-      <div class="thought-pop" id="thoughtPop" aria-hidden="true">
-        <div class="thought-pop-card">
-          <button class="thought-pop-x" onclick="hideThoughtPop()" aria-label="Close">✕</button>
-          <div class="thought-pop-label">💭 Today's Thought</div>
-          <p class="thought-pop-text" id="thoughtPopText">—</p>
-        </div>
-      </div>
-
       <!-- Support / donation -->
       <div class="support">
         <p class="support-note">Made by eUgenio — the Idea Guy</p>
@@ -4107,8 +4134,7 @@
     const txt = document.getElementById("thoughtPopText");
     if (!el || !txt) return;
     txt.textContent = getTodaysThoughtText();
-    el.classList.remove("hiding");
-    el.classList.add("show");
+    el.classList.add("show"); // expands, pushing the page down
     if (thoughtPopTimer) clearTimeout(thoughtPopTimer);
     thoughtPopTimer = setTimeout(hideThoughtPop, 15000); // ~time to read, then gone
   }
@@ -4116,8 +4142,9 @@
     const el = document.getElementById("thoughtPop");
     if (!el) return;
     if (thoughtPopTimer){ clearTimeout(thoughtPopTimer); thoughtPopTimer = null; }
-    el.classList.add("hiding");
-    setTimeout(() => { el.classList.remove("show", "hiding"); }, 340);
+    el.classList.add("leaving");   // cloud drifts up-right and fades
+    el.classList.remove("show");   // space collapses, page follows up
+    setTimeout(() => { el.classList.remove("leaving"); }, 600);
   }
   window.showThoughtPop = showThoughtPop;
   window.hideThoughtPop = hideThoughtPop;
