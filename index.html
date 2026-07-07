@@ -254,6 +254,7 @@
 
   /* Add-page dialog */
   .addpage-q { color: #555; font-size: 14px; margin: 0 0 10px; }
+  .qs-label { display: block; color: #555; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
   .addpage-types { display: flex; gap: 10px; margin-bottom: 16px; }
   .addpage-type {
     flex: 1;
@@ -1109,12 +1110,64 @@
     gap: 6px;
   }
   .set-num {
-    flex: 0 0 auto;
+    flex: 0 0 32px;
+    width: 32px;
+    text-align: center;
     font-size: 12px;
     font-weight: 600;
     color: #6a6f85;
     white-space: nowrap;
   }
+  /* Column titles sitting above the set rows: Sets  Rep  Wght */
+  .sets-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 2px 3px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #9096ad;
+    letter-spacing: 0.3px;
+  }
+  .sets-head .sh-num  { flex: 0 0 32px; width: 32px; text-align: center; }
+  .sets-head .sh-col  { flex: 1 1 0; min-width: 40px; text-align: center; }
+  .sets-head .sh-end  { flex: 0 0 72px; }
+  /* Weight/Distance titles are tappable unit switches */
+  .sets-head .sh-unit-btn {
+    font: inherit; letter-spacing: inherit; color: #5b6cff;
+    background: none; border: none; padding: 0; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 2px; white-space: nowrap;
+  }
+  .sets-head .sh-unit-btn:active { opacity: 0.6; }
+  /* On/off buttons that choose which columns show */
+  .sets-cols { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+  .col-toggle {
+    flex: 0 0 auto; padding: 5px 11px; border-radius: 20px;
+    border: 1px solid #dde2fb; background: #f2f3fd; color: #8a8fa3;
+    font-weight: 600; font-size: 12px; cursor: pointer;
+  }
+  .col-toggle.on { background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-color: transparent; }
+  .set-col {
+    flex: 1 1 0; min-width: 40px; padding: 8px 4px;
+    border: 1px solid #e6e8f0; border-radius: 10px;
+    font-size: 14px; text-align: center; background: #fff;
+  }
+  .set-col:focus { outline: none; border-color: #5b6cff; }
+  .set-row.done .set-col { text-decoration: line-through; color: #aab; }
+  /* "Weight (lbs)" header is a tappable lbs/kg switch */
+  .sets-head .sh-wt-btn {
+    font: inherit;
+    letter-spacing: inherit;
+    color: #5b6cff;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+  }
+  .sets-head .sh-wt-btn:active { opacity: 0.6; }
   /* Box 1: the reps number, on its own */
   .set-reps {
     flex: 0 1 56px;
@@ -1147,17 +1200,16 @@
     background: #e6e8f0;
   }
   .set-weight {
-    width: 0;
-    flex: 1 1 0;
+    flex: 1 1 auto;
     min-width: 0;
     padding: 8px 4px;
-    border: none;
-    border-radius: 0;
+    border: 1px solid #e6e8f0;
+    border-radius: 10px;
     font-size: 14px;
     text-align: center;
-    background: transparent;
+    background: #fff;
   }
-  .set-weight:focus { outline: none; }
+  .set-weight:focus { outline: none; border-color: #5b6cff; }
   /* Per-set weight: a small "+ weight" button that adds the box on tap */
   .set-unit {
     flex: 0 0 auto;
@@ -2090,6 +2142,21 @@
         </div>
       </div>
     </div>
+
+    <!-- Quick-fill sets dialog: answer 3 questions, builds the whole table -->
+    <div class="overlay" id="quickSetsOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>Add sets</h2>
+          <button class="close-btn" onclick="closeQuickSets()">&times;</button>
+        </div>
+        <div id="qsFields"></div>
+        <div class="addpage-actions">
+          <button class="addpage-cancel" onclick="closeQuickSets()">Cancel</button>
+          <button class="addpage-create" onclick="confirmQuickSets()">Create sets</button>
+        </div>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -2103,7 +2170,7 @@
     return {
       name: "",
       details: {
-        reps:     { on:false, sets:[ {reps:"", weight:"", unit:"lbs", done:false} ] },
+        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
         time:     { on:false, rows:[ {label:"", min:"", miles:"", done:false} ] },
         weight:   { on:false, val:"" },
         distance: { on:false, val:"" }
@@ -2600,9 +2667,21 @@
     const det = r.details || {};
     if (det.reps && det.reps.on){
       const sets = det.reps.sets || [];
-      html += '<div class="hist-line">Reps: ' + sets.map((s, i) => {
-        const wt = (s.weight != null && String(s.weight) !== "") ? ` @ ${escapeHtml(s.weight)} ${escapeHtml(s.unit || "lbs")}` : "";
-        return `Set ${i+1}: ${escapeHtml(s.reps || "-")}${wt}${s.done ? ' <span class="hist-done">✓</span>' : ""}`;
+      const cols = (det.reps.cols) ? SET_COLS.filter(k => det.reps.cols[k]) : ["reps","weight"];
+      const wUnit = ((det.reps.weightUnit || det.reps.unit) === "kg") ? "Kls" : "Lbs";
+      const dUnit = (det.reps.distUnit === "km") ? "km" : "mi";
+      const colText = (s) => cols.map(k => {
+        const v = s[k];
+        if (v == null || String(v) === "") return null;
+        if (k === "reps") return `${escapeHtml(v)} reps`;
+        if (k === "weight") return `${escapeHtml(v)} ${wUnit}`;
+        if (k === "time") return `${escapeHtml(v)} min`;
+        if (k === "distance") return `${escapeHtml(v)} ${dUnit}`;
+        return null;
+      }).filter(Boolean).join(", ");
+      html += '<div class="hist-line">Sets: ' + sets.map((s, i) => {
+        const parts = colText(s);
+        return `${i+1}) ${parts || "-"}${s.done ? ' <span class="hist-done">✓</span>' : ""}`;
       }).join(" · ") + '</div>';
     }
     if (det.time && det.time.on){
@@ -2785,10 +2864,10 @@
       : '<p class="hist-empty">Nothing recorded for this day.</p>';
   }
 
-  const detailFields = ["reps","time","weight","distance"];
-  // The order detail FIELDS stack in the card (chips keep detailFields order).
-  // Weight sits above the Time rows; the "+ Add Time" button sits below them.
-  const fieldOrder = ["reps","weight","time","distance"];
+  // The flexible sets table (opened by "+ Reps") now covers reps, weight, time
+  // and distance as its own columns, so the old separate chips are retired.
+  const detailFields = ["reps"];
+  const fieldOrder = ["reps"];
   const detailPlaceholders = {
     reps: "e.g. 12 reps / 3 sets of 10",
     time: "e.g. 30 sec / 2 min",
@@ -2831,6 +2910,8 @@
               return `
           <div class="detail-field" data-field="reps">
             <div class="sets-block">
+              <div class="sets-cols"></div>
+              <div class="sets-head"></div>
               <div class="sets-list"></div>
               <button class="add-set" onclick="addSet(this)">+ Add set</button>
             </div>
@@ -2884,7 +2965,7 @@
       detailFields.forEach(f => {
         const d = r.details[f];
         const fe = card.querySelector(`.detail-field[data-field="${f}"]`);
-        if (f === "reps") renderSets(fe, d.sets);
+        if (f === "reps") renderSets(fe, d);
         if (f === "time") renderIntervals(fe, d.rows);
         if (d.on){
           card.querySelector(`.chip[data-field="${f}"]`).classList.add("on");
@@ -2920,17 +3001,11 @@
         const on = chip.classList.contains("on");
         if (f === "reps"){
           r.details.reps.on = on;
-          r.details.reps.sets = [...fe.querySelectorAll(".set-row")].map(row => {
-            const wEl = row.querySelector(".set-weight");
-            const uEl = row.querySelector(".set-unit");
-            return {
-              reps: row.querySelector(".set-reps").value,
-              weight: wEl ? wEl.value : "",
-              unit: uEl ? uEl.value : "lbs",
-              done: row.dataset.done === "true"
-            };
-          });
-          if (!r.details.reps.sets.length) r.details.reps.sets = [{ reps:"", weight:"", unit:"lbs", done:false }];
+          const rd = readRepsFromDom(fe);
+          r.details.reps.cols = rd.cols;
+          r.details.reps.weightUnit = rd.weightUnit;
+          r.details.reps.distUnit = rd.distUnit;
+          r.details.reps.sets = rd.sets;
         } else if (f === "time"){
           r.details.time.on = on;
           r.details.time.rows = [...fe.querySelectorAll(".interval-row")].map(row => ({
@@ -2989,62 +3064,164 @@
     saveData();
   }
 
-  function renderSets(fieldEl, sets){
+  // ---- Flexible set table: Sets# + any of Reps / Weight / Time / Distance ----
+  const SET_COLS = ["reps","weight","time","distance"];
+  const SET_COL_INFO = {
+    reps:     { toggle:"Reps",     ph:"reps", title:()=>"Reps" },
+    weight:   { toggle:"Weight",   ph:"wt",   title:(c)=> c.weightUnit==="kg" ? "Kls" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
+    time:     { toggle:"Time",     ph:"min",  title:()=>"min" },
+    distance: { toggle:"Distance", ph:"dist", title:(c)=> c.distUnit==="km" ? "km" : "mi", unitKey:"distUnit", units:["mi","km"] }
+  };
+  function activeCols(cfg){ return SET_COLS.filter(k => cfg.cols[k]); }
+
+  // Turn saved data (old or new) into a clean {cfg, sets}
+  function normReps(d){
+    d = d || {};
+    const c = d.cols;
+    const cfg = {
+      cols: c ? { reps:!!c.reps, weight:!!c.weight, time:!!c.time, distance:!!c.distance }
+              : { reps:true, weight:true, time:false, distance:false },
+      weightUnit: ((d.weightUnit || d.unit) === "kg") ? "kg" : "lbs",
+      distUnit: (d.distUnit === "km") ? "km" : "mi"
+    };
+    if (!activeCols(cfg).length) cfg.cols.reps = true; // never zero columns
+    const sets = (d.sets && d.sets.length) ? d.sets : [{ reps:"", weight:"", time:"", distance:"", done:false }];
+    return { cfg, sets };
+  }
+
+  function renderSets(fieldEl, d){
+    const { cfg, sets } = normReps(d);
+    fieldEl._repsCfg = cfg;
+    renderSetsCols(fieldEl.querySelector(".sets-cols"), cfg);
+    renderSetsHead(fieldEl.querySelector(".sets-head"), cfg);
     const listWrap = fieldEl.querySelector(".sets-list");
     listWrap.innerHTML = "";
-    const data = (sets && sets.length) ? sets : [{ reps:"", weight:"", unit:"lbs", done:false }];
-    data.forEach((s, i) => listWrap.appendChild(buildSetRow(i + 1, s.reps, s.weight, s.unit, s.done)));
+    sets.forEach((s, i) => listWrap.appendChild(buildSetRow(i + 1, s, cfg)));
   }
 
-  // Box 2: the weight number AND its lbs/kg picker together in one box,
-  // separated by a thin divider line. Shown once a set has a weight.
-  function weightControlsHtml(){
-    return `<div class="set-wbox">`
-         +   `<input class="set-weight" type="number" min="0" step="any" inputmode="decimal" placeholder="weight">`
-         +   `<span class="set-div"></span>`
-         +   `<select class="set-unit"><option value="lbs">lbs</option><option value="kg">kg</option></select>`
-         + `</div>`;
+  // The small on/off buttons that choose which columns show
+  function renderSetsCols(colsEl, cfg){
+    colsEl.innerHTML = SET_COLS.map(k =>
+      `<button type="button" class="col-toggle${cfg.cols[k] ? " on" : ""}" data-col="${k}" onclick="toggleSetCol(this)">${SET_COL_INFO[k].toggle}</button>`
+    ).join("");
   }
 
-  function buildSetRow(num, reps, weight, unit, done){
+  // The column titles; Weight/Distance titles double as the unit switch
+  function renderSetsHead(headEl, cfg){
+    let html = `<span class="sh-num">Sets</span>`;
+    activeCols(cfg).forEach(k => {
+      const info = SET_COL_INFO[k];
+      html += info.unitKey
+        ? `<button type="button" class="sh-col sh-unit-btn" data-col="${k}" onclick="toggleColUnit(this)" title="Switch unit">${info.title(cfg)}</button>`
+        : `<span class="sh-col">${info.title(cfg)}</span>`;
+    });
+    headEl.innerHTML = html + `<span class="sh-end"></span>`;
+  }
+
+  function buildSetRow(num, set, cfg){
     const row = document.createElement("div");
-    row.className = "set-row" + (done ? " done" : "");
-    row.dataset.done = done ? "true" : "false";
-    // Two boxes: box 1 is the reps number, box 2 holds the weight number + the
-    // lbs/kg picker. Weight starts hidden behind a "+ weight" button so a set
-    // without a weight stays simple; tapping it adds the second box.
-    const hasWt = (weight != null && String(weight) !== "");
-    const wtHtml = hasWt
-      ? weightControlsHtml()
-      : `<button class="set-addwt" onclick="addSetWeight(this)">+ weight</button>`;
-    row.innerHTML = `
-      <span class="set-num">Set ${num}</span>
-      <input class="set-reps" type="number" min="0" placeholder="reps">
-      ${wtHtml}
-      <button class="set-done" onclick="toggleSetDone(this)">${done ? "✓ Done" : "Done"}</button>
-      <button class="set-remove" onclick="removeSet(this)">✕</button>
-    `;
-    row.querySelector(".set-reps").value = reps == null ? "" : reps;
-    const wEl = row.querySelector(".set-weight");
-    if (wEl) wEl.value = hasWt ? weight : "";
-    const uEl = row.querySelector(".set-unit");
-    if (uEl) uEl.value = (unit === "kg") ? "kg" : "lbs";
+    row.className = "set-row" + (set.done ? " done" : "");
+    row.dataset.done = set.done ? "true" : "false";
+    let html = `<span class="set-num">${num}</span>`;
+    activeCols(cfg).forEach(k => {
+      html += `<input class="set-col" data-col="${k}" type="number" min="0" step="any" inputmode="decimal" placeholder="${SET_COL_INFO[k].ph}">`;
+    });
+    html += `<button class="set-done" onclick="toggleSetDone(this)">${set.done ? "✓ Done" : "Done"}</button>`
+          + `<button class="set-remove" onclick="removeSet(this)">✕</button>`;
+    row.innerHTML = html;
+    activeCols(cfg).forEach(k => {
+      const el = row.querySelector(`.set-col[data-col="${k}"]`);
+      if (el) el.value = (set[k] == null) ? "" : set[k];
+    });
     return row;
   }
 
-  // Tap "+ weight": swap the button for box 2 (weight number + lbs/kg picker).
-  function addSetWeight(btn){
-    const tmp = document.createElement("div");
-    tmp.innerHTML = weightControlsHtml();
-    const wbox = tmp.firstElementChild;
-    btn.replaceWith(wbox);
-    const input = wbox.querySelector(".set-weight");
-    if (input) input.focus();
+  // Read the current table's DOM (values + column config) back into a data object
+  function readRepsFromDom(fieldEl){
+    const cfg = fieldEl._repsCfg || normReps({}).cfg;
+    const cols = activeCols(cfg);
+    const sets = [...fieldEl.querySelectorAll(".set-row")].map(row => {
+      const s = { reps:"", weight:"", time:"", distance:"", done: row.dataset.done === "true" };
+      cols.forEach(k => { const el = row.querySelector(`.set-col[data-col="${k}"]`); s[k] = el ? el.value : ""; });
+      return s;
+    });
+    return {
+      cols: { ...cfg.cols },
+      weightUnit: cfg.weightUnit,
+      distUnit: cfg.distUnit,
+      sets: sets.length ? sets : [{ reps:"", weight:"", time:"", distance:"", done:false }]
+    };
   }
 
+  // Tap a column on/off (keeps typed values)
+  function toggleSetCol(btn){
+    const fieldEl = btn.closest(".detail-field");
+    const cfg = fieldEl._repsCfg;
+    const k = btn.dataset.col;
+    if (cfg.cols[k] && activeCols(cfg).length <= 1) return; // keep at least one
+    cfg.cols[k] = !cfg.cols[k];
+    renderSets(fieldEl, readRepsFromDom(fieldEl));
+    captureDay(); saveData();
+  }
+
+  // Tap the Weight/Distance title to switch its unit (Lbs↔Kls, mi↔km)
+  function toggleColUnit(btn){
+    const fieldEl = btn.closest(".detail-field");
+    const cfg = fieldEl._repsCfg;
+    const info = SET_COL_INFO[btn.dataset.col];
+    cfg[info.unitKey] = (cfg[info.unitKey] === info.units[1]) ? info.units[0] : info.units[1];
+    btn.textContent = info.title(cfg);
+    captureDay(); saveData();
+  }
+
+  // "+ Add set" opens a quick pop-up (how many sets, plus a value for each
+  // active column) that builds the whole table at once. Boxes stay editable.
+  let quickSetsField = null;
   function addSet(btn){
-    const listWrap = btn.closest(".detail-field").querySelector(".sets-list");
-    listWrap.appendChild(buildSetRow(listWrap.children.length + 1, "", "", "lbs", false));
+    quickSetsField = btn.closest(".detail-field");
+    openQuickSets();
+  }
+  function openQuickSets(){
+    const cfg = (quickSetsField && quickSetsField._repsCfg) || normReps({}).cfg;
+    const qLabel = {
+      reps: "How many reps each?",
+      weight: `How much weight (${SET_COL_INFO.weight.title(cfg)})?`,
+      time: "How much time each (min)?",
+      distance: `How far each (${SET_COL_INFO.distance.title(cfg)})?`
+    };
+    let html = `<label class="qs-label" for="qsSets">How many sets?</label>`
+             + `<input id="qsSets" class="addpage-name" type="number" min="1" inputmode="numeric" placeholder="e.g. 5" />`;
+    activeCols(cfg).forEach(k => {
+      html += `<label class="qs-label" for="qs_${k}">${qLabel[k]}</label>`
+            + `<input id="qs_${k}" class="addpage-name" type="number" min="0" step="any" inputmode="decimal" placeholder="e.g. 10" />`;
+    });
+    document.getElementById("qsFields").innerHTML = html;
+    document.getElementById("quickSetsOverlay").classList.add("open");
+    setTimeout(() => { const el = document.getElementById("qsSets"); if (el) el.focus(); }, 60);
+  }
+  function closeQuickSets(){
+    document.getElementById("quickSetsOverlay").classList.remove("open");
+    quickSetsField = null;
+  }
+  function confirmQuickSets(){
+    if (!quickSetsField){ closeQuickSets(); return; }
+    const cfg = quickSetsField._repsCfg || normReps({}).cfg;
+    const n = Math.max(1, Math.min(50, parseInt(document.getElementById("qsSets").value, 10) || 1));
+    const vals = {};
+    activeCols(cfg).forEach(k => { const el = document.getElementById("qs_" + k); vals[k] = el ? el.value : ""; });
+    const listWrap = quickSetsField.querySelector(".sets-list");
+    // If the current rows are all still blank, replace them; otherwise add on.
+    const existing = [...listWrap.querySelectorAll(".set-row")];
+    const allEmpty = existing.every(r => [...r.querySelectorAll(".set-col")].every(inp => !inp.value));
+    if (allEmpty) listWrap.innerHTML = "";
+    const start = listWrap.querySelectorAll(".set-row").length;
+    for (let i = 0; i < n; i++){
+      const set = { reps:"", weight:"", time:"", distance:"", done:false };
+      activeCols(cfg).forEach(k => { set[k] = vals[k]; });
+      listWrap.appendChild(buildSetRow(start + i + 1, set, cfg));
+    }
+    closeQuickSets();
+    captureDay(); saveData();
   }
 
   function removeSet(btn){
@@ -3053,7 +3230,7 @@
     if (listWrap.children.length <= 1) return;
     row.remove();
     [...listWrap.children].forEach((r, i) => {
-      r.querySelector(".set-num").textContent = "Set " + (i + 1);
+      r.querySelector(".set-num").textContent = (i + 1);
     });
   }
 
@@ -3217,10 +3394,10 @@
   // Card helper classes: show the per-row miles box when Distance is on, and
   // hide the standalone Distance box while Time rows are in use (miles live there).
   function updateCardModes(card){
-    const timeOn = card.querySelector('.chip[data-field="time"]').classList.contains("on");
-    const distOn = card.querySelector('.chip[data-field="distance"]').classList.contains("on");
-    card.classList.toggle("time-on", timeOn);
-    card.classList.toggle("dist-on", distOn);
+    const timeChip = card.querySelector('.chip[data-field="time"]');
+    const distChip = card.querySelector('.chip[data-field="distance"]');
+    card.classList.toggle("time-on", !!(timeChip && timeChip.classList.contains("on")));
+    card.classList.toggle("dist-on", !!(distChip && distChip.classList.contains("on")));
   }
 
   function toggleTimer(input){
