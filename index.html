@@ -183,6 +183,46 @@
     border-color: transparent;
   }
   .page-tab:active { transform: scale(0.97); }
+  .page-more { border-style: dashed; }
+  .page-more.active { border-style: solid; }
+
+  /* The "More" pages dropdown */
+  .pages-menu {
+    position: fixed; z-index: 10000;
+    min-width: 200px; max-width: 82vw;
+    background: #fff; border: 1px solid #dfe3f4;
+    border-radius: 14px; padding: 6px;
+    box-shadow: 0 12px 30px rgba(40,50,120,0.18);
+  }
+  .pages-menu-item { display: flex; align-items: center; gap: 4px; }
+  .pages-menu .pm-go {
+    flex: 1 1 auto; text-align: left;
+    padding: 10px 12px; border: none; background: none; cursor: pointer;
+    font-size: 15px; font-weight: 600; color: #3a4066; border-radius: 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .pages-menu-item.active .pm-go { color: #5b6cff; }
+  .pages-menu .pm-go:active { background: #eef1fd; }
+  .pages-menu .pm-edit {
+    flex: 0 0 auto; width: 34px; height: 34px; margin-right: 2px;
+    border: none; background: none; cursor: pointer;
+    color: #9aa0bd; font-size: 15px; border-radius: 9px;
+  }
+  .pages-menu .pm-edit:active { background: #eef1fd; }
+  .pages-menu .pm-action {
+    display: block; width: 100%; margin-top: 4px; padding: 11px 12px;
+    border: none; border-top: 1px solid #eef0fa; cursor: pointer;
+    background: none; color: #3a4066; font-weight: 700; font-size: 15px; text-align: left;
+    border-radius: 10px;
+  }
+  .pages-menu .pm-action:active { background: #eef1fd; }
+  .pages-menu .pm-add {
+    display: block; width: 100%; padding: 11px 12px;
+    border: none; cursor: pointer;
+    background: none; color: #5b6cff; font-weight: 700; font-size: 15px; text-align: left;
+    border-radius: 10px;
+  }
+  .pages-menu .pm-add:active { background: #eef1fd; }
 
   /* Notes / list page mode: hide the sheet UI, show the page's own area */
   .screen.notes-mode .day-row,
@@ -194,9 +234,37 @@
   .screen.list-mode .thought-card,
   .screen.list-mode .thought-show,
   .screen.list-mode .routines,
-  .screen.list-mode .history-btn { display: none !important; }
+  .screen.list-mode .history-btn,
+  .screen.pics-mode .day-row,
+  .screen.pics-mode .thought-card,
+  .screen.pics-mode .thought-show,
+  .screen.pics-mode .routines,
+  .screen.pics-mode .history-btn { display: none !important; }
   .notes-view { display: none; margin-top: 8px; }
   .screen.notes-mode .notes-view { display: block; }
+
+  /* Pictures page */
+  .pics-view { display: none; margin-top: 8px; }
+  .screen.pics-mode .pics-view { display: block; }
+  .pics-add {
+    display: block; width: 100%; margin-bottom: 14px;
+    border: none; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff; font-weight: 700; font-size: 15px;
+    padding: 12px; border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(91,108,255,0.28);
+  }
+  .pics-add:active { transform: scale(0.99); }
+  .pics-empty { text-align: center; color: #8a8fa3; font-size: 13px; line-height: 1.5; margin: 24px 8px; }
+  .pics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pics-cell { position: relative; aspect-ratio: 1 / 1; border-radius: 12px; overflow: hidden; background: #e7ebfb; }
+  .pics-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pics-del {
+    position: absolute; top: 4px; right: 4px; width: 24px; height: 24px;
+    border: none; border-radius: 50%; cursor: pointer;
+    background: rgba(0,0,0,0.55); color: #fff; font-size: 14px; line-height: 24px;
+    padding: 0; text-align: center;
+  }
 
   /* Shopping-list page */
   .list-view { display: none; margin-top: 8px; }
@@ -1705,7 +1773,7 @@
     margin-bottom: 2px;
   }
   .welcome-name {
-    display: inline-block; font-size: 72px; font-weight: 800; letter-spacing: 1px;
+    display: inline-block; font-size: clamp(40px, 15.5vw, 72px); font-weight: 800; letter-spacing: 1px;
     transform: scaleY(2.5); transform-origin: center;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     -webkit-background-clip: text; background-clip: text;
@@ -2003,8 +2071,6 @@
       <div class="screen-top">
         <div class="title-row">
           <div class="title-topbar">
-            <button class="history-btn" onclick="openHistory()">🕘 History</button>
-            <button class="addpage-btn" onclick="addPage()">＋ Page</button>
             <button class="thought-show" id="thoughtShow" onclick="showCover()" title="Today's Thought">💭 Thought</button>
           </div>
         </div>
@@ -2031,12 +2097,12 @@
         </div>
         <div id="routineList"></div>
         <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
-        <p class="support-cta" style="text-align:center; font-size:15px; font-weight:700; color:#5b6cff; margin:42px 0 6px; padding-top:28px; border-top:1px solid #d3d8f2;"><span class="us-beat">Help us</span> keep <span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span> free…</p>
+        <p class="support-cta" style="text-align:center; font-size:15px; font-weight:700; color:#5b6cff; margin:60px 0 6px; padding-top:28px; border-top:1px solid #d3d8f2;"><span class="us-beat">Help us</span> keep <span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span> free…</p>
         <div class="routine-support" style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top:4px;">
           <button type="button" class="coffee-btn" id="likeBtn" onclick="likeApp()" title="Like the app" aria-label="Like the app"><svg viewBox="0 0 24 24" fill="none" stroke="#ff2d55" stroke-width="2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
           <a class="coffee-btn" id="coffeeBtn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"><svg class="cup-icon" viewBox="0 0 48 48" aria-hidden="true"><g class="cup-steam" stroke="#9b7a5a" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M16 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M22 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M28 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/></g><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linejoin="round" d="M8 19 h26 v7 a13 13 0 0 1 -13 13 a13 13 0 0 1 -13 -13 z"/><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linecap="round" d="M34 21 h5 a6 6 0 0 1 0 12 h-4"/></svg></a>
         </div>
-        <p class="contact-note" style="text-align:center; margin-top:34px;">
+        <p class="contact-note" style="text-align:center; margin-top:16px;">
           <button type="button" class="help-link" onclick="openHelp()">❓ How to use MOWES</button>
         </p>
       </div>
@@ -2053,6 +2119,14 @@
           <button type="button" onclick="addListItem()" title="Add to list">＋</button>
         </div>
         <ul class="list-items" id="listItems"></ul>
+      </div>
+
+      <!-- Pictures page (shown only when the current page is a pictures page) -->
+      <div class="pics-view" id="picsView">
+        <button type="button" class="pics-add" onclick="document.getElementById('picsInput').click()">＋ Add photos</button>
+        <input type="file" id="picsInput" accept="image/*" multiple style="display:none" onchange="addPics(this)">
+        <p class="pics-empty" id="picsEmpty">No photos yet. Tap “＋ Add photos” to add some — they stay on your phone. 🔒</p>
+        <div class="pics-grid" id="picsGrid"></div>
       </div>
 
       <!-- Support / donation -->
@@ -2147,7 +2221,7 @@
           <div class="help-num">7</div>
           <div class="help-body">
             <div class="help-title">📖 Make pages</div>
-            <p>Tap <strong>＋ Page</strong> to add pages like <em>At the Gym</em> or <em>At Home</em>. Tap a page's name to rename it. Swipe the tabs to flip between pages.</p>
+            <p>Tap <strong>＋ More ▾</strong> to open your other pages — Note taking, Shopping list, Goals &amp; achievements, and Pictures — or to <strong>Add a page</strong>. Tap the ✎ next to a page to rename or remove it.</p>
           </div>
         </div>
 
@@ -2207,6 +2281,7 @@
             <button class="addpage-type" data-type="sheet" onclick="pickPageType('sheet')">📋 Exercise sheet</button>
             <button class="addpage-type" data-type="notes" onclick="pickPageType('notes')">📝 Notes page</button>
             <button class="addpage-type" data-type="list" onclick="pickPageType('list')">🛒 Shopping list</button>
+            <button class="addpage-type" data-type="pics" onclick="pickPageType('pics')">🖼️ Pictures</button>
           </div>
           <input id="addPageName" class="addpage-name" placeholder="Name it (e.g. Gym, Home, Notes)" />
           <div class="addpage-actions">
@@ -2312,11 +2387,13 @@
   function sheetKeyFor(id){ return id === "default" ? WEEKS_KEY : WEEKS_KEY + "__" + id; }
   function notesKeyFor(id){ return "mowes_notes_" + id; }
   function listKeyFor(id){ return "mowes_list_" + id; }
+  function picsKeyFor(id){ return "mowes_pics_" + id; }
   function currentPage(){ return pages.find(p => p.id === activePageId); }
   function currentPageIsNotes(){ const p = currentPage(); return !!(p && p.type === "notes"); }
   function currentPageIsList(){ const p = currentPage(); return !!(p && p.type === "list"); }
   function currentPageIsSheet(){ const p = currentPage(); return !!(p && p.type === "sheet"); }
-  function pageName(id){ const p = pages.find(x => x.id === id); return p ? p.name : "My Exercise Sheet"; }
+  function currentPageIsPics(){ const p = currentPage(); return !!(p && p.type === "pics"); }
+  function pageName(id){ const p = pages.find(x => x.id === id); return p ? p.name : "Weight Routine"; }
 
   let allWeeks = {};
   function saveData(){
@@ -2394,10 +2471,10 @@
       if (raw) pages = JSON.parse(raw) || [];
     } catch(e){ pages = []; }
     if (!Array.isArray(pages) || !pages.length){
-      pages = [{ id:"default", type:"sheet", name:"My Exercise Sheet" }];
+      pages = [{ id:"default", type:"sheet", name:"Weight Routine" }];
     }
     if (!pages.some(p => p.id === "default")){
-      pages.unshift({ id:"default", type:"sheet", name:"My Exercise Sheet" });
+      pages.unshift({ id:"default", type:"sheet", name:"Weight Routine" });
     }
     // First run only: seed a few example pages so the tabs row clearly shows
     // more than one page — making "swipe to find / add your own pages" easy to
@@ -2406,9 +2483,10 @@
       if (!localStorage.getItem(EXAMPLES_KEY)){
         localStorage.setItem(EXAMPLES_KEY, "1");
         if (pages.length === 1 && pages[0].id === "default"){
-          pages.push({ id:"p_ex_goals",    type:"list",  name:"Goals" });
-          pages.push({ id:"p_ex_notes",    type:"notes", name:"Notes" });
+          pages.push({ id:"p_ex_goals",    type:"list",  name:"Goals & achievements" });
+          pages.push({ id:"p_ex_notes",    type:"notes", name:"Note taking" });
           pages.push({ id:"p_ex_shopping", type:"list",  name:"Shopping List" });
+          pages.push({ id:"p_ex_pics",     type:"pics",  name:"Pictures" });
         }
       }
     } catch(e){}
@@ -2425,6 +2503,29 @@
         if (gp && gp.type === "notes") gp.type = "list";
       }
     } catch(e){}
+    // Starter routine pages: make "Weight Routine" and "Walk & Running" the first
+    // two buttons. One-time; renames the old default and adds the walking page.
+    try {
+      if (!localStorage.getItem("mowes_starter_routines_v1")){
+        localStorage.setItem("mowes_starter_routines_v1", "1");
+        const def = pages.find(p => p.id === "default");
+        if (def && def.name === "My Exercise Sheet") def.name = "Weight Routine";
+        if (!pages.some(p => p.id === "p_ex_walkrun")){
+          const di = pages.findIndex(p => p.id === "default");
+          pages.splice((di < 0 ? 0 : di) + 1, 0, { id:"p_ex_walkrun", type:"sheet", name:"Walk & Running" });
+        }
+      }
+    } catch(e){}
+    // Rename the example pages to clearer names and add a Pictures page.
+    // One-time; skips pages the user already renamed themselves.
+    try {
+      if (!localStorage.getItem("mowes_pages_v2")){
+        localStorage.setItem("mowes_pages_v2", "1");
+        const gp = pages.find(p => p.id === "p_ex_goals"); if (gp && gp.name === "Goals") gp.name = "Goals & achievements";
+        const np = pages.find(p => p.id === "p_ex_notes"); if (np && np.name === "Notes") np.name = "Note taking";
+        if (!pages.some(p => p.id === "p_ex_pics")) pages.push({ id:"p_ex_pics", type:"pics", name:"Pictures" });
+      }
+    } catch(e){}
     savePagesRegistry();
   }
 
@@ -2434,6 +2535,7 @@
     if (!screen) return;
     screen.classList.toggle("notes-mode", type === "notes");
     screen.classList.toggle("list-mode", type === "list");
+    screen.classList.toggle("pics-mode", type === "pics");
   }
 
   // Load an exercise-sheet page's data and render it
@@ -2554,48 +2656,184 @@
     renderList();
   }
 
+  // ---- Pictures page ----
+  let picsData = []; // array of image data URLs (stored on this device only)
+  function loadPics(id){
+    try { picsData = JSON.parse(localStorage.getItem(picsKeyFor(id)) || "[]") || []; }
+    catch(e){ picsData = []; }
+    if (!Array.isArray(picsData)) picsData = [];
+  }
+  function savePics(){
+    if (!currentPageIsPics()) return;
+    try { localStorage.setItem(picsKeyFor(activePageId), JSON.stringify(picsData)); }
+    catch(e){ alert("Your phone's storage for this app is full — remove a few photos to add more."); }
+  }
+  function activatePicsPage(id){
+    activePageId = id;
+    loadPics(id);
+    renderPics();
+  }
+  function renderPics(){
+    const grid = document.getElementById("picsGrid");
+    const empty = document.getElementById("picsEmpty");
+    if (!grid) return;
+    grid.innerHTML = "";
+    if (empty) empty.style.display = picsData.length ? "none" : "block";
+    picsData.forEach((src, i) => {
+      const cell = document.createElement("div");
+      cell.className = "pics-cell";
+      const img = document.createElement("img");
+      img.src = src; img.alt = "photo";
+      const del = document.createElement("button");
+      del.className = "pics-del"; del.textContent = "✕"; del.title = "Remove photo";
+      del.onclick = () => removePic(i);
+      cell.appendChild(img); cell.appendChild(del);
+      grid.appendChild(cell);
+    });
+  }
+  // Read chosen photos, shrink them to keep the device's storage small, then save
+  function addPics(input){
+    const files = [...(input.files || [])];
+    input.value = "";
+    if (!files.length) return;
+    let pending = files.length;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        shrinkImage(e.target.result, 1000, 0.72, dataUrl => {
+          picsData.push(dataUrl);
+          if (--pending === 0){ savePics(); renderPics(); }
+        });
+      };
+      reader.onerror = () => { if (--pending === 0){ savePics(); renderPics(); } };
+      reader.readAsDataURL(file);
+    });
+  }
+  // Scale a photo down to a max dimension and re-encode as JPEG to save space
+  function shrinkImage(dataUrl, maxSide, quality, done){
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > h && w > maxSide){ h = Math.round(h * maxSide / w); w = maxSide; }
+      else if (h >= w && h > maxSide){ w = Math.round(w * maxSide / h); h = maxSide; }
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      try { done(c.toDataURL("image/jpeg", quality)); }
+      catch(e){ done(dataUrl); }
+    };
+    img.onerror = () => done(dataUrl);
+    img.src = dataUrl;
+  }
+  function removePic(i){
+    if (i < 0 || i >= picsData.length) return;
+    picsData.splice(i, 1);
+    savePics();
+    renderPics();
+  }
+  window.addPics = addPics;
+
   // Flip to another page (saving the current one first)
   function switchToPage(id){
     if (currentPageIsNotes()) saveNotes();
     else if (currentPageIsList()) saveList();
+    else if (currentPageIsPics()) savePics();
     else { captureDay(); saveData(); }
     const p = pages.find(x => x.id === id);
     if (!p) return;
     if (p.type === "notes"){ setLayoutMode("notes"); activateNotesPage(id); }
     else if (p.type === "list"){ setLayoutMode("list"); activateListPage(id); }
+    else if (p.type === "pics"){ setLayoutMode("pics"); activatePicsPage(id); }
     else { setLayoutMode("sheet"); activateSheetPage(id); }
     try { localStorage.setItem(ACTIVE_KEY, id); } catch(e){}
     renderPageTabs();
     window.scrollTo({ top:0, behavior:"smooth" });
   }
 
+  // The two routine pages get their own tabs; every other page lives in the
+  // "More" dropdown (along with "Add page").
+  const PINNED_PAGE_IDS = ["default", "p_ex_walkrun"];
+  function pageIcon(type){ return type === "notes" ? "📝 " : type === "list" ? "🛒 " : type === "pics" ? "🖼️ " : "📋 "; }
+  function goToPage(id){
+    if (id === activePageId){ openPageTools(id); return; }
+    const ci = pages.findIndex(x => x.id === activePageId);
+    const ti = pages.findIndex(x => x.id === id);
+    transitionToPage(id, ti >= ci ? 1 : -1);
+  }
   function renderPageTabs(){
     const wrap = document.getElementById("pageTabs");
     if (!wrap) return;
     wrap.innerHTML = "";
-    // The page tabs are the single source of the page name now (the old <h1>
-    // title was removed to avoid showing the name twice). Always show the tabs,
-    // even with one page, so the name is visible and tappable to rename.
     wrap.style.display = "flex";
     let activeTab = null;
-    pages.forEach(p => {
+    // The pinned routine pages, shown as their own tabs.
+    pages.filter(p => PINNED_PAGE_IDS.includes(p.id)).forEach(p => {
       const tab = document.createElement("button");
       tab.className = "page-tab" + (p.id === activePageId ? " active" : "");
-      tab.textContent = (p.type === "notes" ? "📝 " : p.type === "list" ? "🛒 " : "📋 ") + p.name;
-      tab.onclick = () => {
-        if (p.id === activePageId) { openPageTools(p.id); return; }
-        // Sweep in the direction of the tapped tab (right = next, left = prev).
-        const ci = pages.findIndex(x => x.id === activePageId);
-        const ti = pages.findIndex(x => x.id === p.id);
-        transitionToPage(p.id, ti >= ci ? 1 : -1);
-      };
+      tab.textContent = pageIcon(p.type) + p.name;
+      tab.onclick = () => goToPage(p.id);
       wrap.appendChild(tab);
       if (p.id === activePageId) activeTab = tab;
     });
-    // Slide the selected page into view so it's never hidden off-screen.
-    if (activeTab && pages.length > 1){
-      activeTab.scrollIntoView({ block: "nearest", inline: "center", behavior: "auto" });
-    }
+    // One dropdown button for everything else. If a menu page is currently open,
+    // the button shows its name so you know where you are.
+    const ap = currentPage();
+    const activeInMenu = !!(ap && !PINNED_PAGE_IDS.includes(ap.id));
+    const more = document.createElement("button");
+    more.className = "page-tab page-more" + (activeInMenu ? " active" : "");
+    more.textContent = (activeInMenu ? pageIcon(ap.type) + ap.name : "＋ More") + " ▾";
+    more.onclick = (e) => { e.stopPropagation(); togglePagesMenu(more); };
+    wrap.appendChild(more);
+    if (activeInMenu) activeTab = more;
+    if (activeTab){ activeTab.scrollIntoView({ block: "nearest", inline: "center", behavior: "auto" }); }
+  }
+
+  // ---- The "More" pages dropdown ----
+  let pagesMenuOpen = false;
+  function togglePagesMenu(anchor){ pagesMenuOpen ? closePagesMenu() : openPagesMenu(anchor); }
+  function openPagesMenu(anchor){
+    closePagesMenu();
+    const menu = document.createElement("div");
+    menu.className = "pages-menu"; menu.id = "pagesMenu";
+    pages.filter(p => !PINNED_PAGE_IDS.includes(p.id)).forEach(p => {
+      const row = document.createElement("div");
+      row.className = "pages-menu-item" + (p.id === activePageId ? " active" : "");
+      const go = document.createElement("button");
+      go.className = "pm-go"; go.textContent = pageIcon(p.type) + p.name;
+      go.onclick = () => { closePagesMenu(); if (p.id !== activePageId) goToPage(p.id); };
+      const edit = document.createElement("button");
+      edit.className = "pm-edit"; edit.textContent = "✎"; edit.title = "Rename or delete";
+      edit.onclick = (e) => { e.stopPropagation(); closePagesMenu(); openPageTools(p.id); };
+      row.appendChild(go); row.appendChild(edit);
+      menu.appendChild(row);
+    });
+    const hist = document.createElement("button");
+    hist.className = "pm-action"; hist.textContent = "🕘 History";
+    hist.onclick = () => { closePagesMenu(); openHistory(); };
+    menu.appendChild(hist);
+    const add = document.createElement("button");
+    add.className = "pm-add"; add.textContent = "＋ Add page";
+    add.onclick = () => { closePagesMenu(); addPage(); };
+    menu.appendChild(add);
+    document.body.appendChild(menu);
+    const r = anchor.getBoundingClientRect();
+    menu.style.top = (r.bottom + 6) + "px";
+    let left = r.left, mw = menu.offsetWidth;
+    if (left + mw > window.innerWidth - 8) left = window.innerWidth - 8 - mw;
+    if (left < 8) left = 8;
+    menu.style.left = left + "px";
+    pagesMenuOpen = true;
+    setTimeout(() => document.addEventListener("click", onDocClickClosePages), 0);
+  }
+  function onDocClickClosePages(e){
+    const menu = document.getElementById("pagesMenu");
+    if (menu && !menu.contains(e.target)) closePagesMenu();
+  }
+  function closePagesMenu(){
+    const menu = document.getElementById("pagesMenu");
+    if (menu) menu.remove();
+    pagesMenuOpen = false;
+    document.removeEventListener("click", onDocClickClosePages);
   }
 
   // Flip to the previous/next page in the book (used by swiping the tabs strip).
@@ -2625,7 +2863,7 @@
   function closeAddPage(){ document.getElementById("addPageOverlay").classList.remove("open"); }
   function confirmAddPage(){
     let name = (document.getElementById("addPageName").value || "").trim();
-    if (!name) name = (newPageType === "notes" ? "Notes" : newPageType === "list" ? "Shopping List" : "Sheet");
+    if (!name) name = (newPageType === "notes" ? "Notes" : newPageType === "list" ? "Shopping List" : newPageType === "pics" ? "Pictures" : "Sheet");
     const id = "p_" + Date.now().toString(36);
     pages.push({ id, type: newPageType, name });
     savePagesRegistry();
@@ -4110,12 +4348,38 @@
   }
   window.openApp = openApp;
   window.dismissWelcome = dismissWelcome;
+  // Going back from the Introduction page to the Cover
+  function showWelcome(){
+    if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
+    document.getElementById("welcomeOverlay").classList.add("show");
+  }
+  window.showWelcome = showWelcome;
   // The cover is the app's face — show it on every open
   document.getElementById("coverThought").textContent = getTodaysThoughtText();
   revealCover();
   // The welcome screen is our book "Cover" — show it on EVERY open, on top of the
   // cover overlay. The cover countdown waits until the welcome is dismissed.
   document.getElementById("welcomeOverlay").classList.add("show");
+
+  // ---- Swipe to flip between the book pages: Cover <-> Introduction <-> workspace ----
+  // Same feel as the rest of the app: swipe LEFT = go forward, swipe RIGHT = go back.
+  function onBookSwipe(el, cb){
+    if (!el) return;
+    let sx = 0, sy = 0, tracking = false;
+    el.addEventListener("touchstart", e => {
+      if (e.touches.length !== 1) { tracking = false; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+    }, { passive: true });
+    el.addEventListener("touchend", e => {
+      if (!tracking) return; tracking = false;
+      const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3) cb(dx < 0 ? "fwd" : "back");
+    }, { passive: true });
+  }
+  // Cover: swipe left = forward to the Introduction page
+  onBookSwipe(document.getElementById("welcomeOverlay"), dir => { if (dir === "fwd") dismissWelcome(); });
+  // Introduction: swipe left = into the workspace, swipe right = back to the Cover
+  onBookSwipe(document.getElementById("coverOverlay"), dir => { if (dir === "fwd") openApp(); else showWelcome(); });
 
   // Auto-save: any typing, toggle, or button tap in the routines saves your work
   const routineListEl = document.getElementById("routineList");
@@ -4144,8 +4408,31 @@
       const t = e.changedTouches[0];
       const dx = t.clientX - sx, dy = t.clientY - sy;
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){
+        // A right-swipe that STARTS at the far left edge = flip back to the
+        // Introduction page (book-page back), like a phone's back gesture.
+        if (dx > 0 && sx < 32){ showCover(); return; }
         changeDay(dx > 0 ? -1 : 1);
       }
+    }, { passive: true });
+  })();
+
+  // Same "back" gesture, but for edge-swipes that START in the side margin
+  // (outside the routine cards). Only active on the workspace page.
+  (function(){
+    let sx = 0, sy = 0, tracking = false, inCards = false;
+    document.addEventListener("touchstart", e => {
+      if (e.touches.length !== 1) { tracking = false; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+      inCards = !!(e.target.closest && e.target.closest(".routines"));
+    }, { passive: true });
+    document.addEventListener("touchend", e => {
+      if (!tracking) return; tracking = false;
+      if (inCards) return; // the routines handler already covers edge-swipes there
+      const w = document.getElementById("welcomeOverlay");
+      const c = document.getElementById("coverOverlay");
+      if (w.classList.contains("show") || c.classList.contains("show")) return; // workspace only
+      const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (dx > 50 && Math.abs(dx) > Math.abs(dy) * 1.3 && sx < 32) showCover();
     }, { passive: true });
   })();
 
