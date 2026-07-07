@@ -389,6 +389,20 @@
     60%  { transform: scale(1); }
     100% { transform: scale(1); }
   }
+  /* MOWES lifts up + straightens, then floats back down to its curved resting pose */
+  .mowes-anim { display: inline-block; transform-origin: left bottom; animation: mowesLift 3.2s ease-in-out infinite; }
+  .mowes-anim > span { display: inline-block; }
+  .mowes-anim .mL { animation: curveM 3.2s ease-in-out infinite; }
+  .mowes-anim .mO { animation: curveO 3.2s ease-in-out infinite; }
+  .mowes-anim .mW { animation: curveW 3.2s ease-in-out infinite; }
+  .mowes-anim .mE { animation: curveE 3.2s ease-in-out infinite; }
+  .mowes-anim .mS { animation: curveS 3.2s ease-in-out infinite; }
+  @keyframes mowesLift { 0%,100% { transform: rotate(-10deg) translateY(0); } 50% { transform: rotate(0deg) translateY(-34px); } }
+  @keyframes curveM { 0%,100% { transform: translateY(2px) rotate(-5deg); } 50% { transform: translateY(0) rotate(0); } }
+  @keyframes curveO { 0%,100% { transform: translateY(-1px) rotate(-2.5deg); } 50% { transform: translateY(0) rotate(0); } }
+  @keyframes curveW { 0%,100% { transform: translateY(-2px); } 50% { transform: translateY(0); } }
+  @keyframes curveE { 0%,100% { transform: translateY(-1px) rotate(2.5deg); } 50% { transform: translateY(0) rotate(0); } }
+  @keyframes curveS { 0%,100% { transform: translateY(2px) rotate(5deg); } 50% { transform: translateY(0) rotate(0); } }
   .contact-note {
     color: #8a8fa3;
     font-size: 13px;
@@ -2017,7 +2031,7 @@
         </div>
         <div id="routineList"></div>
         <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
-        <p class="support-cta" style="text-align:center; font-size:15px; font-weight:700; color:#5b6cff; margin:42px 0 6px; padding-top:28px; border-top:1px solid #d3d8f2;"><span class="us-beat">Help us keep</span> <span class="mowes-curve" style="display:inline-block; transform:rotate(-10deg); transform-origin:left bottom;"><span style="display:inline-block; transform:translateY(2px) rotate(-5deg)">M</span><span style="display:inline-block; transform:translateY(-1px) rotate(-2.5deg)">O</span><span style="display:inline-block; transform:translateY(-2px)">W</span><span style="display:inline-block; transform:translateY(-1px) rotate(2.5deg)">E</span><span style="display:inline-block; transform:translateY(2px) rotate(5deg)">S</span></span> free…</p>
+        <p class="support-cta" style="text-align:center; font-size:15px; font-weight:700; color:#5b6cff; margin:42px 0 6px; padding-top:28px; border-top:1px solid #d3d8f2;"><span class="us-beat">Help us</span> keep <span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span> free…</p>
         <div class="routine-support" style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top:4px;">
           <button type="button" class="coffee-btn" id="likeBtn" onclick="likeApp()" title="Like the app" aria-label="Like the app"><svg viewBox="0 0 24 24" fill="none" stroke="#ff2d55" stroke-width="2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
           <a class="coffee-btn" id="coffeeBtn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"><svg class="cup-icon" viewBox="0 0 48 48" aria-hidden="true"><g class="cup-steam" stroke="#9b7a5a" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M16 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M22 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M28 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/></g><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linejoin="round" d="M8 19 h26 v7 a13 13 0 0 1 -13 13 a13 13 0 0 1 -13 -13 z"/><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linecap="round" d="M34 21 h5 a6 6 0 0 1 0 12 h-4"/></svg></a>
