@@ -97,7 +97,7 @@
   }
   #coffeeBtn:active { transform: scale(0.9); }
   /* Rising steam wisps above the coffee cup */
-  .cup-icon { flex: 0 0 auto; width: 40px; height: 40px; display: block; overflow: visible; }
+  .cup-icon { flex: 0 0 auto; width: 57px; height: 57px; display: block; overflow: visible; }
   .cup-steam path {
     opacity: 0;
     transform-origin: center bottom;
@@ -1890,9 +1890,9 @@
         </div>
         <div id="routineList"></div>
         <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
-        <div class="routine-support" style="text-align:center; margin-top:18px;">
+        <div class="routine-support" style="display:flex; justify-content:center; align-items:center; gap:26px; margin-top:18px;">
           <button type="button" class="coffee-btn" id="likeBtn" onclick="likeApp()" title="Like the app" aria-label="Like the app"><svg viewBox="0 0 24 24" fill="none" stroke="#ff2d55" stroke-width="2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
-          <a class="coffee-btn" id="coffeeBtn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee" style="display:none;"><svg class="cup-icon" viewBox="0 0 48 48" aria-hidden="true"><g class="cup-steam" stroke="#9b7a5a" stroke-width="2.6" stroke-linecap="round" fill="none"><path d="M18 17 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M24 17 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M30 17 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/></g><path fill="none" stroke="#6f4e37" stroke-width="2.6" stroke-linejoin="round" d="M11 20 h22 v6 a11 11 0 0 1 -11 11 a11 11 0 0 1 -11 -11 z"/><path fill="none" stroke="#6f4e37" stroke-width="2.6" stroke-linecap="round" d="M33 22 h4.5 a5.5 5.5 0 0 1 0 11 H35"/></svg></a>
+          <a class="coffee-btn" id="coffeeBtn" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"><svg class="cup-icon" viewBox="0 0 48 48" aria-hidden="true"><g class="cup-steam" stroke="#9b7a5a" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M16 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M22 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M28 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/></g><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linejoin="round" d="M8 19 h26 v7 a13 13 0 0 1 -13 13 a13 13 0 0 1 -13 -13 z"/><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linecap="round" d="M34 21 h5 a6 6 0 0 1 0 12 h-4"/></svg></a>
         </div>
         <p class="contact-note" style="text-align:center; margin-top:14px;">
           <button type="button" class="help-link" onclick="openHelp()">❓ How to use MOWES</button>
@@ -2644,14 +2644,9 @@
     var likeBtn = document.getElementById("likeBtn");
     var coffeeBtn = document.getElementById("coffeeBtn");
     if (!likeBtn || !coffeeBtn) return;
-    var liked = localStorage.getItem("mowes_liked") === "1";
-    if (liked) {
-      likeBtn.style.display = "none";
-      coffeeBtn.style.display = "";
-    } else {
-      likeBtn.style.display = "";
-      coffeeBtn.style.display = "none";
-    }
+    // Both the heart and the coffee cup are always shown, side by side.
+    likeBtn.style.display = "";
+    coffeeBtn.style.display = "";
   }
   function likeApp(){
     localStorage.setItem("mowes_liked", "1");
