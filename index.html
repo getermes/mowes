@@ -1668,22 +1668,24 @@
     -webkit-text-fill-color: transparent;
   }
   .welcome-tag {
-    margin-top: 5px; color: #5a6076; font-size: 13px; font-weight: 600;
+    margin-top: 5px; color: #E0941A; font-size: 13px; font-weight: 700;
   }
-  .welcome-emoji { font-size: 46px; margin: 160px 0 10px; }
+  .welcome-dumbbell { display: block; width: 104px; height: auto; margin: 70px auto 0; }
+  .welcome-emoji { font-size: 46px; margin: -42px 0 0; position: relative; z-index: 2; }
   .welcome-title { font-weight: 800; }
   .welcome-greet {
     display: block; font-size: 15px; font-weight: 700; color: #6a7088;
     margin-bottom: 2px;
   }
   .welcome-name {
-    display: block; font-size: 60px; font-weight: 800; letter-spacing: 1px;
+    display: inline-block; font-size: 60px; font-weight: 800; letter-spacing: 1px;
+    transform: scaleY(1.65); transform-origin: center;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   .welcome-sub { font-size: 13px; color: #5b6cff; margin-top: -34px; }
-  .welcome-barbell { display: block; position: relative; left: 50%; transform: translateX(-50%); width: 98vw; max-width: 460px; height: auto; margin: -26px 0 0; }
+  .welcome-barbell { display: block; position: relative; left: 50%; transform: translateX(-50%); width: 98vw; max-width: 460px; height: auto; margin: -20px 0 0; }
   .welcome-desc {
     margin: 16px auto 4px; max-width: 320px;
     font-size: 14px; line-height: 1.55; color: #4a5068;
@@ -1706,7 +1708,9 @@
     box-shadow: 0 6px 16px rgba(91,108,255,0.28);
   }
   .welcome-btn:active { transform: scale(0.99); }
-  .welcome-note { position: fixed; left: 0; right: 0; bottom: 16px; margin: 0; text-align: center; font-size: 12px; color: #8a8fa3; line-height: 1.4; }
+  .welcome-note { position: fixed; left: 0; right: 0; bottom: 16px; margin: 0; text-align: center; font-size: 13px; color: #5b6cff; font-weight: 600; line-height: 1.4; }
+  .welcome-note .wn-name { color: #E0941A; font-weight: 700; }
+  .welcome-note .wn-heart { font-style: normal; }
 
   /* Page-border trace animation (cover -> Routines) */
   .page-trace {
@@ -1845,6 +1849,28 @@
     <div class="welcome-box">
       <div class="welcome-mark">ERMES</div>
       <div class="welcome-tag">Apps to solve real problems</div>
+      <svg class="welcome-dumbbell" viewBox="0 0 140 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="dbBar" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#F0A32E"/>
+            <stop offset="0.5" stop-color="#FBC13D"/>
+            <stop offset="1" stop-color="#F0A32E"/>
+          </linearGradient>
+          <linearGradient id="dbPlate" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#7a5bff"/>
+            <stop offset="1" stop-color="#5b6cff"/>
+          </linearGradient>
+        </defs>
+        <!-- handle -->
+        <rect x="46" y="28" width="48" height="8" rx="4" fill="url(#dbBar)"/>
+        <!-- left weight -->
+        <rect x="24" y="12" width="20" height="40" rx="9" fill="url(#dbPlate)"/>
+        <!-- right weight -->
+        <rect x="96" y="12" width="20" height="40" rx="9" fill="url(#dbPlate)"/>
+        <!-- end caps -->
+        <rect x="18" y="26" width="6" height="12" rx="3" fill="#F0A32E"/>
+        <rect x="116" y="26" width="6" height="12" rx="3" fill="#F0A32E"/>
+      </svg>
       <div class="welcome-emoji">💪</div>
       <div class="welcome-title"><span class="welcome-name">MOWES</span></div>
       <svg class="welcome-barbell" viewBox="0 0 460 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -1873,7 +1899,7 @@
       </svg>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
       <button class="welcome-btn" onclick="dismissWelcome()">Let's go →</button>
-      <p class="welcome-note">Made by Eugenio — the Idea Guy</p>
+      <p class="welcome-note">Made with <span class="wn-heart">💛</span> by <span class="wn-name">Eugenio</span> — the Idea Guy</p>
     </div>
   </div>
 
