@@ -866,6 +866,21 @@
   .backup-divider::before, .backup-divider::after { content: ""; flex: 1; height: 1px; background: #e6e8f0; }
   .backup-privacy { margin-top: 18px; background: #f1f3fb; border-radius: 12px; padding: 12px 14px; font-size: 12.5px; color: #555; line-height: 1.5; }
 
+  /* My Progress popup */
+  .stats-streak { text-align: center; background: linear-gradient(135deg, #fff3e0, #ffe6c7); border-radius: 18px; padding: 18px; margin: 4px 0 14px; }
+  .stats-streak-num { font-size: 46px; font-weight: 900; line-height: 1; color: #e8710a; }
+  .stats-streak-label { font-size: 14px; font-weight: 700; color: #a85a12; margin-top: 4px; }
+  .stats-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  .stats-tile { background: #f5f6fc; border-radius: 14px; padding: 14px; text-align: center; }
+  .stats-tile-num { font-size: 26px; font-weight: 900; color: #5b6cff; line-height: 1; }
+  .stats-tile-label { font-size: 12px; color: #666; margin-top: 5px; font-weight: 600; }
+  .stats-section-title { font-size: 14px; font-weight: 800; color: #333; margin: 18px 0 8px; }
+  .stats-best { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f5f6fc; border-radius: 12px; margin-bottom: 7px; }
+  .stats-best-name { font-weight: 700; color: #333; font-size: 14px; }
+  .stats-best-val { font-weight: 800; color: #2fa36b; font-size: 14px; white-space: nowrap; }
+  .stats-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 24px 8px; }
+  .stats-privacy { margin-top: 18px; background: #f1f3fb; border-radius: 12px; padding: 12px 14px; font-size: 12.5px; color: #555; line-height: 1.5; }
+
   .card {
     background: #fff;
     border-radius: 24px 24px 0 0;
@@ -2653,6 +2668,18 @@
       </div>
     </div>
 
+    <!-- My Progress: motivating stats worked out from your own data, on your phone -->
+    <div class="overlay" id="statsOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>📊 My Progress</h2>
+          <button class="close-btn" onclick="closeStats()">&times;</button>
+        </div>
+        <div id="statsBody"></div>
+        <div class="stats-privacy">🔒 All figured out right here on your phone from your own workouts — nothing is sent anywhere.</div>
+      </div>
+    </div>
+
     <!-- Page options dialog (rename / delete) -->
     <div class="overlay" id="pageToolsOverlay">
       <div class="card">
@@ -3294,6 +3321,10 @@
     hist.className = "pm-action"; hist.textContent = "🕘 History";
     hist.onclick = () => { closePagesMenu(); openHistory(); };
     menu.appendChild(hist);
+    const stats = document.createElement("button");
+    stats.className = "pm-action"; stats.textContent = "📊 My Progress";
+    stats.onclick = () => { closePagesMenu(); openStats(); };
+    menu.appendChild(stats);
     const backup = document.createElement("button");
     backup.className = "pm-action"; backup.textContent = "💾 Backup & Restore";
     backup.onclick = () => { closePagesMenu(); openBackup(); };
@@ -4716,6 +4747,85 @@
   }
   window.openBackup = openBackup; window.closeBackup = closeBackup;
   window.doBackupSave = doBackupSave; window.doBackupRestore = doBackupRestore;
+
+  // ---- My Progress: motivating stats worked out from your own saved data ----
+  // Shift a "YYYY-MM-DD" Monday key back a whole number of weeks (local time).
+  function statWeekKeyMinus(weekKey, weeksBack){
+    const p = weekKey.split("-").map(Number);
+    const dt = new Date(p[0], p[1] - 1, p[2], 12, 0, 0);
+    dt.setDate(dt.getDate() - weeksBack * 7);
+    return dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+  }
+  function computeStats(){
+    const sheetPages = pages.filter(p => p.type === "sheet");
+    const doneWeeks = new Set();
+    const workoutDaysAll = new Set(), workoutDaysWeek = new Set();
+    let allSetsDone = 0, weekSetsDone = 0;
+    const bests = {}; // exercise name -> { num, unit }
+    sheetPages.forEach(pg => {
+      let allWeeks = {};
+      try { allWeeks = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
+      Object.keys(allWeeks).forEach(wk => {
+        const week = allWeeks[wk] || {};
+        days.forEach(day => {
+          (week[day] || []).forEach(r => {
+            if (!r) return;
+            const nm = (r.name || "").trim();
+            const det = r.details || {};
+            const markDone = () => {
+              allSetsDone++; if (wk === currentWeekKey) weekSetsDone++;
+              workoutDaysAll.add(pg.id + "|" + wk + "|" + day);
+              if (wk === currentWeekKey) workoutDaysWeek.add(pg.id + "|" + wk + "|" + day);
+              doneWeeks.add(wk);
+            };
+            const reps = det.reps || {};
+            const unit = reps.weightUnit || "lbs";
+            (reps.sets || []).forEach(s => {
+              if (!s) return;
+              if (s.done) markDone();
+              const w = parseFloat(s.weight);
+              if (nm && !isNaN(w) && w > 0 && (!bests[nm] || w > bests[nm].num)) bests[nm] = { num: w, unit: unit };
+            });
+            ((det.time || {}).rows || []).forEach(s => { if (s && s.done) markDone(); });
+          });
+        });
+      });
+    });
+    // Current streak = consecutive weeks (ending at this week, or last week if
+    // this week hasn't been started yet) that had at least one set done.
+    let streak = 0;
+    let base = doneWeeks.has(currentWeekKey) ? 0 : (doneWeeks.has(statWeekKeyMinus(currentWeekKey, 1)) ? 1 : -1);
+    if (base >= 0){ let i = 0; while (doneWeeks.has(statWeekKeyMinus(currentWeekKey, base + i))) i++; streak = i; }
+    const bestList = Object.keys(bests).map(n => ({ name: n, num: bests[n].num, unit: bests[n].unit }))
+      .sort((a, b) => b.num - a.num).slice(0, 5);
+    return { streak, weekSetsDone, weekWorkouts: workoutDaysWeek.size, allSetsDone, allWorkouts: workoutDaysAll.size, bests: bestList };
+  }
+  function statsTile(num, label){ return '<div class="stats-tile"><div class="stats-tile-num">' + num + '</div><div class="stats-tile-label">' + label + '</div></div>'; }
+  function renderStats(){
+    const body = document.getElementById("statsBody");
+    if (!body) return;
+    const s = computeStats();
+    if (s.allSetsDone === 0 && s.bests.length === 0){
+      body.innerHTML = '<div class="stats-empty">No progress yet. As you finish your sets and tap the ✓ next to each one, your streak, totals and personal bests will show up here. 💪</div>';
+      return;
+    }
+    let html = "";
+    html += '<div class="stats-streak"><div class="stats-streak-num">' + s.streak + '</div><div class="stats-streak-label">' + (s.streak === 1 ? "week in a row" : "weeks in a row") + ' 🔥</div></div>';
+    html += '<div class="stats-tiles">';
+    html += statsTile(s.weekWorkouts, "workouts this week");
+    html += statsTile(s.weekSetsDone, "sets done this week");
+    html += statsTile(s.allWorkouts, "workouts all time");
+    html += statsTile(s.allSetsDone, "sets done all time");
+    html += '</div>';
+    if (s.bests.length){
+      html += '<div class="stats-section-title">🏆 Personal bests (heaviest)</div>';
+      s.bests.forEach(b => { html += '<div class="stats-best"><span class="stats-best-name">' + escapeHtml(b.name) + '</span><span class="stats-best-val">' + b.num + ' ' + escapeHtml(b.unit) + '</span></div>'; });
+    }
+    body.innerHTML = html;
+  }
+  function openStats(){ renderStats(); document.getElementById("statsOverlay").classList.add("open"); }
+  function closeStats(){ document.getElementById("statsOverlay").classList.remove("open"); }
+  window.openStats = openStats; window.closeStats = closeStats;
   function pickStepSize(btn){
     [...document.querySelectorAll("#lmStepSize .lm-size")].forEach(x => x.classList.remove("on"));
     btn.classList.add("on"); lmStepM = parseFloat(btn.dataset.m) || 0.76; recomputeLap();
