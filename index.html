@@ -1363,6 +1363,18 @@
   .lap-input:focus { outline: none; border-color: #5b6cff; }
   .lap-unit { color: #8a8fa3; }
   .lap-hint { flex-basis: 100%; font-size: 11px; font-weight: 600; color: #9aa0bd; }
+  .lap-measure-link { border: none; background: none; color: #5b6cff; font-weight: 700; font-size: 12px; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; padding: 0; }
+  /* Measure-your-lap helper */
+  .lm-intro { color: #6a7088; font-size: 13px; line-height: 1.55; margin: 0 0 14px; }
+  .lm-label { display: block; font-size: 12px; font-weight: 700; color: #9096ad; margin: 8px 0 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .lm-input { width: 100%; padding: 12px 14px; border: 1px solid #d8dcf0; border-radius: 12px; font-size: 18px; font-weight: 700; text-align: center; background: #fff; }
+  .lm-input:focus { outline: none; border-color: #5b6cff; }
+  .lm-steps { display: flex; gap: 8px; }
+  .lm-size { flex: 1 1 0; padding: 11px 6px; border: 1px solid #d8dcf0; border-radius: 12px; background: #fff; color: #5a6076; font-weight: 700; font-size: 13px; cursor: pointer; }
+  .lm-size.on { background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-color: transparent; }
+  .lm-result { margin: 16px 0; text-align: center; font-size: 20px; font-weight: 800; color: #1f9257; }
+  .lm-use { display: block; width: 100%; border: none; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; font-weight: 700; font-size: 16px; padding: 14px; border-radius: 14px; }
+  .lm-use:active { transform: scale(0.99); }
   .set-col-auto { background: #eef1fd !important; color: #5b6cff !important; }
   .set-col:focus { outline: none; border-color: #5b6cff; }
   .set-row.done .set-col { text-decoration: line-through; color: #aab; }
@@ -2586,6 +2598,27 @@
       </div>
     </div>
 
+    <!-- Measure your lap length (indoors, by counting steps) -->
+    <div class="overlay" id="lapMeasureOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>📏 Measure your lap</h2>
+          <button class="close-btn" onclick="closeLapMeasure()">&times;</button>
+        </div>
+        <p class="lm-intro">No GPS indoors? No problem. 🙂 Walk <strong>one lap</strong> and count your steps, then pick your step size — MOWES estimates how far one lap is, so you can measure any hallway or room.</p>
+        <label class="lm-label">Steps in one lap</label>
+        <input class="lm-input" id="lmSteps" type="number" min="0" inputmode="numeric" placeholder="e.g. 120" oninput="recomputeLap()">
+        <label class="lm-label">Your step size</label>
+        <div class="lm-steps" id="lmStepSize">
+          <button type="button" class="lm-size" data-m="0.66" onclick="pickStepSize(this)">👣 Small</button>
+          <button type="button" class="lm-size on" data-m="0.76" onclick="pickStepSize(this)">👣 Average</button>
+          <button type="button" class="lm-size" data-m="0.86" onclick="pickStepSize(this)">👣 Large</button>
+        </div>
+        <div class="lm-result" id="lmResult">Enter your steps to see your lap distance.</div>
+        <button class="lm-use" onclick="useLapLength()">Use this length</button>
+      </div>
+    </div>
+
     <!-- Page options dialog (rename / delete) -->
     <div class="overlay" id="pageToolsOverlay">
       <div class="card">
@@ -3666,7 +3699,7 @@
           <div class="detail-field" data-field="reps">
             <div class="sets-block">
               <div class="sets-cols"></div>
-              <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
+              <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><button type="button" class="lap-measure-link" onclick="openLapMeasure(this)">📏 not sure? measure it</button><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
               <div class="sets-head"></div>
               <div class="sets-list"></div>
               <button class="add-set" onclick="addSet(this)">+ Add set</button>
@@ -4565,6 +4598,44 @@
   }
   window.openGps = openGps; window.closeGps = closeGps; window.toggleGps = toggleGps;
   window.resetGps = resetGps; window.addGpsToRoutine = addGpsToRoutine;
+
+  // ---- Measure your lap length indoors (by counting steps) ----
+  let lapTargetInput = null, lmStepM = 0.76;
+  function openLapMeasure(btn){
+    const field = btn.closest(".detail-field");
+    lapTargetInput = field ? field.querySelector(".lap-input") : null;
+    document.getElementById("lmSteps").value = "";
+    [...document.querySelectorAll("#lmStepSize .lm-size")].forEach(x => x.classList.toggle("on", x.dataset.m === "0.76"));
+    lmStepM = 0.76;
+    recomputeLap();
+    document.getElementById("lapMeasureOverlay").classList.add("open");
+  }
+  function closeLapMeasure(){ document.getElementById("lapMeasureOverlay").classList.remove("open"); }
+  function pickStepSize(btn){
+    [...document.querySelectorAll("#lmStepSize .lm-size")].forEach(x => x.classList.remove("on"));
+    btn.classList.add("on"); lmStepM = parseFloat(btn.dataset.m) || 0.76; recomputeLap();
+  }
+  function lapMeasureUnit(){
+    const f = lapTargetInput && lapTargetInput.closest(".detail-field");
+    const cfg = f && f._repsCfg;
+    return (cfg && cfg.distUnit === "km") ? "km" : "mi";
+  }
+  function computedLap(){
+    const steps = parseFloat(document.getElementById("lmSteps").value) || 0;
+    const m = steps * lmStepM, unit = lapMeasureUnit();
+    return { val: (unit === "km") ? (m / 1000) : (m / 1609.344), unit: unit, m: m };
+  }
+  function recomputeLap(){
+    const r = computedLap(), el = document.getElementById("lmResult");
+    el.textContent = (r.m > 0) ? ("≈ " + (+r.val.toFixed(3)) + " " + r.unit + " per lap") : "Enter your steps to see your lap distance.";
+  }
+  function useLapLength(){
+    const r = computedLap();
+    if (lapTargetInput && r.m > 0){ lapTargetInput.value = +r.val.toFixed(3); lapChanged(lapTargetInput); }
+    closeLapMeasure();
+  }
+  window.openLapMeasure = openLapMeasure; window.closeLapMeasure = closeLapMeasure;
+  window.pickStepSize = pickStepSize; window.recomputeLap = recomputeLap; window.useLapLength = useLapLength;
 
   // Move a routine up (dir = -1) or down (dir = +1) to reorder the list
   function moveRoutine(btn, dir){
