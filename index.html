@@ -1996,6 +1996,32 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px;
   }
   body.has-page-bar { padding-bottom: 70px; }
+
+  /* Today's Workout — guided, check off each set as you go */
+  .workout-overlay { position: fixed; inset: 0; z-index: 9800; display: none; overflow-y: auto;
+    background: linear-gradient(180deg, #eef1ff 0%, #e7ebfb 100%); }
+  .workout-overlay.show { display: block; }
+  .workout-inner { max-width: 480px; margin: 0 auto; padding: 20px 18px calc(60px + env(safe-area-inset-bottom, 0px)); }
+  .workout-head { text-align: center; }
+  .workout-close { display: inline-block; background: none; border: none; color: #5b6cff; font-weight: 800; font-size: 15px; cursor: pointer; padding: 4px 0; float: left; }
+  .workout-title { font-size: 24px; font-weight: 900; color: #3a4066; margin-top: 4px; }
+  .workout-day { color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 16px; }
+  .workout-progress { height: 10px; background: #e2e6f5; border-radius: 6px; overflow: hidden; }
+  .workout-progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, #2fa36b, #27b98a); transition: width 0.3s ease; }
+  .workout-progress-text { text-align: center; font-size: 13px; color: #666; font-weight: 700; margin: 8px 0 14px; }
+  .workout-done-banner { text-align: center; background: linear-gradient(135deg, #e7f9f0, #d6f5e6); border-radius: 16px; padding: 18px; margin-bottom: 14px; font-weight: 800; color: #1f8f5f; font-size: 16px; }
+  .wk-exercise { font-size: 15px; font-weight: 900; color: #5b6cff; margin: 16px 2px 8px; }
+  .wk-step { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); cursor: pointer; }
+  .wk-step:active { transform: scale(0.995); }
+  .wk-step.current { border: 2px solid #5b6cff; box-shadow: 0 6px 18px rgba(91,108,255,0.20); }
+  .wk-step.done { opacity: 0.62; }
+  .wk-check { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #c7cdf0; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; color: #fff; }
+  .wk-step.done .wk-check { background: #27b98a; border-color: #27b98a; }
+  .wk-info { flex: 1 1 auto; min-width: 0; }
+  .wk-set { font-weight: 800; color: #3a4066; font-size: 15px; }
+  .wk-step.done .wk-set { text-decoration: line-through; }
+  .wk-detail { font-size: 13px; color: #777; margin-top: 2px; }
+  .workout-empty { text-align: center; color: #777; font-size: 15px; line-height: 1.6; padding: 40px 12px; }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2033,6 +2059,8 @@
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
   }
   .welcome-overlay.show { display: flex; }
+  /* When the Cover is shown as page 1 (via the bottom bar), sit it below the bar. */
+  .welcome-overlay.cover-as-page { z-index: 1000; padding-bottom: 90px; }
   .welcome-box {
     max-width: 360px; width: 100%;
     text-align: center;
@@ -2285,7 +2313,7 @@
       <div class="plan-mark">📋 Today's Plan</div>
       <div class="plan-day" id="planDay">Today</div>
       <div class="plan-list" id="planList"></div>
-      <button class="plan-next" onclick="planNext()">My routines →</button>
+      <button class="plan-next" onclick="startWorkout()">Let's go! 💪</button>
     </div>
   </div>
 
@@ -2294,6 +2322,20 @@
     <button class="page-bar-arrow" id="pageBarPrev" onclick="pageBarStep(-1)" aria-label="Previous page">‹</button>
     <div class="page-bar-current" id="pageBarCurrent">📋 Today's Plan</div>
     <button class="page-bar-arrow" id="pageBarNext" onclick="pageBarStep(1)" aria-label="Next page">›</button>
+  </div>
+
+  <!-- Today's Workout: your real routine for today, step by step, check off as you go -->
+  <div class="workout-overlay" id="workoutOverlay">
+    <div class="workout-inner">
+      <div class="workout-head">
+        <button class="workout-close" onclick="closeWorkout()">‹ Back</button>
+        <div class="workout-title">💪 Today's Workout</div>
+        <div class="workout-day" id="workoutDay">Today</div>
+      </div>
+      <div class="workout-progress" id="workoutProgressWrap"><div class="workout-progress-bar" id="workoutBar"></div></div>
+      <div class="workout-progress-text" id="workoutProgressText">0 of 0 sets done</div>
+      <div id="workoutList"></div>
+    </div>
   </div>
 
   <!-- Cover page: the app's "book cover" — shows every time it opens -->
@@ -3318,22 +3360,40 @@
   // ---- Bottom page bar: flip between pages (Today's Plan → routines → others) ----
   var appOpened = false; // becomes true once you've entered the workspace
   function pageBarStops(){
-    // Page 1 is Today's Plan; then every page of your book, in order.
-    return [{ plan:true, name:"Today's Plan", icon:"📋 " }]
+    // Page 1 is the Cover, then Today's Plan, then every page of your book.
+    return [{ cover:true, name:"Cover", icon:"📖 " }, { plan:true, name:"Today's Plan", icon:"📋 " }]
       .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })));
+  }
+  function coverShownAsPage(){
+    const el = document.getElementById("welcomeOverlay");
+    return !!(el && el.classList.contains("cover-as-page") && el.classList.contains("show"));
   }
   function planShownAsPage(){
     const el = document.getElementById("planOverlay");
     return !!(el && el.classList.contains("show"));
   }
   function pageBarIndex(){
-    if (planShownAsPage()) return 0;
+    if (coverShownAsPage()) return 0;
+    if (planShownAsPage()) return 1;
     const i = pages.findIndex(p => p.id === activePageId);
-    return i < 0 ? 0 : i + 1;
+    return i < 0 ? 1 : i + 2;
+  }
+  function openCoverPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leavePlanPage();
+    const el = document.getElementById("welcomeOverlay");
+    el.classList.add("cover-as-page", "show");
+    renderPageBar();
+  }
+  function leaveCoverPage(){
+    const el = document.getElementById("welcomeOverlay");
+    el.classList.remove("show", "cover-as-page");
   }
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
+    leaveCoverPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -3348,8 +3408,9 @@
     if (!stops.length) return;
     k = Math.max(0, Math.min(stops.length - 1, k));
     const s = stops[k];
+    if (s.cover){ openCoverPage(); return; }
     if (s.plan){ openPlanPage(); return; }
-    leavePlanPage();
+    leaveCoverPage(); leavePlanPage();
     if (s.id !== activePageId) goToPage(s.id);
     else renderPageBar();
   }
@@ -3372,12 +3433,128 @@
     if (!bar) return;
     const w = document.getElementById("welcomeOverlay");
     const t = document.getElementById("coverOverlay");
-    const introUp = (w && w.classList.contains("show")) || (t && t.classList.contains("show"));
-    const show = appOpened && !introUp;
+    // Hide the bar during the INTRO cover (welcome without the cover-as-page flag)
+    // and the Thought screen. When the Cover is shown as a bar page, keep it on.
+    const introCover = w && w.classList.contains("show") && !w.classList.contains("cover-as-page");
+    const thoughtUp = t && t.classList.contains("show");
+    const show = appOpened && !introCover && !thoughtUp;
     bar.classList.toggle("on", show);
     document.body.classList.toggle("has-page-bar", show);
   }
   window.pageBarStep = pageBarStep; window.goToStop = goToStop; window.openPlanPage = openPlanPage;
+
+  // ---- Today's Workout: your real routine for today, step by step ----
+  let workoutSteps = [];
+  // Make sure a sheet page has this week materialised (copying last week's plan
+  // with the checkmarks cleared, like the app does when you open a page).
+  function ensureTodayWeek(pageId){
+    let all = {};
+    try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pageId)) || "{}") || {}; } catch(e){}
+    if (!all[currentWeekKey]){
+      const past = Object.keys(all).filter(k => k < currentWeekKey).sort();
+      all[currentWeekKey] = past.length ? clearDoneInWeek(all[past[past.length - 1]]) : blankWeek();
+      try { localStorage.setItem(sheetKeyFor(pageId), JSON.stringify(all)); } catch(e){}
+    }
+    return all[currentWeekKey];
+  }
+  function buildWorkoutSteps(){
+    const steps = [];
+    pages.filter(p => p.type === "sheet").forEach(pg => {
+      const week = ensureTodayWeek(pg.id);
+      const routines = (week && week[todayKey]) || [];
+      routines.forEach((r, ri) => {
+        if (!r || !(r.name || "").trim()) return;
+        const det = r.details || {};
+        const reps = det.reps || {};
+        if (reps.on && reps.sets && reps.sets.length){
+          const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {};
+          reps.sets.forEach((s, si) => {
+            if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
+            const parts = [];
+            if (cols.reps !== false && s.reps) parts.push(s.reps + " reps");
+            if (cols.weight !== false && s.weight) parts.push(s.weight + " " + wUnit);
+            if (cols.time && s.time) parts.push(s.time + " min");
+            if (cols.distance && s.distance) parts.push(s.distance + " " + dUnit);
+            steps.push({ pageId:pg.id, ri:ri, kind:"set", si:si, name:r.name, setLabel:"Set " + (si + 1), detail:parts.join(" × "), done:!!s.done });
+          });
+        }
+        const tm = det.time || {};
+        if (tm.on && tm.rows && tm.rows.length){
+          tm.rows.forEach((row, si) => {
+            if (!row || (!row.label && !row.min && !row.miles)) return;
+            const parts = [];
+            if (row.min) parts.push(row.min + " min");
+            if (row.miles) parts.push(row.miles + " mi");
+            steps.push({ pageId:pg.id, ri:ri, kind:"interval", si:si, name:r.name, setLabel:row.label || ("Part " + (si + 1)), detail:parts.join(" · "), done:!!row.done });
+          });
+        }
+      });
+    });
+    return steps;
+  }
+  function setStepDoneInStorage(pageId, ri, kind, si, val){
+    let all = {};
+    try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pageId)) || "{}") || {}; } catch(e){}
+    const apply = (r) => {
+      if (!r) return; const d = r.details || {};
+      if (kind === "set"){ const s = d.reps && d.reps.sets && d.reps.sets[si]; if (s) s.done = val; }
+      else { const s = d.time && d.time.rows && d.time.rows[si]; if (s) s.done = val; }
+    };
+    const wk = all[currentWeekKey];
+    apply(wk && wk[todayKey] && wk[todayKey][ri]);
+    try { localStorage.setItem(sheetKeyFor(pageId), JSON.stringify(all)); } catch(e){}
+    // keep the active sheet's in-memory copy in sync so it isn't overwritten
+    if (pageId === activePageId && weekData && weekData[todayKey]) apply(weekData[todayKey][ri]);
+  }
+  function toggleWorkoutStep(idx){
+    const st = workoutSteps[idx];
+    if (!st) return;
+    st.done = !st.done;
+    setStepDoneInStorage(st.pageId, st.ri, st.kind, st.si, st.done);
+    renderWorkout();
+  }
+  function renderWorkout(){
+    const dayEl = document.getElementById("workoutDay");
+    if (dayEl) dayEl.textContent = dayTitle(todayKey);
+    const list = document.getElementById("workoutList");
+    if (!list) return;
+    const total = workoutSteps.length, done = workoutSteps.filter(s => s.done).length;
+    const wrap = document.getElementById("workoutProgressWrap"), pt = document.getElementById("workoutProgressText");
+    if (!total){
+      if (wrap) wrap.style.display = "none";
+      if (pt) pt.style.display = "none";
+      list.innerHTML = '<div class="workout-empty">Nothing planned for today yet. Add exercises (with sets) on your Weight Routine or Walk &amp; Running pages, then come back and tap “Let’s go!” 💪</div>';
+      return;
+    }
+    if (wrap){ wrap.style.display = ""; document.getElementById("workoutBar").style.width = Math.round(done / total * 100) + "%"; }
+    if (pt){ pt.style.display = ""; pt.textContent = done + " of " + total + " sets done"; }
+    const firstUndone = workoutSteps.findIndex(s => !s.done);
+    let html = "";
+    if (done === total) html += '<div class="workout-done-banner">🎉 All done! Great work today.</div>';
+    let lastKey = null;
+    workoutSteps.forEach((s, i) => {
+      const exKey = s.pageId + "|" + s.ri + "|" + s.name;
+      if (exKey !== lastKey){ html += '<div class="wk-exercise">' + escapeHtml(s.name) + '</div>'; lastKey = exKey; }
+      const cls = "wk-step" + (s.done ? " done" : "") + (i === firstUndone ? " current" : "");
+      html += '<div class="' + cls + '" onclick="toggleWorkoutStep(' + i + ')">'
+        + '<div class="wk-check">' + (s.done ? "✓" : "") + '</div>'
+        + '<div class="wk-info"><div class="wk-set">' + escapeHtml(s.setLabel) + '</div>'
+        + (s.detail ? '<div class="wk-detail">' + escapeHtml(s.detail) + '</div>' : '')
+        + '</div></div>';
+    });
+    list.innerHTML = html;
+  }
+  function startWorkout(){
+    if (currentPageIsSheet()){ captureDay(); saveData(); } // persist current edits first
+    workoutSteps = buildWorkoutSteps();
+    renderWorkout();
+    document.getElementById("workoutOverlay").classList.add("show");
+  }
+  function closeWorkout(){
+    document.getElementById("workoutOverlay").classList.remove("show");
+    if (currentPageIsSheet()) renderRoutines(); // reflect any newly-checked sets
+  }
+  window.startWorkout = startWorkout; window.closeWorkout = closeWorkout; window.toggleWorkoutStep = toggleWorkoutStep;
 
   // The two routine pages get their own tabs; every other page lives in the
   // "More" dropdown (along with "Add page").
@@ -5490,8 +5667,8 @@
   }
   window.showCover = showCover;
   function dismissWelcome(){
-    document.getElementById("welcomeOverlay").classList.remove("show");
-    showPlan(); // the Cover hands off to Today's Plan (the 2nd page)
+    leaveCoverPage();
+    openPlanPage(); // the Cover hands off to Today's Plan (page 2), with the bar on
   }
   window.openApp = openApp;
   window.dismissWelcome = dismissWelcome;
@@ -5593,11 +5770,10 @@
   }
   window.viewThought = viewThought;
 
-  // The cover is the app's face — show it on every open
+  // The ERMES Cover (welcome) is the app's face — show it on every open. The
+  // Today's Thought screen stays HIDDEN until you tap the "💭 Thought" tab, so it
+  // never blocks the flow (we just preload its text).
   document.getElementById("coverThought").textContent = getTodaysThoughtText();
-  revealCover();
-  // The welcome screen is our book "Cover" — show it on EVERY open, on top of the
-  // cover overlay. The cover countdown waits until the welcome is dismissed.
   document.getElementById("welcomeOverlay").classList.add("show");
 
   // ---- Swipe to flip between the book pages: Cover <-> Introduction <-> workspace ----
@@ -5617,10 +5793,10 @@
   }
   // Cover: swipe left = forward to Today's Plan
   onBookSwipe(document.getElementById("welcomeOverlay"), dir => { if (dir === "fwd") dismissWelcome(); });
-  // Today's Plan: swipe left = on to Today's Thought, swipe right = back to the Cover
-  onBookSwipe(document.getElementById("planOverlay"), dir => { if (dir === "fwd") planNext(); else showWelcome(); });
+  // Today's Plan: swipe = flip pages via the bottom bar (right = Cover, left = routines)
+  onBookSwipe(document.getElementById("planOverlay"), dir => pageBarStep(dir === "fwd" ? 1 : -1));
   // Today's Thought: swipe left = into the workspace, swipe right = back to Today's Plan
-  onBookSwipe(document.getElementById("coverOverlay"), dir => { if (dir === "fwd") openApp(); else showPlan(); });
+  onBookSwipe(document.getElementById("coverOverlay"), dir => { if (dir === "fwd") openApp(); else openPlanPage(); });
   // Bottom page bar: swipe it left = next page, swipe it right = previous page
   onBookSwipe(document.getElementById("pageBar"), dir => pageBarStep(dir === "fwd" ? 1 : -1));
 
