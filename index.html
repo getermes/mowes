@@ -239,7 +239,12 @@
   .screen.pics-mode .thought-card,
   .screen.pics-mode .thought-show,
   .screen.pics-mode .routines,
-  .screen.pics-mode .history-btn { display: none !important; }
+  .screen.pics-mode .history-btn,
+  .screen.videos-mode .day-row,
+  .screen.videos-mode .thought-card,
+  .screen.videos-mode .thought-show,
+  .screen.videos-mode .routines,
+  .screen.videos-mode .history-btn { display: none !important; }
   .notes-view { display: none; margin-top: 8px; }
   .screen.notes-mode .notes-view { display: block; }
 
@@ -310,6 +315,45 @@
     border: none; border-radius: 50%; cursor: pointer;
     background: rgba(0,0,0,0.55); color: #fff; font-size: 14px; line-height: 24px;
     padding: 0; text-align: center;
+  }
+
+  /* Exercise Videos page */
+  .videos-view { display: none; margin-top: 8px; }
+  .screen.videos-mode .videos-view { display: block; }
+  .video-add { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .video-add input {
+    width: 100%; padding: 12px 14px; font-size: 15px;
+    border: 1px solid #d8dcf0; border-radius: 12px; background: #fff; color: #3a4066;
+  }
+  .video-add input:focus { outline: none; border-color: #5b6cff; }
+  .video-add-btn {
+    border: none; cursor: pointer; padding: 12px; border-radius: 12px;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    color: #fff; font-weight: 700; font-size: 15px;
+    box-shadow: 0 6px 16px rgba(91,108,255,0.28);
+  }
+  .video-add-btn:active { transform: scale(0.99); }
+  .video-empty { text-align: center; color: #8a8fa3; font-size: 13px; line-height: 1.5; margin: 24px 8px; }
+  .video-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .video-card { position: relative; background: #fff; border: 1px solid #e7eafb; border-radius: 14px; overflow: hidden; }
+  .video-thumb { position: relative; aspect-ratio: 16 / 9; background: #e7ebfb; cursor: pointer; }
+  .video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video-thumb.generic { background: linear-gradient(135deg, #6b78ff, #8a6bff); }
+  .video-src {
+    position: absolute; top: 7px; left: 7px; z-index: 1;
+    background: rgba(255,255,255,0.9); color: #4a4f75; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .video-play {
+    position: absolute; inset: 0; margin: auto; width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.55); color: #fff; border-radius: 50%; font-size: 16px; padding-left: 3px;
+  }
+  .video-title { padding: 9px 11px; font-size: 14px; font-weight: 600; color: #3a4066; cursor: pointer; line-height: 1.35; }
+  .video-del {
+    position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; z-index: 2;
+    border: none; border-radius: 50%; cursor: pointer;
+    background: rgba(0,0,0,0.6); color: #fff; font-size: 13px; line-height: 24px; padding: 0; text-align: center;
   }
 
   /* Shopping-list page */
@@ -2278,6 +2322,17 @@
         <div class="pics-grid" id="picsGrid"></div>
       </div>
 
+      <!-- Exercise Videos page: save your favorite YouTube exercise links -->
+      <div class="videos-view" id="videosView">
+        <div class="video-add">
+          <input type="text" id="videoTitleInput" placeholder="Name it (e.g. Beginner squats)">
+          <input type="text" id="videoUrlInput" placeholder="Paste a video link (YouTube, Facebook…)" enterkeyhint="done">
+          <button type="button" class="video-add-btn" onclick="addVideo()">＋ Add video</button>
+        </div>
+        <p class="video-empty" id="videoEmpty">No videos yet. Paste any exercise video link — YouTube, Facebook, Vimeo, TikTok — to save it here. Your links stay on your phone. 🔒</p>
+        <div class="video-grid" id="videoGrid"></div>
+      </div>
+
       <!-- Today's Thought pop-up: appears when you open the app, closes on ✕ or after 15s -->
       <!-- Support / donation -->
       <div class="support">
@@ -2432,6 +2487,7 @@
             <button class="addpage-type" data-type="notes" onclick="pickPageType('notes')">📝 Notes page</button>
             <button class="addpage-type" data-type="list" onclick="pickPageType('list')">🛒 Shopping list</button>
             <button class="addpage-type" data-type="pics" onclick="pickPageType('pics')">🖼️ Pictures</button>
+            <button class="addpage-type" data-type="videos" onclick="pickPageType('videos')">🎬 Exercise videos</button>
           </div>
           <input id="addPageName" class="addpage-name" placeholder="Name it (e.g. Gym, Home, Notes)" />
           <div class="addpage-actions">
@@ -2550,11 +2606,13 @@
   function notesKeyFor(id){ return "mowes_notes_" + id; }
   function listKeyFor(id){ return "mowes_list_" + id; }
   function picsKeyFor(id){ return "mowes_pics_" + id; }
+  function videosKeyFor(id){ return "mowes_videos_" + id; }
   function currentPage(){ return pages.find(p => p.id === activePageId); }
   function currentPageIsNotes(){ const p = currentPage(); return !!(p && p.type === "notes"); }
   function currentPageIsList(){ const p = currentPage(); return !!(p && p.type === "list"); }
   function currentPageIsSheet(){ const p = currentPage(); return !!(p && p.type === "sheet"); }
   function currentPageIsPics(){ const p = currentPage(); return !!(p && p.type === "pics"); }
+  function currentPageIsVideos(){ const p = currentPage(); return !!(p && p.type === "videos"); }
   function pageName(id){ const p = pages.find(x => x.id === id); return p ? p.name : "Weight Routine"; }
 
   let allWeeks = {};
@@ -2649,6 +2707,7 @@
           pages.push({ id:"p_ex_notes",    type:"notes", name:"Note taking" });
           pages.push({ id:"p_ex_shopping", type:"list",  name:"Shopping List" });
           pages.push({ id:"p_ex_pics",     type:"pics",  name:"Pictures" });
+          pages.push({ id:"p_ex_videos",   type:"videos", name:"Exercise Videos" });
         }
       }
     } catch(e){}
@@ -2688,6 +2747,13 @@
         if (!pages.some(p => p.id === "p_ex_pics")) pages.push({ id:"p_ex_pics", type:"pics", name:"Pictures" });
       }
     } catch(e){}
+    // Add the Exercise Videos page (saved YouTube links). One-time.
+    try {
+      if (!localStorage.getItem("mowes_pages_v3")){
+        localStorage.setItem("mowes_pages_v3", "1");
+        if (!pages.some(p => p.id === "p_ex_videos")) pages.push({ id:"p_ex_videos", type:"videos", name:"Exercise Videos" });
+      }
+    } catch(e){}
     savePagesRegistry();
   }
 
@@ -2698,6 +2764,7 @@
     screen.classList.toggle("notes-mode", type === "notes");
     screen.classList.toggle("list-mode", type === "list");
     screen.classList.toggle("pics-mode", type === "pics");
+    screen.classList.toggle("videos-mode", type === "videos");
   }
 
   // Load an exercise-sheet page's data and render it
@@ -2895,17 +2962,113 @@
   }
   window.addPics = addPics;
 
+  // ---- Exercise Videos page (saved YouTube links; open in YouTube on tap) ----
+  let videosData = []; // array of { url, id, title } — just links, stored on this device
+  function youtubeId(url){
+    url = String(url || "").trim();
+    let m;
+    m = url.match(/[?&]v=([A-Za-z0-9_-]{11})/);        if (m) return m[1];
+    m = url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/);   if (m) return m[1];
+    m = url.match(/\/embed\/([A-Za-z0-9_-]{11})/);     if (m) return m[1];
+    m = url.match(/\/shorts\/([A-Za-z0-9_-]{11})/);    if (m) return m[1];
+    m = url.match(/^([A-Za-z0-9_-]{11})$/);            if (m) return m[1];
+    return "";
+  }
+  // A friendly source name for a non-YouTube link (Facebook, Vimeo, the domain…)
+  function linkLabel(url){
+    let host = "";
+    try { host = new URL(/^https?:\/\//i.test(url) ? url : "https://" + url).hostname.replace(/^www\./, ""); }
+    catch(e){ return "Link"; }
+    const map = { "facebook.com":"Facebook", "fb.watch":"Facebook", "instagram.com":"Instagram",
+      "vimeo.com":"Vimeo", "tiktok.com":"TikTok", "dailymotion.com":"Dailymotion" };
+    for (const k in map){ if (host === k || host.endsWith("." + k)) return map[k]; }
+    return host || "Link";
+  }
+  function loadVideos(id){
+    try { videosData = JSON.parse(localStorage.getItem(videosKeyFor(id)) || "[]") || []; }
+    catch(e){ videosData = []; }
+    if (!Array.isArray(videosData)) videosData = [];
+  }
+  function saveVideos(){
+    if (!currentPageIsVideos()) return;
+    try { localStorage.setItem(videosKeyFor(activePageId), JSON.stringify(videosData)); } catch(e){}
+  }
+  function activateVideosPage(id){
+    activePageId = id;
+    loadVideos(id);
+    renderVideos();
+    const t = document.getElementById("videoTitleInput"); if (t) t.value = "";
+    const u = document.getElementById("videoUrlInput"); if (u) u.value = "";
+  }
+  function renderVideos(){
+    const grid = document.getElementById("videoGrid");
+    const empty = document.getElementById("videoEmpty");
+    if (!grid) return;
+    grid.innerHTML = "";
+    if (empty) empty.style.display = videosData.length ? "none" : "block";
+    videosData.forEach((v, i) => {
+      const card = document.createElement("div"); card.className = "video-card";
+      const del = document.createElement("button"); del.className = "video-del"; del.textContent = "✕"; del.title = "Remove";
+      del.onclick = (e) => { e.stopPropagation(); removeVideo(i); };
+      const thumb = document.createElement("div"); thumb.className = "video-thumb";
+      if (v.id){
+        // YouTube: show the real thumbnail
+        const img = document.createElement("img"); img.loading = "lazy"; img.alt = ""; img.src = "https://img.youtube.com/vi/" + v.id + "/hqdefault.jpg";
+        thumb.appendChild(img);
+      } else {
+        // Other sites: clean play card with the source name (no external tracker loaded)
+        thumb.classList.add("generic");
+        const src = document.createElement("span"); src.className = "video-src"; src.textContent = v.source || linkLabel(v.url);
+        thumb.appendChild(src);
+      }
+      const play = document.createElement("span"); play.className = "video-play"; play.textContent = "▶";
+      thumb.appendChild(play);
+      const title = document.createElement("div"); title.className = "video-title"; title.textContent = v.title || "Exercise video";
+      const open = () => window.open(v.url, "_blank", "noopener");
+      thumb.onclick = open; title.onclick = open;
+      card.appendChild(del); card.appendChild(thumb); card.appendChild(title);
+      grid.appendChild(card);
+    });
+  }
+  function addVideo(){
+    const urlEl = document.getElementById("videoUrlInput");
+    const titleEl = document.getElementById("videoTitleInput");
+    const raw = (urlEl.value || "").trim();
+    if (!raw){ alert("Please paste a video link."); return; }
+    const id = youtubeId(raw);
+    const looksLikeUrl = /^https?:\/\//i.test(raw) || /\.[a-z]{2,}(\/|$|\?)/i.test(raw);
+    if (!id && !looksLikeUrl){ alert("Please paste a video link — YouTube, Facebook, Vimeo, TikTok, and others all work."); return; }
+    // Build a proper openable URL
+    let openUrl = raw;
+    if (!/^https?:\/\//i.test(openUrl)){
+      openUrl = (id && /^[A-Za-z0-9_-]{11}$/.test(raw)) ? ("https://www.youtube.com/watch?v=" + id) : ("https://" + raw);
+    }
+    const title = (titleEl.value || "").trim() || "Exercise video";
+    const source = id ? "YouTube" : linkLabel(openUrl);
+    videosData.push({ url: openUrl, id: id, title: title, source: source });
+    saveVideos(); renderVideos();
+    urlEl.value = ""; titleEl.value = "";
+  }
+  function removeVideo(i){
+    if (i < 0 || i >= videosData.length) return;
+    videosData.splice(i, 1);
+    saveVideos(); renderVideos();
+  }
+  window.addVideo = addVideo;
+
   // Flip to another page (saving the current one first)
   function switchToPage(id){
     if (currentPageIsNotes()) saveNotes();
     else if (currentPageIsList()) saveList();
     else if (currentPageIsPics()) savePics();
+    else if (currentPageIsVideos()) saveVideos();
     else { captureDay(); saveData(); }
     const p = pages.find(x => x.id === id);
     if (!p) return;
     if (p.type === "notes"){ setLayoutMode("notes"); activateNotesPage(id); }
     else if (p.type === "list"){ setLayoutMode("list"); activateListPage(id); }
     else if (p.type === "pics"){ setLayoutMode("pics"); activatePicsPage(id); }
+    else if (p.type === "videos"){ setLayoutMode("videos"); activateVideosPage(id); }
     else { setLayoutMode("sheet"); activateSheetPage(id); }
     try { localStorage.setItem(ACTIVE_KEY, id); } catch(e){}
     renderPageTabs();
@@ -2915,7 +3078,7 @@
   // The two routine pages get their own tabs; every other page lives in the
   // "More" dropdown (along with "Add page").
   const PINNED_PAGE_IDS = ["default", "p_ex_walkrun"];
-  function pageIcon(type){ return type === "notes" ? "📝 " : type === "list" ? "🛒 " : type === "pics" ? "🖼️ " : "📋 "; }
+  function pageIcon(type){ return type === "notes" ? "📝 " : type === "list" ? "🛒 " : type === "pics" ? "🖼️ " : type === "videos" ? "🎬 " : "📋 "; }
   function goToPage(id){
     if (id === activePageId){ openPageTools(id); return; }
     const ci = pages.findIndex(x => x.id === activePageId);
@@ -3025,7 +3188,7 @@
   function closeAddPage(){ document.getElementById("addPageOverlay").classList.remove("open"); }
   function confirmAddPage(){
     let name = (document.getElementById("addPageName").value || "").trim();
-    if (!name) name = (newPageType === "notes" ? "Notes" : newPageType === "list" ? "Shopping List" : newPageType === "pics" ? "Pictures" : "Sheet");
+    if (!name) name = (newPageType === "notes" ? "Notes" : newPageType === "list" ? "Shopping List" : newPageType === "pics" ? "Pictures" : newPageType === "videos" ? "Exercise Videos" : "Sheet");
     const id = "p_" + Date.now().toString(36);
     pages.push({ id, type: newPageType, name });
     savePagesRegistry();
