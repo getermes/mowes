@@ -1796,6 +1796,26 @@
   }
   .suggest-btn:active { transform: scale(0.99); }
 
+  /* GPS tracker */
+  .gps-intro { color: #6a7088; font-size: 13px; line-height: 1.55; margin: 0 0 16px; }
+  .gps-stats { display: flex; gap: 10px; margin-bottom: 6px; }
+  .gps-stat { flex: 1 1 0; background: #f2f4fd; border-radius: 14px; padding: 14px 6px; text-align: center; }
+  .gps-val { font-size: 26px; font-weight: 800; color: #3a4066; line-height: 1.1; }
+  .gps-lbl { font-size: 11px; font-weight: 700; color: #9096ad; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .gps-msg { min-height: 18px; text-align: center; font-size: 13px; font-weight: 600; color: #5b6cff; margin: 8px 0; }
+  .gps-msg.error { color: #e5484d; }
+  .gps-btn {
+    display: block; width: 100%; margin-top: 8px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff;
+    font-weight: 700; font-size: 16px; padding: 14px; border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(91,108,255,0.28);
+  }
+  .gps-btn.recording { background: linear-gradient(135deg, #e5484d, #ff6b6b); box-shadow: 0 6px 16px rgba(229,72,77,0.28); }
+  .gps-btn:active { transform: scale(0.99); }
+  .gps-done-actions { display: flex; gap: 8px; }
+  .gps-done-actions .gps-btn { flex: 1 1 0; }
+  .gps-btn.gps-btn-alt { background: #fff; color: #5b6cff; border: 1px solid #d8dcf0; box-shadow: none; }
+
   /* Beginner suggestions modal */
   .suggest-intro { color: #6a7088; font-size: 13px; line-height: 1.5; margin: 0 0 14px; }
   .suggest-cat { font-weight: 800; color: #3a4066; font-size: 15px; margin: 16px 0 8px; }
@@ -2313,6 +2333,7 @@
         <div id="routineList"></div>
         <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
         <button class="suggest-btn" onclick="openSuggestions()">💡 Beginner Exercise Suggestions</button>
+        <button class="suggest-btn gps-open-btn" onclick="openGps()">📍 Measure a walk / run (GPS)</button>
         <p class="support-cta" style="text-align:center; font-size:15px; font-weight:700; color:#5b6cff; margin:60px 0 6px; padding-top:28px; border-top:1px solid #d3d8f2;"><span class="us-beat">Help us</span> keep <span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span> free…</p>
         <div class="routine-support" style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top:4px;">
           <button type="button" class="coffee-btn" id="likeBtn" onclick="likeApp()" title="Like the app" aria-label="Like the app"><svg viewBox="0 0 24 24" fill="none" stroke="#ff2d55" stroke-width="2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
@@ -2540,6 +2561,28 @@
         </div>
         <p class="suggest-intro">Simple, safe moves to get started — great for beginners, staying in shape, gentle therapy, or training at home. Tap one to see how, then add it to your routine.</p>
         <div id="suggestList"></div>
+      </div>
+    </div>
+
+    <!-- GPS walk/run tracker -->
+    <div class="overlay" id="gpsOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>📍 Measure a walk / run</h2>
+          <button class="close-btn" onclick="closeGps()">&times;</button>
+        </div>
+        <p class="gps-intro">Take your phone <strong>outside</strong>, keep the screen on, and press Start. MOWES measures how far you go using your phone's GPS — the numbers stay <strong>on your phone</strong>. 🔒 <em>(GPS needs open sky, so it won't work indoors.)</em></p>
+        <div class="gps-stats">
+          <div class="gps-stat"><div class="gps-val" id="gpsDist">0.00</div><div class="gps-lbl" id="gpsDistUnit">mi</div></div>
+          <div class="gps-stat"><div class="gps-val" id="gpsTime">0:00</div><div class="gps-lbl">time</div></div>
+          <div class="gps-stat"><div class="gps-val" id="gpsSpeed">—</div><div class="gps-lbl">speed</div></div>
+        </div>
+        <p class="gps-msg" id="gpsMsg"></p>
+        <button class="gps-btn" id="gpsStartBtn" onclick="toggleGps()">▶ Start</button>
+        <div class="gps-done-actions" id="gpsDoneActions" style="display:none;">
+          <button class="gps-btn gps-btn-alt" onclick="resetGps()">↺ Again</button>
+          <button class="gps-btn" onclick="addGpsToRoutine()">＋ Add to my routine</button>
+        </div>
       </div>
     </div>
 
@@ -4442,6 +4485,86 @@
   }
   window.openSuggestions = openSuggestions;
   window.closeSuggestions = closeSuggestions;
+
+  // ---- GPS walk/run tracker (measures outdoor distance on this device only) ----
+  let gpsWatchId = null, gpsTimer = null, gpsStartMs = 0, gpsElapsed = 0, gpsDistM = 0, gpsLast = null, gpsRecording = false, gpsUnit = "mi";
+  function haversineM(lat1, lon1, lat2, lon2){
+    const R = 6371000, r = Math.PI / 180;
+    const dLat = (lat2 - lat1) * r, dLon = (lon2 - lon1) * r;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*r) * Math.cos(lat2*r) * Math.sin(dLon/2)**2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  function fmtTime(s){ const m = Math.floor(s/60), ss = s%60; return m + ":" + (ss<10?"0":"") + ss; }
+  function gpsMsg(t, err){ const m = document.getElementById("gpsMsg"); if (m){ m.textContent = t || ""; m.classList.toggle("error", !!err); } }
+  function openGps(){ resetGps(); gpsUnit = "mi"; document.getElementById("gpsDistUnit").textContent = gpsUnit; document.getElementById("gpsOverlay").classList.add("open"); }
+  function closeGps(){ stopWatch(); document.getElementById("gpsOverlay").classList.remove("open"); }
+  function resetGps(){
+    stopWatch(); gpsDistM = 0; gpsElapsed = 0; gpsLast = null; gpsRecording = false;
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    set("gpsDist", "0.00"); set("gpsTime", "0:00"); set("gpsSpeed", "—"); gpsMsg("");
+    const da = document.getElementById("gpsDoneActions"); if (da) da.style.display = "none";
+    const b = document.getElementById("gpsStartBtn"); if (b){ b.style.display = "block"; b.textContent = "▶ Start"; b.classList.remove("recording"); }
+  }
+  function toggleGps(){ gpsRecording ? finishGps() : startGps(); }
+  function startGps(){
+    if (!navigator.geolocation){ gpsMsg("This phone/browser can't use GPS here.", true); return; }
+    gpsDistM = 0; gpsLast = null; gpsElapsed = 0; gpsStartMs = Date.now(); gpsRecording = true;
+    document.getElementById("gpsDoneActions").style.display = "none";
+    const b = document.getElementById("gpsStartBtn"); b.textContent = "⏹ Stop"; b.classList.add("recording");
+    gpsMsg("Getting your location… take a few steps.");
+    gpsTimer = setInterval(function(){ gpsElapsed = Math.round((Date.now() - gpsStartMs)/1000); renderGps(); }, 1000);
+    gpsWatchId = navigator.geolocation.watchPosition(onGpsPos, onGpsErr, { enableHighAccuracy:true, maximumAge:1000, timeout:20000 });
+  }
+  function onGpsPos(pos){
+    gpsMsg("Recording… keep going! 🏃");
+    const c = pos.coords;
+    if (c.accuracy && c.accuracy > 35) return;            // skip very fuzzy fixes
+    if (gpsLast){
+      const seg = haversineM(gpsLast.lat, gpsLast.lon, c.latitude, c.longitude);
+      if (seg > 2 && seg < 60) gpsDistM += seg;           // ignore jitter (<2m) & jumps (>60m)
+    }
+    gpsLast = { lat: c.latitude, lon: c.longitude };
+    renderGps();
+  }
+  function onGpsErr(err){
+    if (err && err.code === 1) gpsMsg("Location was blocked. Please allow location so MOWES can measure your distance.", true);
+    else gpsMsg("Couldn't get GPS — make sure you're outside with a clear view of the sky.", true);
+  }
+  function gpsDistanceInUnit(){ return (gpsUnit === "km") ? (gpsDistM / 1000) : (gpsDistM / 1609.344); }
+  function renderGps(){
+    const dist = gpsDistanceInUnit(), mins = gpsElapsed / 60;
+    document.getElementById("gpsDist").textContent = dist.toFixed(2);
+    document.getElementById("gpsTime").textContent = fmtTime(gpsElapsed);
+    document.getElementById("gpsSpeed").textContent = (dist > 0 && mins > 0)
+      ? (dist * 60 / mins).toFixed(1) + " " + (gpsUnit === "km" ? "km/h" : "mph") : "—";
+  }
+  function stopWatch(){
+    if (gpsWatchId != null){ navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; }
+    if (gpsTimer){ clearInterval(gpsTimer); gpsTimer = null; }
+  }
+  function finishGps(){
+    stopWatch(); gpsRecording = false;
+    document.getElementById("gpsStartBtn").style.display = "none";
+    document.getElementById("gpsDoneActions").style.display = "flex";
+    gpsMsg(gpsDistanceInUnit() > 0 ? "Nice work! Add it to your routine, or go again." : "No distance recorded — try again outside.");
+  }
+  function addGpsToRoutine(){
+    if (!currentPageIsSheet()) switchToPage("default");
+    const dist = +gpsDistanceInUnit().toFixed(3);
+    const mins = +(gpsElapsed / 60).toFixed(1);
+    captureDay();
+    const r = blankRoutine();
+    r.name = "Walk/Run (GPS)";
+    r.details.reps.on = true;
+    r.details.reps.cols = { reps:false, weight:false, time:true, distance:true };
+    r.details.reps.distUnit = gpsUnit;
+    r.details.reps.sets = [ { reps:"", weight:"", time: String(mins), distance: dist, done:false } ];
+    weekData[selectedDay].push(r);
+    renderRoutines(); captureDay(); saveData();
+    closeGps();
+  }
+  window.openGps = openGps; window.closeGps = closeGps; window.toggleGps = toggleGps;
+  window.resetGps = resetGps; window.addGpsToRoutine = addGpsToRoutine;
 
   // Move a routine up (dir = -1) or down (dir = +1) to reorder the list
   function moveRoutine(btn, dir){
