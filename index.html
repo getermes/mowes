@@ -2220,7 +2220,7 @@
       <div class="plan-mark">📋 Today's Plan</div>
       <div class="plan-day" id="planDay">Today</div>
       <div class="plan-list" id="planList"></div>
-      <button class="plan-next" onclick="planNext()">Next →</button>
+      <button class="plan-next" onclick="planNext()">My routines →</button>
     </div>
   </div>
 
@@ -3674,6 +3674,13 @@
 
     const routineCount = weekData[selectedDay].length;
     weekData[selectedDay].forEach((r, idx) => {
+      // Safety net: older or partial saved data may be missing some detail
+      // fields (e.g. no "reps"). Fill any gaps from a blank routine so drawing
+      // a routine can never crash the whole app.
+      const _def = blankRoutine();
+      if (!r.details) r.details = _def.details;
+      else { for (const k in _def.details){ if (r.details[k] == null) r.details[k] = _def.details[k]; } }
+      if (!r.timer) r.timer = _def.timer;
       const i = idx + 1;
       const isFirst = idx === 0;
       const isLast = idx === routineCount - 1;
@@ -5163,7 +5170,11 @@
   function planNext(){
     hidePlan();
     document.getElementById("coverThought").textContent = getTodaysThoughtText();
-    startCoverAutoOpen(); // Today's Thought is already revealed; begin its countdown to the app
+    // New book order: Today's Plan hands off STRAIGHT to the Routines — Today's
+    // Thought is no longer a forced stop in the middle. The page-turn briefly
+    // shows the Thought as it peels away, and it re-appears as the cloud pop-up
+    // once you're on your routines ("after the routines, still visible").
+    openApp();
   }
   window.showPlan = showPlan;
   window.planNext = planNext;
