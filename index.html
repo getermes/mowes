@@ -1858,6 +1858,15 @@
   .gps-done-actions { display: flex; gap: 8px; }
   .gps-done-actions .gps-btn { flex: 1 1 0; }
   .gps-btn.gps-btn-alt { background: #fff; color: #5b6cff; border: 1px solid #d8dcf0; box-shadow: none; }
+  .gps-history-link { display: block; width: 100%; margin-top: 12px; background: none; border: none; color: #5b6cff; font-weight: 700; font-size: 14px; cursor: pointer; padding: 8px; text-decoration: underline; text-underline-offset: 3px; }
+  /* Past runs list */
+  .gps-run { display: flex; align-items: center; gap: 10px; background: #f5f6fc; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; }
+  .gps-run-main { flex: 1 1 auto; min-width: 0; }
+  .gps-run-dist { font-size: 20px; font-weight: 900; color: #3a4066; line-height: 1.1; }
+  .gps-run-sub { font-size: 12.5px; color: #777; margin-top: 3px; }
+  .gps-run-date { font-size: 12px; color: #9096ad; margin-top: 2px; }
+  .gps-run-del { flex: 0 0 auto; background: #fff; border: 1px solid #eadadd; color: #e5484d; border-radius: 10px; width: 34px; height: 34px; font-size: 16px; cursor: pointer; }
+  .gps-runs-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 24px 8px; }
 
   /* Beginner suggestions modal */
   .suggest-intro { color: #6a7088; font-size: 13px; line-height: 1.5; margin: 0 0 14px; }
@@ -2626,6 +2635,19 @@
           <button class="gps-btn gps-btn-alt" onclick="resetGps()">↺ Again</button>
           <button class="gps-btn" onclick="addGpsToRoutine()">＋ Add to my routine</button>
         </div>
+        <button type="button" class="gps-history-link" id="gpsHistoryLink" onclick="openGpsHistory()">🕘 Past runs</button>
+      </div>
+    </div>
+
+    <!-- Past runs: every finished GPS run, saved on this phone -->
+    <div class="overlay" id="gpsHistoryOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>🕘 Past runs</h2>
+          <button class="close-btn" onclick="closeGpsHistory()">&times;</button>
+        </div>
+        <div id="gpsHistoryBody"></div>
+        <div class="stats-privacy">🔒 Your runs are saved only on this phone — nothing is sent anywhere.</div>
       </div>
     </div>
 
@@ -4605,7 +4627,7 @@
   }
   function fmtTime(s){ const m = Math.floor(s/60), ss = s%60; return m + ":" + (ss<10?"0":"") + ss; }
   function gpsMsg(t, err){ const m = document.getElementById("gpsMsg"); if (m){ m.textContent = t || ""; m.classList.toggle("error", !!err); } }
-  function openGps(){ resetGps(); gpsUnit = "mi"; document.getElementById("gpsDistUnit").textContent = gpsUnit; document.getElementById("gpsOverlay").classList.add("open"); }
+  function openGps(){ resetGps(); gpsUnit = "mi"; document.getElementById("gpsDistUnit").textContent = gpsUnit; updateGpsHistoryLink(); document.getElementById("gpsOverlay").classList.add("open"); }
   function closeGps(){ stopWatch(); document.getElementById("gpsOverlay").classList.remove("open"); }
   function resetGps(){
     stopWatch(); gpsDistM = 0; gpsElapsed = 0; gpsLast = null; gpsRecording = false;
@@ -4655,8 +4677,59 @@
     stopWatch(); gpsRecording = false;
     document.getElementById("gpsStartBtn").style.display = "none";
     document.getElementById("gpsDoneActions").style.display = "flex";
-    gpsMsg(gpsDistanceInUnit() > 0 ? "Nice work! Add it to your routine, or go again." : "No distance recorded — try again outside.");
+    const saved = recordGpsRun(); // remember every run with real distance
+    gpsMsg(gpsDistanceInUnit() > 0
+      ? (saved ? "Nice work! Saved to your past runs. 🎉 Add it to a routine, or go again." : "Nice work! Add it to your routine, or go again.")
+      : "No distance recorded — try again outside.");
   }
+  // ---- Past runs history: remember every finished GPS run on this phone ----
+  const GPS_RUNS_KEY = "mowes_gps_runs_v1";
+  function loadGpsRuns(){ try { return JSON.parse(localStorage.getItem(GPS_RUNS_KEY) || "[]") || []; } catch(e){ return []; } }
+  function saveGpsRuns(runs){ try { localStorage.setItem(GPS_RUNS_KEY, JSON.stringify(runs)); } catch(e){} }
+  function recordGpsRun(){
+    const d = +gpsDistanceInUnit().toFixed(3);
+    if (!(d > 0)) return false;
+    const runs = loadGpsRuns();
+    const id = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7);
+    runs.push({ id: id, d: d, u: gpsUnit, t: gpsElapsed, at: new Date().toISOString() });
+    saveGpsRuns(runs);
+    updateGpsHistoryLink();
+    return true;
+  }
+  function updateGpsHistoryLink(){
+    const link = document.getElementById("gpsHistoryLink");
+    if (!link) return;
+    const n = loadGpsRuns().length;
+    link.textContent = n ? ("🕘 Past runs (" + n + ")") : "🕘 Past runs";
+    link.style.display = n ? "block" : "none";
+  }
+  function renderGpsHistory(){
+    const body = document.getElementById("gpsHistoryBody");
+    if (!body) return;
+    const runs = loadGpsRuns().slice().reverse(); // newest first (runs are stored oldest→newest)
+    if (!runs.length){ body.innerHTML = '<div class="gps-runs-empty">No runs saved yet. Finish a GPS walk or run and it\'ll be saved here so you can look back and compare. 🏃</div>'; return; }
+    let html = "";
+    runs.forEach(r => {
+      const unit = r.u || "mi", mins = (r.t || 0) / 60;
+      const speed = (r.d > 0 && mins > 0) ? ((r.d * 60 / mins).toFixed(1) + " " + (unit === "km" ? "km/h" : "mph")) : "—";
+      let dateStr = "";
+      try { if (r.at) dateStr = new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); } catch(e){}
+      html += '<div class="gps-run"><div class="gps-run-main">'
+        + '<div class="gps-run-dist">' + r.d.toFixed(2) + ' ' + escapeHtml(unit) + '</div>'
+        + '<div class="gps-run-sub">⏱ ' + fmtTime(r.t || 0) + '  ·  ' + escapeHtml(speed) + '</div>'
+        + '<div class="gps-run-date">' + escapeHtml(dateStr) + '</div>'
+        + '</div><button class="gps-run-del" title="Delete this run" onclick="deleteGpsRun(\'' + escapeHtml(r.id || r.at || "") + '\')">✕</button></div>';
+    });
+    body.innerHTML = html;
+  }
+  function deleteGpsRun(id){
+    if (!confirm("Delete this run? This can't be undone.")) return;
+    saveGpsRuns(loadGpsRuns().filter(r => (r.id || r.at || "") !== id));
+    renderGpsHistory(); updateGpsHistoryLink();
+  }
+  function openGpsHistory(){ renderGpsHistory(); document.getElementById("gpsHistoryOverlay").classList.add("open"); }
+  function closeGpsHistory(){ document.getElementById("gpsHistoryOverlay").classList.remove("open"); }
+  window.openGpsHistory = openGpsHistory; window.closeGpsHistory = closeGpsHistory; window.deleteGpsRun = deleteGpsRun;
   function addGpsToRoutine(){
     if (!currentPageIsSheet()) switchToPage("default");
     const dist = +gpsDistanceInUnit().toFixed(3);
