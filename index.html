@@ -2022,6 +2022,32 @@
   .wk-step.done .wk-set { text-decoration: line-through; }
   .wk-detail { font-size: 13px; color: #777; margin-top: 2px; }
   .workout-empty { text-align: center; color: #777; font-size: 15px; line-height: 1.6; padding: 40px 12px; }
+
+  /* Guided start (onboarding) */
+  .onb-overlay { position: fixed; inset: 0; z-index: 9700; display: none; overflow-y: auto;
+    align-items: flex-start; justify-content: center; padding: 48px 20px 40px;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
+  .onb-overlay.show { display: flex; }
+  .onb-box { max-width: 380px; width: 100%; text-align: center; }
+  .onb-emoji { font-size: 46px; }
+  .onb-title { font-size: 26px; font-weight: 900; color: #3a4066; margin: 8px 0 6px; }
+  .onb-sub { color: #6a7088; font-size: 15px; line-height: 1.5; margin-bottom: 22px; }
+  .onb-choices { display: flex; flex-direction: column; gap: 12px; }
+  .onb-choice { display: flex; align-items: center; gap: 14px; text-align: left;
+    background: #fff; border: 2px solid #e6e8f0; border-radius: 16px; padding: 16px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(60,64,102,0.08); }
+  .onb-choice:active { transform: scale(0.99); border-color: #5b6cff; }
+  .onb-c-emoji { font-size: 28px; flex: 0 0 auto; }
+  .onb-c-text { display: flex; flex-direction: column; }
+  .onb-c-label { font-weight: 800; color: #3a4066; font-size: 16px; }
+  .onb-c-desc { font-size: 13px; color: #888; margin-top: 2px; }
+  .onb-note { font-size: 12.5px; color: #7a7f95; margin-top: 20px; line-height: 1.5; }
+  .onb-progress { display: flex; justify-content: center; gap: 7px; margin-bottom: 14px; }
+  .onb-dot { width: 8px; height: 8px; border-radius: 50%; background: #c7cdf0; transition: background 0.2s, transform 0.2s; }
+  .onb-dot.done { background: #7a8cff; }
+  .onb-dot.current { background: #5b6cff; transform: scale(1.35); }
+  .onb-back { background: none; border: none; color: #8a90a8; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 16px; padding: 6px; }
+  .onb-back[hidden] { display: none; }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2335,6 +2361,19 @@
       <div class="workout-progress" id="workoutProgressWrap"><div class="workout-progress-bar" id="workoutBar"></div></div>
       <div class="workout-progress-text" id="workoutProgressText">0 of 0 sets done</div>
       <div id="workoutList"></div>
+    </div>
+  </div>
+
+  <!-- Guided start: a brand-new person is welcomed and asked their experience level, then taken to Today's Plan -->
+  <div class="onb-overlay" id="onboardingOverlay">
+    <div class="onb-box">
+      <div class="onb-progress" id="onbProgress"></div>
+      <div class="onb-emoji" id="onbEmoji">👋</div>
+      <div class="onb-title" id="onbTitle">Welcome to MOWES!</div>
+      <div class="onb-sub" id="onbSub"></div>
+      <div class="onb-choices" id="onbChoices"></div>
+      <button class="onb-back" id="onbBack" onclick="onbPrev()">‹ Back</button>
+      <p class="onb-note">🔒 Your answers stay on your phone. You can change your routine anytime.</p>
     </div>
   </div>
 
@@ -5666,9 +5705,88 @@
     playDotTrace({ reverse: true });
   }
   window.showCover = showCover;
+  // ---- Guided start (onboarding): a brand-new person answers a few quick questions, then lands on Today's Plan ----
+  const ONBOARDING_KEY = "mowes_onboarding_v1";
+  const ONB_ANSWERS_KEY = "mowes_onboarding_answers_v1";
+  const ONB_QUESTIONS = [
+    { key:"experience", emoji:"👋", title:"Welcome to MOWES!", sub:"First — how much workout experience do you have?", opts:[
+      { e:"🌱", l:"Beginner", d:"New to this — I'll start easy", v:"beginner" },
+      { e:"💪", l:"Some experience", d:"I've worked out before", v:"some" },
+      { e:"🔥", l:"Experienced", d:"I know my way around", v:"experienced" } ] },
+    { key:"goal", emoji:"🎯", title:"What's your goal?", sub:"What do you most want out of this?", opts:[
+      { e:"🏃", l:"Lose weight", d:"", v:"lose_weight" },
+      { e:"💪", l:"Build strength", d:"", v:"strength" },
+      { e:"🙂", l:"Stay active", d:"", v:"active" },
+      { e:"❤️", l:"Feel healthier", d:"", v:"healthier" } ] },
+    { key:"days", emoji:"📅", title:"How many days a week?", sub:"How often do you want to work out?", opts:[
+      { e:"🟢", l:"2–3 days", d:"A gentle start", v:"2-3" },
+      { e:"🔵", l:"4–5 days", d:"Building a habit", v:"4-5" },
+      { e:"🔥", l:"Every day", d:"All in", v:"daily" } ] },
+    { key:"where", emoji:"📍", title:"Where will you train?", sub:"", opts:[
+      { e:"🏠", l:"At home", d:"", v:"home" },
+      { e:"🏋️", l:"At a gym", d:"", v:"gym" },
+      { e:"🌳", l:"Outdoors", d:"", v:"outdoors" } ] },
+    { key:"time", emoji:"⏱️", title:"How much time per session?", sub:"", opts:[
+      { e:"⚡", l:"15 min", d:"Quick", v:"15" },
+      { e:"⏳", l:"30 min", d:"Standard", v:"30" },
+      { e:"💪", l:"45+ min", d:"Full session", v:"45+" } ] }
+  ];
+  let onbStep = 0, onbAnswers = {};
+  function needsOnboarding(){ try { return !localStorage.getItem(ONBOARDING_KEY); } catch(e){ return false; } }
+  function showOnboarding(){ onbStep = 0; onbAnswers = {}; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
+  function hideOnboarding(){ document.getElementById("onboardingOverlay").classList.remove("show"); }
+  function renderOnbStep(){
+    const q = ONB_QUESTIONS[onbStep];
+    if (!q) return;
+    document.getElementById("onbEmoji").textContent = q.emoji;
+    document.getElementById("onbTitle").textContent = q.title;
+    const sub = document.getElementById("onbSub");
+    sub.textContent = q.sub; sub.style.display = q.sub ? "" : "none";
+    const choices = document.getElementById("onbChoices");
+    choices.innerHTML = "";
+    q.opts.forEach(o => {
+      const b = document.createElement("button");
+      b.className = "onb-choice";
+      b.innerHTML = '<span class="onb-c-emoji">' + o.e + '</span><span class="onb-c-text"><span class="onb-c-label">' + escapeHtml(o.l) + '</span>' + (o.d ? '<span class="onb-c-desc">' + escapeHtml(o.d) + '</span>' : '') + '</span>';
+      if (onbAnswers[q.key] === o.v) b.classList.add("picked");
+      b.onclick = () => onbPick(o.v);
+      choices.appendChild(b);
+    });
+    const back = document.getElementById("onbBack");
+    if (back) back.hidden = (onbStep === 0);
+    const prog = document.getElementById("onbProgress");
+    if (prog){
+      prog.innerHTML = "";
+      ONB_QUESTIONS.forEach((_, i) => {
+        const d = document.createElement("div");
+        d.className = "onb-dot" + (i < onbStep ? " done" : i === onbStep ? " current" : "");
+        prog.appendChild(d);
+      });
+    }
+  }
+  function onbPick(value){
+    const q = ONB_QUESTIONS[onbStep];
+    onbAnswers[q.key] = value;
+    if (onbStep < ONB_QUESTIONS.length - 1){ onbStep++; renderOnbStep(); }
+    else finishOnboarding();
+  }
+  function onbPrev(){ if (onbStep > 0){ onbStep--; renderOnbStep(); } }
+  function finishOnboarding(){
+    try {
+      localStorage.setItem(ONB_ANSWERS_KEY, JSON.stringify(onbAnswers));
+      localStorage.setItem(ONBOARDING_KEY, "1");
+    } catch(e){}
+    hideOnboarding();
+    openPlanPage(); // the guided start hands off to Today's Plan
+  }
+  window.onbPick = onbPick; window.onbPrev = onbPrev;
+
   function dismissWelcome(){
     leaveCoverPage();
-    openPlanPage(); // the Cover hands off to Today's Plan (page 2), with the bar on
+    // A brand-new person gets the guided start first; everyone else goes straight
+    // to Today's Plan (page 2) with the bar on.
+    if (needsOnboarding()) showOnboarding();
+    else openPlanPage();
   }
   window.openApp = openApp;
   window.dismissWelcome = dismissWelcome;
