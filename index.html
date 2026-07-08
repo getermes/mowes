@@ -3171,6 +3171,17 @@
     if (ni < 0 || ni >= pages.length) return;
     transitionToPage(pages[ni].id, offset);
   }
+  // Swiping the button row flips ONLY between the visible tabs (the pinned pages),
+  // never into a page hidden in the "More" menu.
+  function flipVisibleTab(offset){
+    const visible = pages.filter(p => PINNED_PAGE_IDS.includes(p.id));
+    if (visible.length < 2) return;
+    let idx = visible.findIndex(p => p.id === activePageId);
+    if (idx < 0) idx = (offset > 0) ? -1 : visible.length; // a menu page is open → land on the nearest tab
+    const ni = idx + offset;
+    if (ni < 0 || ni >= visible.length) return;
+    transitionToPage(visible[ni].id, offset);
+  }
 
   // ---- Add a page ----
   let newPageType = "sheet";
@@ -3261,7 +3272,7 @@
         const t = e.changedTouches[0];
         const dx = t.clientX - tsx, dy = t.clientY - tsy;
         if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2){
-          flipPage(dx > 0 ? -1 : 1);
+          flipVisibleTab(dx > 0 ? -1 : 1);
         }
       }, { passive: true });
     }
