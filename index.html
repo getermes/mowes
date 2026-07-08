@@ -1355,6 +1355,15 @@
     margin-top: 10px; padding: 8px 12px; border-radius: 12px;
     background: #e6f7ee; color: #1f9257; font-weight: 800; font-size: 14px;
   }
+  .lap-row { align-items: center; gap: 7px; flex-wrap: wrap; margin: 4px 0 8px; font-size: 13px; font-weight: 700; color: #5a6076; }
+  .lap-input {
+    width: 66px; padding: 6px 8px; border: 1px solid #d8dcf0; border-radius: 10px;
+    font-size: 15px; font-weight: 700; text-align: center; background: #fff;
+  }
+  .lap-input:focus { outline: none; border-color: #5b6cff; }
+  .lap-unit { color: #8a8fa3; }
+  .lap-hint { flex-basis: 100%; font-size: 11px; font-weight: 600; color: #9aa0bd; }
+  .set-col-auto { background: #eef1fd !important; color: #5b6cff !important; }
   .set-col:focus { outline: none; border-color: #5b6cff; }
   .set-row.done .set-col { text-decoration: line-through; color: #aab; }
   /* Rest-between-sets control */
@@ -3614,6 +3623,7 @@
           <div class="detail-field" data-field="reps">
             <div class="sets-block">
               <div class="sets-cols"></div>
+              <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
               <div class="sets-head"></div>
               <div class="sets-list"></div>
               <button class="add-set" onclick="addSet(this)">+ Add set</button>
@@ -3794,7 +3804,8 @@
               : { reps:true, weight:true, time:false, distance:false },
       weightUnit: ((d.weightUnit || d.unit) === "kg") ? "kg" : "lbs",
       distUnit: (d.distUnit === "km") ? "km" : "mi",
-      rest: parseInt(d.rest, 10) || 0
+      rest: parseInt(d.rest, 10) || 0,
+      lapLen: parseFloat(d.lapLen) || 0
     };
     if (!activeCols(cfg).length) cfg.cols.reps = true; // never zero columns
     const sets = (d.sets && d.sets.length) ? d.sets : [{ reps:"", weight:"", time:"", distance:"", done:false }];
@@ -3811,12 +3822,46 @@
     sets.forEach((s, i) => listWrap.appendChild(buildSetRow(i + 1, s, cfg)));
     const restEl = fieldEl.querySelector(".rest-input");
     if (restEl) restEl.value = cfg.rest ? cfg.rest : "";
+    // Lap-length control: only shown when the Distance column is on
+    const lapRow = fieldEl.querySelector(".lap-row");
+    const lapInput = fieldEl.querySelector(".lap-input");
+    const lapUnit = fieldEl.querySelector(".lap-unit");
+    if (lapRow) lapRow.style.display = cfg.cols.distance ? "flex" : "none";
+    if (lapInput) lapInput.value = cfg.lapLen ? cfg.lapLen : "";
+    if (lapUnit) lapUnit.textContent = (cfg.distUnit === "km") ? "km" : "mi";
     if (listWrap && !listWrap.dataset.speedBound){
-      listWrap.addEventListener("input", () => updateSpeed(fieldEl));
+      listWrap.addEventListener("input", () => recalcLaps(fieldEl));
       listWrap.dataset.speedBound = "1";
     }
+    recalcLaps(fieldEl);
+  }
+  // Lap length changed → auto-fill each set's distance from its reps (laps)
+  function lapChanged(input){
+    const fieldEl = input.closest(".detail-field");
+    if (!fieldEl || !fieldEl._repsCfg) return;
+    fieldEl._repsCfg.lapLen = parseFloat(input.value) || 0;
+    recalcLaps(fieldEl);
+    captureDay(); saveData();
+  }
+  // When a lap length is set, Distance = Reps × lap length (read-only, computed)
+  function recalcLaps(fieldEl){
+    const cfg = fieldEl._repsCfg;
+    const on = !!(cfg && cfg.cols.distance && cfg.lapLen > 0);
+    fieldEl.querySelectorAll(".set-row").forEach(row => {
+      const distEl = row.querySelector('.set-col[data-col="distance"]');
+      if (!distEl) return;
+      if (on){
+        const repsEl = row.querySelector('.set-col[data-col="reps"]');
+        const laps = parseFloat(repsEl && repsEl.value) || 0;
+        distEl.value = laps > 0 ? +((laps * cfg.lapLen).toFixed(3)) : "";
+        distEl.readOnly = true; distEl.classList.add("set-col-auto");
+      } else {
+        distEl.readOnly = false; distEl.classList.remove("set-col-auto");
+      }
+    });
     updateSpeed(fieldEl);
   }
+  window.lapChanged = lapChanged;
 
   // Auto speed: when a set has both Distance and Time, show its speed (distance ÷ time)
   function updateSpeed(fieldEl){
@@ -3888,11 +3933,13 @@
       return s;
     });
     const restEl = fieldEl.querySelector(".rest-input");
+    const lapEl = fieldEl.querySelector(".lap-input");
     return {
       cols: { ...cfg.cols },
       weightUnit: cfg.weightUnit,
       distUnit: cfg.distUnit,
       rest: restEl ? (parseInt(restEl.value, 10) || 0) : 0,
+      lapLen: lapEl ? (parseFloat(lapEl.value) || 0) : (cfg.lapLen || 0),
       sets: sets.length ? sets : [{ reps:"", weight:"", time:"", distance:"", done:false }]
     };
   }
