@@ -316,6 +316,19 @@
     background: rgba(0,0,0,0.55); color: #fff; font-size: 14px; line-height: 24px;
     padding: 0; text-align: center;
   }
+  .pics-cell img { cursor: pointer; }
+  /* Full-size photo viewer */
+  .pic-viewer {
+    display: none; position: fixed; inset: 0; z-index: 10002;
+    background: rgba(0,0,0,0.9); align-items: center; justify-content: center; padding: 20px;
+  }
+  .pic-viewer.open { display: flex; }
+  .pic-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; }
+  .pic-viewer-x {
+    position: fixed; top: 14px; right: 16px; width: 38px; height: 38px; z-index: 1;
+    border: none; border-radius: 50%; background: rgba(255,255,255,0.22); color: #fff;
+    font-size: 17px; cursor: pointer;
+  }
 
   /* Exercise Videos page */
   .videos-view { display: none; margin-top: 8px; }
@@ -2333,6 +2346,12 @@
         <div class="video-grid" id="videoGrid"></div>
       </div>
 
+      <!-- Full-size photo viewer: tap a photo to see it big; tap outside or ✕ to close -->
+      <div class="pic-viewer" id="picViewer" onclick="closePicViewer()">
+        <button class="pic-viewer-x" onclick="closePicViewer()" aria-label="Close">✕</button>
+        <img id="picViewerImg" alt="photo" onclick="event.stopPropagation()">
+      </div>
+
       <!-- Today's Thought pop-up: appears when you open the app, closes on ✕ or after 15s -->
       <!-- Support / donation -->
       <div class="support">
@@ -2913,6 +2932,7 @@
       cell.className = "pics-cell";
       const img = document.createElement("img");
       img.src = src; img.alt = "photo";
+      img.onclick = () => openPicViewer(src);
       const del = document.createElement("button");
       del.className = "pics-del"; del.textContent = "✕"; del.title = "Remove photo";
       del.onclick = () => removePic(i);
@@ -2920,6 +2940,20 @@
       grid.appendChild(cell);
     });
   }
+  // Tap a photo to see it full-size; tap the background or ✕ to close
+  function openPicViewer(src){
+    const v = document.getElementById("picViewer"), im = document.getElementById("picViewerImg");
+    if (!v || !im) return;
+    im.src = src; v.classList.add("open");
+  }
+  function closePicViewer(){
+    const v = document.getElementById("picViewer");
+    if (!v) return;
+    v.classList.remove("open");
+    const im = document.getElementById("picViewerImg"); if (im) im.src = "";
+  }
+  window.openPicViewer = openPicViewer;
+  window.closePicViewer = closePicViewer;
   // Read chosen photos, shrink them to keep the device's storage small, then save
   function addPics(input){
     const files = [...(input.files || [])];
