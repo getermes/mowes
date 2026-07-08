@@ -2037,6 +2037,8 @@
     background: #fff; border: 2px solid #e6e8f0; border-radius: 16px; padding: 16px; cursor: pointer;
     box-shadow: 0 4px 14px rgba(60,64,102,0.08); }
   .onb-choice:active { transform: scale(0.99); border-color: #5b6cff; }
+  .onb-choice.picked { border-color: #5b6cff; background: #eef1ff; }
+  .onb-choice.picked::after { content: "✓"; margin-left: auto; color: #5b6cff; font-weight: 900; font-size: 20px; }
   .onb-c-emoji { font-size: 28px; flex: 0 0 auto; }
   .onb-c-text { display: flex; flex-direction: column; }
   .onb-c-label { font-weight: 800; color: #3a4066; font-size: 16px; }
@@ -5729,11 +5731,11 @@
       { e:"🟢", l:"2–3 days", d:"A gentle start", v:"2-3" },
       { e:"🔵", l:"4–5 days", d:"Building a habit", v:"4-5" },
       { e:"🔥", l:"Every day", d:"All in", v:"daily" } ] },
-    { key:"where", emoji:"📍", title:"Where will you train?", sub:"", opts:[
+    { key:"where", emoji:"📍", title:"Where will you train?", sub:"Pick all that apply.", multi:true, opts:[
       { e:"🏠", l:"At home", d:"", v:"home" },
       { e:"🏋️", l:"At a gym", d:"", v:"gym" },
       { e:"🌳", l:"Outdoors", d:"", v:"outdoors" } ] },
-    { key:"time", emoji:"⏱️", title:"How much time per session?", sub:"", opts:[
+    { key:"time", emoji:"⏱️", title:"How much time per session?", sub:"Pick all that apply.", multi:true, opts:[
       { e:"⚡", l:"15 min", d:"Quick", v:"15" },
       { e:"⏳", l:"30 min", d:"Standard", v:"30" },
       { e:"💪", l:"45+ min", d:"Full session", v:"45+" } ] }
@@ -5751,14 +5753,25 @@
     sub.textContent = q.sub; sub.style.display = q.sub ? "" : "none";
     const choices = document.getElementById("onbChoices");
     choices.innerHTML = "";
+    const isMulti = !!q.multi;
     q.opts.forEach(o => {
       const b = document.createElement("button");
       b.className = "onb-choice";
       b.innerHTML = '<span class="onb-c-emoji">' + o.e + '</span><span class="onb-c-text"><span class="onb-c-label">' + escapeHtml(o.l) + '</span>' + (o.d ? '<span class="onb-c-desc">' + escapeHtml(o.d) + '</span>' : '') + '</span>';
-      if (onbAnswers[q.key] === o.v) b.classList.add("picked");
-      b.onclick = () => onbPick(o.v);
+      const picked = isMulti ? (Array.isArray(onbAnswers[q.key]) && onbAnswers[q.key].indexOf(o.v) >= 0) : (onbAnswers[q.key] === o.v);
+      if (picked) b.classList.add("picked");
+      b.onclick = isMulti ? () => onbToggle(o.v) : () => onbPick(o.v);
       choices.appendChild(b);
     });
+    if (isMulti){
+      const cont = document.createElement("button");
+      cont.className = "onb-go";
+      cont.textContent = "Continue →";
+      const arr = onbAnswers[q.key];
+      cont.disabled = !(Array.isArray(arr) && arr.length);
+      cont.onclick = onbContinue;
+      choices.appendChild(cont);
+    }
     const back = document.getElementById("onbBack");
     if (back) back.hidden = (onbStep === 0);
     const prog = document.getElementById("onbProgress");
@@ -5771,11 +5784,28 @@
       });
     }
   }
-  function onbPick(value){
-    const q = ONB_QUESTIONS[onbStep];
-    onbAnswers[q.key] = value;
+  function onbAdvance(){
     if (onbStep < ONB_QUESTIONS.length - 1){ onbStep++; renderOnbStep(); }
     else { onbSuggesting = true; renderOnbSuggestion(); } // last question → tailored suggestion
+  }
+  function onbPick(value){ // single-choice questions: pick and move on
+    const q = ONB_QUESTIONS[onbStep];
+    onbAnswers[q.key] = value;
+    onbAdvance();
+  }
+  function onbToggle(value){ // multi-choice questions: toggle, then tap Continue
+    const q = ONB_QUESTIONS[onbStep];
+    let arr = Array.isArray(onbAnswers[q.key]) ? onbAnswers[q.key] : [];
+    const i = arr.indexOf(value);
+    if (i >= 0) arr.splice(i, 1); else arr.push(value);
+    onbAnswers[q.key] = arr;
+    renderOnbStep();
+  }
+  function onbContinue(){
+    const q = ONB_QUESTIONS[onbStep];
+    const arr = onbAnswers[q.key];
+    if (!(Array.isArray(arr) && arr.length)) return; // need at least one
+    onbAdvance();
   }
   function onbPrev(){
     if (onbSuggesting){ onbSuggesting = false; renderOnbStep(); return; }
@@ -5783,16 +5813,22 @@
   }
   // Build a friendly, tailored "here's a good way to start" from the answers.
   function buildSuggestion(a){
-    const nEx = a.time === "15" ? 2 : a.time === "45+" ? 4 : 3;
+    // Where and Time can be multiple picks now — use the first choice to shape
+    // the plan, and treat a "15 min" pick as the shortest session.
+    const wheres = Array.isArray(a.where) ? a.where : (a.where ? [a.where] : ["home"]);
+    const times = Array.isArray(a.time) ? a.time : (a.time ? [a.time] : ["30"]);
+    const primaryWhere = wheres[0] || "home";
+    const shortest = times.indexOf("15") >= 0 ? "15" : (times.indexOf("30") >= 0 ? "30" : (times[0] || "30"));
+    const nEx = shortest === "15" ? 2 : shortest === "45+" ? 4 : 3;
     const setsWord = a.experience === "beginner" ? "2 sets" : "3 sets";
     const pools = {
       home: ["Push-ups", "Squats", "Plank", "Lunges", "Glute bridges"],
       gym: ["Chest press", "Squats", "Lat pulldown", "Dumbbell rows", "Leg press"],
       outdoors: ["Brisk walk", "Bodyweight squats", "Lunges", "Step-ups", "Push-ups"]
     };
-    let list = (pools[a.where] || pools.home).slice();
+    let list = (pools[primaryWhere] || pools.home).slice();
     if (a.goal === "lose_weight"){
-      const cardio = a.where === "gym" ? "10-min treadmill walk" : "10–15 min brisk walk";
+      const cardio = primaryWhere === "gym" ? "10-min treadmill walk" : "10–15 min brisk walk";
       list = [cardio].concat(list.filter(x => x.toLowerCase().indexOf("walk") === -1));
     }
     const exercises = list.slice(0, nEx);
@@ -5831,7 +5867,7 @@
     hideOnboarding();
     openPlanPage(); // the guided start hands off to Today's Plan
   }
-  window.onbPick = onbPick; window.onbPrev = onbPrev; window.finishOnboarding = finishOnboarding;
+  window.onbPick = onbPick; window.onbToggle = onbToggle; window.onbContinue = onbContinue; window.onbPrev = onbPrev; window.finishOnboarding = finishOnboarding;
 
   function dismissWelcome(){
     leaveCoverPage();
