@@ -1971,6 +1971,31 @@
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
   }
   .plan-overlay.show { display: flex; }
+  /* When Today's Plan is shown as page 1 (via the bottom bar), sit it BELOW the
+     bottom bar so the bar stays visible and usable on top of it. */
+  .plan-overlay.plan-as-page { z-index: 1000; padding-bottom: 90px; }
+
+  /* Bottom page bar — always there; flip between pages */
+  .page-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1500;
+    display: none; align-items: center; gap: 8px; padding: 8px 10px;
+    background: rgba(255,255,255,0.97); border-top: 1px solid #e6e8f0;
+    box-shadow: 0 -4px 18px rgba(60,64,102,0.12);
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+  .page-bar.on { display: flex; }
+  .page-bar-arrow {
+    flex: 0 0 auto; width: 46px; height: 42px; border: none; border-radius: 12px;
+    background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; line-height: 1;
+  }
+  .page-bar-arrow:active { transform: scale(0.95); }
+  .page-bar-arrow:disabled { opacity: 0.32; cursor: default; }
+  .page-bar-current {
+    flex: 1 1 auto; min-width: 0; height: 42px; border: none; border-radius: 12px;
+    background: #f5f6fc; color: #3a4066; font-weight: 800; font-size: 15px; cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px;
+  }
+  body.has-page-bar { padding-bottom: 70px; }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2262,6 +2287,13 @@
       <div class="plan-list" id="planList"></div>
       <button class="plan-next" onclick="planNext()">My routines →</button>
     </div>
+  </div>
+
+  <!-- Bottom page bar: always there. Flip between pages (Today's Plan → routines → your other pages). -->
+  <div class="page-bar" id="pageBar">
+    <button class="page-bar-arrow" id="pageBarPrev" onclick="pageBarStep(-1)" aria-label="Previous page">‹</button>
+    <div class="page-bar-current" id="pageBarCurrent">📋 Today's Plan</div>
+    <button class="page-bar-arrow" id="pageBarNext" onclick="pageBarStep(1)" aria-label="Next page">›</button>
   </div>
 
   <!-- Cover page: the app's "book cover" — shows every time it opens -->
@@ -3279,8 +3311,73 @@
     else { setLayoutMode("sheet"); activateSheetPage(id); }
     try { localStorage.setItem(ACTIVE_KEY, id); } catch(e){}
     renderPageTabs();
+    renderPageBar();
     window.scrollTo({ top:0, behavior:"smooth" });
   }
+
+  // ---- Bottom page bar: flip between pages (Today's Plan → routines → others) ----
+  var appOpened = false; // becomes true once you've entered the workspace
+  function pageBarStops(){
+    // Page 1 is Today's Plan; then every page of your book, in order.
+    return [{ plan:true, name:"Today's Plan", icon:"📋 " }]
+      .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })));
+  }
+  function planShownAsPage(){
+    const el = document.getElementById("planOverlay");
+    return !!(el && el.classList.contains("show"));
+  }
+  function pageBarIndex(){
+    if (planShownAsPage()) return 0;
+    const i = pages.findIndex(p => p.id === activePageId);
+    return i < 0 ? 0 : i + 1;
+  }
+  function openPlanPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    renderPlan();
+    const el = document.getElementById("planOverlay");
+    el.classList.add("plan-as-page", "show");
+    renderPageBar();
+  }
+  function leavePlanPage(){
+    const el = document.getElementById("planOverlay");
+    el.classList.remove("show", "plan-as-page");
+  }
+  function goToStop(k){
+    const stops = pageBarStops();
+    if (!stops.length) return;
+    k = Math.max(0, Math.min(stops.length - 1, k));
+    const s = stops[k];
+    if (s.plan){ openPlanPage(); return; }
+    leavePlanPage();
+    if (s.id !== activePageId) goToPage(s.id);
+    else renderPageBar();
+  }
+  function pageBarStep(dir){ goToStop(pageBarIndex() + dir); }
+  function renderPageBar(){
+    const bar = document.getElementById("pageBar");
+    if (!bar) return;
+    const stops = pageBarStops();
+    const idx = pageBarIndex();
+    const cur = stops[idx] || stops[0];
+    const label = document.getElementById("pageBarCurrent");
+    if (label && cur) label.textContent = (cur.icon || "") + cur.name;
+    const prev = document.getElementById("pageBarPrev"), next = document.getElementById("pageBarNext");
+    if (prev) prev.disabled = (idx <= 0);
+    if (next) next.disabled = (idx >= stops.length - 1);
+    updatePageBarVisibility();
+  }
+  function updatePageBarVisibility(){
+    const bar = document.getElementById("pageBar");
+    if (!bar) return;
+    const w = document.getElementById("welcomeOverlay");
+    const t = document.getElementById("coverOverlay");
+    const introUp = (w && w.classList.contains("show")) || (t && t.classList.contains("show"));
+    const show = appOpened && !introUp;
+    bar.classList.toggle("on", show);
+    document.body.classList.toggle("has-page-bar", show);
+  }
+  window.pageBarStep = pageBarStep; window.goToStop = goToStop; window.openPlanPage = openPlanPage;
 
   // The two routine pages get their own tabs; every other page lives in the
   // "More" dropdown (along with "Add page").
@@ -3312,7 +3409,7 @@
     const planTab = document.createElement("button");
     planTab.className = "page-tab page-tab-plan";
     planTab.textContent = "📋 Today's Plan";
-    planTab.onclick = () => showPlan();
+    planTab.onclick = () => openPlanPage();
     wrap.appendChild(planTab);
     const thoughtTab = document.createElement("button");
     thoughtTab.className = "page-tab page-tab-thought";
@@ -5072,13 +5169,16 @@
     // The two dots sweep the border; their moving line peels the cover away to
     // reveal the routines underneath. playDotTrace hides the cover when it ends.
     ov.classList.remove("reveal", "wipeout");
+    appOpened = true;
     playDotTrace();
+    renderPageBar();
     // Safety net: make sure the cover/Thought is fully gone shortly after the
     // peel, even if the animation frame stalls (e.g. tab throttled). Keeps the
     // Thought from ever getting "stuck" on screen when you come back.
     setTimeout(function(){
       const c = document.getElementById("coverOverlay");
       if (c){ c.classList.remove("show", "wipeout", "reveal"); c.style.clipPath = ""; c.style.webkitClipPath = ""; }
+      renderPageBar();
     }, 1600);
     // (No automatic Today's Thought pop-up — the thought stays quiet. You reach it
     //  only by tapping the "💭 Thought" tab, which sits last in the page row.)
@@ -5468,14 +5568,16 @@
   }
   function hidePlan(){ document.getElementById("planOverlay").classList.remove("show"); }
   function planNext(){
-    hidePlan();
+    leavePlanPage();
     // Go STRAIGHT to the routines with a clean page-outline reveal. We do NOT
     // peel the Today's Thought overlay here, so the Thought never flashes on the
     // way in — it stays quiet until you tap the "💭 Thought" tab.
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
     document.getElementById("coverOverlay").classList.remove("show");
+    appOpened = true;
     if (typeof centerToday === "function") centerToday();
     playPageTrace();
+    renderPageBar();
   }
   window.showPlan = showPlan;
   window.planNext = planNext;
@@ -5519,6 +5621,8 @@
   onBookSwipe(document.getElementById("planOverlay"), dir => { if (dir === "fwd") planNext(); else showWelcome(); });
   // Today's Thought: swipe left = into the workspace, swipe right = back to Today's Plan
   onBookSwipe(document.getElementById("coverOverlay"), dir => { if (dir === "fwd") openApp(); else showPlan(); });
+  // Bottom page bar: swipe it left = next page, swipe it right = previous page
+  onBookSwipe(document.getElementById("pageBar"), dir => pageBarStep(dir === "fwd" ? 1 : -1));
 
   // Auto-save: any typing, toggle, or button tap in the routines saves your work
   const routineListEl = document.getElementById("routineList");
@@ -5549,7 +5653,7 @@
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5){
         // A right-swipe that STARTS at the far left edge = flip back one page
         // to Today's Plan (book-page back), like a phone's back gesture.
-        if (dx > 0 && sx < 32){ showPlan(); return; }
+        if (dx > 0 && sx < 32){ openPlanPage(); return; }
         changeDay(dx > 0 ? -1 : 1);
       }
     }, { passive: true });
@@ -5572,7 +5676,7 @@
       const p = document.getElementById("planOverlay");
       if (w.classList.contains("show") || c.classList.contains("show") || p.classList.contains("show")) return; // workspace only
       const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-      if (dx > 50 && Math.abs(dx) > Math.abs(dy) * 1.3 && sx < 32) showPlan();
+      if (dx > 50 && Math.abs(dx) > Math.abs(dy) * 1.3 && sx < 32) openPlanPage();
     }, { passive: true });
   })();
 
