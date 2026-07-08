@@ -2057,6 +2057,24 @@
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
     background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
   .onb-go:active { transform: scale(0.99); }
+
+  /* My Setup page (a book page, sits under the bottom bar) */
+  .setup-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
+  .setup-overlay.show { display: block; }
+  .setup-inner { max-width: 400px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .setup-title { text-align: center; font-size: 26px; font-weight: 900; color: #5b6cff; }
+  .setup-sub { text-align: center; color: #6a7088; font-size: 14px; margin: 4px 0 20px; }
+  .setup-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+    background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .setup-label { font-weight: 800; color: #3a4066; font-size: 14px; flex: 0 0 auto; }
+  .setup-value { color: #555; font-size: 14px; text-align: right; font-weight: 600; }
+  .setup-value.empty { color: #aab; font-style: italic; font-weight: 500; }
+  .setup-edit { display: block; width: 100%; margin-top: 18px; border: none; border-radius: 14px; padding: 16px;
+    font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
+  .setup-edit:active { transform: scale(0.99); }
+  .setup-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: 16px; }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2383,6 +2401,17 @@
       <div class="onb-choices" id="onbChoices"></div>
       <button class="onb-back" id="onbBack" onclick="onbPrev()">‹ Back</button>
       <p class="onb-note">🔒 Your answers stay on your phone. You can change your routine anytime.</p>
+    </div>
+  </div>
+
+  <!-- My Setup: a book page (last in the bar) to review/change your guided-start answers anytime -->
+  <div class="setup-overlay" id="setupOverlay">
+    <div class="setup-inner">
+      <div class="setup-title">⚙️ My Setup</div>
+      <div class="setup-sub">Your answers — add or change them anytime.</div>
+      <div id="setupBody"></div>
+      <button class="setup-edit" onclick="editSetup()">✏️ Update my answers</button>
+      <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
     </div>
   </div>
 
@@ -3408,9 +3437,10 @@
   // ---- Bottom page bar: flip between pages (Today's Plan → routines → others) ----
   var appOpened = false; // becomes true once you've entered the workspace
   function pageBarStops(){
-    // Page 1 is the Cover, then Today's Plan, then every page of your book.
+    // Cover, then Today's Plan, then every page of your book, then My Setup (last).
     return [{ cover:true, name:"Cover", icon:"📖 " }, { plan:true, name:"Today's Plan", icon:"📋 " }]
-      .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })));
+      .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
+      .concat([{ setup:true, name:"My Setup", icon:"⚙️ " }]);
   }
   function coverShownAsPage(){
     const el = document.getElementById("welcomeOverlay");
@@ -3420,16 +3450,21 @@
     const el = document.getElementById("planOverlay");
     return !!(el && el.classList.contains("show"));
   }
+  function setupShownAsPage(){
+    const el = document.getElementById("setupOverlay");
+    return !!(el && el.classList.contains("show"));
+  }
   function pageBarIndex(){
     if (coverShownAsPage()) return 0;
     if (planShownAsPage()) return 1;
+    if (setupShownAsPage()) return pageBarStops().length - 1;
     const i = pages.findIndex(p => p.id === activePageId);
     return i < 0 ? 1 : i + 2;
   }
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage();
+    leavePlanPage(); leaveSetupPage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -3441,7 +3476,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage();
+    leaveCoverPage(); leaveSetupPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -3451,6 +3486,18 @@
     const el = document.getElementById("planOverlay");
     el.classList.remove("show", "plan-as-page");
   }
+  function openSetupPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage();
+    renderSetup();
+    document.getElementById("setupOverlay").classList.add("show");
+    renderPageBar();
+  }
+  function leaveSetupPage(){
+    const el = document.getElementById("setupOverlay");
+    if (el) el.classList.remove("show");
+  }
   function goToStop(k){
     const stops = pageBarStops();
     if (!stops.length) return;
@@ -3458,7 +3505,8 @@
     const s = stops[k];
     if (s.cover){ openCoverPage(); return; }
     if (s.plan){ openPlanPage(); return; }
-    leaveCoverPage(); leavePlanPage();
+    if (s.setup){ openSetupPage(); return; }
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage();
     if (s.id !== activePageId) goToPage(s.id);
     else renderPageBar();
   }
@@ -5747,9 +5795,43 @@
       { e:"⏳", l:"30 min", d:"Standard", v:"30" },
       { e:"💪", l:"45+ min", d:"Full session", v:"45+" } ] }
   ];
-  let onbStep = 0, onbAnswers = {}, onbSuggesting = false;
+  let onbStep = 0, onbAnswers = {}, onbSuggesting = false, onbEditMode = false;
   function needsOnboarding(){ try { return !localStorage.getItem(ONBOARDING_KEY); } catch(e){ return false; } }
-  function showOnboarding(){ onbStep = 0; onbAnswers = {}; onbSuggesting = false; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
+  function showOnboarding(){ onbStep = 0; onbAnswers = {}; onbSuggesting = false; onbEditMode = false; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
+  // Re-open the questions to EDIT saved answers (from the My Setup page), pre-filled.
+  function editSetup(){
+    onbStep = 0; onbSuggesting = false; onbEditMode = true;
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(ONB_ANSWERS_KEY) || "{}") || {}; } catch(e){}
+    onbAnswers = saved;
+    leaveSetupPage();
+    renderOnbStep();
+    document.getElementById("onboardingOverlay").classList.add("show");
+  }
+  window.editSetup = editSetup;
+  // Friendly text for a saved answer value (single value or array), from the option labels.
+  function onbValueLabel(qKey, val){
+    const q = ONB_QUESTIONS.find(x => x.key === qKey);
+    if (!q) return String(val);
+    const find = v => { const o = q.opts.find(o => o.v === v); return o ? (o.e + " " + o.l) : String(v); };
+    return Array.isArray(val) ? val.map(find).join(", ") : find(val);
+  }
+  const SETUP_LABELS = { experience:"Experience", goal:"Goal", days:"Days / week", where:"Where", equipment:"Equipment", time:"Time / session" };
+  function renderSetup(){
+    let a = {};
+    try { a = JSON.parse(localStorage.getItem(ONB_ANSWERS_KEY) || "{}") || {}; } catch(e){}
+    const body = document.getElementById("setupBody");
+    if (!body) return;
+    let html = "";
+    ONB_QUESTIONS.forEach(q => {
+      const val = a[q.key];
+      const empty = (val == null || (Array.isArray(val) && !val.length) || val === "");
+      const display = empty ? "not set" : onbValueLabel(q.key, val);
+      html += '<div class="setup-row"><div class="setup-label">' + escapeHtml(SETUP_LABELS[q.key] || q.key) + '</div>'
+        + '<div class="setup-value' + (empty ? ' empty' : '') + '">' + escapeHtml(display) + '</div></div>';
+    });
+    body.innerHTML = html;
+  }
   function hideOnboarding(){ document.getElementById("onboardingOverlay").classList.remove("show"); }
   function renderOnbStep(){
     const q = ONB_QUESTIONS[onbStep];
@@ -5872,7 +5954,7 @@
     s.exercises.forEach(x => { html += '<div class="onb-ex">✅ ' + escapeHtml(x) + '</div>'; });
     html += '</div>';
     html += '<div class="onb-nextstep">' + escapeHtml(s.nextStep) + '</div>';
-    html += '<button class="onb-go" onclick="finishOnboarding()">Take me to my plan →</button>';
+    html += '<button class="onb-go" onclick="finishOnboarding()">' + (onbEditMode ? "Save my setup ✓" : "Take me to my plan →") + '</button>';
     choices.innerHTML = html;
     const back = document.getElementById("onbBack");
     if (back) back.hidden = false;
@@ -5885,7 +5967,8 @@
       localStorage.setItem(ONBOARDING_KEY, "1");
     } catch(e){}
     hideOnboarding();
-    openPlanPage(); // the guided start hands off to Today's Plan
+    if (onbEditMode){ onbEditMode = false; openSetupPage(); } // editing → back to My Setup
+    else openPlanPage(); // first-time guided start → Today's Plan
   }
   window.onbPick = onbPick; window.onbToggle = onbToggle; window.onbContinue = onbContinue; window.onbPrev = onbPrev; window.finishOnboarding = finishOnboarding;
 
