@@ -3307,6 +3307,18 @@
       wrap.appendChild(tab);
       if (p.id === activePageId) activeTab = tab;
     });
+    // Quick tabs: Today's Plan (your home base) and the quiet Today's Thought,
+    // sitting last in the row right before the "＋ More" button.
+    const planTab = document.createElement("button");
+    planTab.className = "page-tab page-tab-plan";
+    planTab.textContent = "📋 Today's Plan";
+    planTab.onclick = () => showPlan();
+    wrap.appendChild(planTab);
+    const thoughtTab = document.createElement("button");
+    thoughtTab.className = "page-tab page-tab-thought";
+    thoughtTab.textContent = "💭 Thought";
+    thoughtTab.onclick = () => viewThought();
+    wrap.appendChild(thoughtTab);
     // One dropdown button for everything else. If a menu page is currently open,
     // the button shows its name so you know where you are.
     const ap = currentPage();
@@ -5061,8 +5073,15 @@
     // reveal the routines underneath. playDotTrace hides the cover when it ends.
     ov.classList.remove("reveal", "wipeout");
     playDotTrace();
-    // Show today's thought as a quick pop-up the first time you enter the app.
-    if (!thoughtPopShown){ thoughtPopShown = true; setTimeout(showThoughtPop, 1700); }
+    // Safety net: make sure the cover/Thought is fully gone shortly after the
+    // peel, even if the animation frame stalls (e.g. tab throttled). Keeps the
+    // Thought from ever getting "stuck" on screen when you come back.
+    setTimeout(function(){
+      const c = document.getElementById("coverOverlay");
+      if (c){ c.classList.remove("show", "wipeout", "reveal"); c.style.clipPath = ""; c.style.webkitClipPath = ""; }
+    }, 1600);
+    // (No automatic Today's Thought pop-up — the thought stays quiet. You reach it
+    //  only by tapping the "💭 Thought" tab, which sits last in the page row.)
   }
 
   // ---- Today's Thought pop-up (open on app entry; ✕ or auto-close in 15s) ----
@@ -5450,15 +5469,27 @@
   function hidePlan(){ document.getElementById("planOverlay").classList.remove("show"); }
   function planNext(){
     hidePlan();
-    document.getElementById("coverThought").textContent = getTodaysThoughtText();
-    // New book order: Today's Plan hands off STRAIGHT to the Routines — Today's
-    // Thought is no longer a forced stop in the middle. The page-turn briefly
-    // shows the Thought as it peels away, and it re-appears as the cloud pop-up
-    // once you're on your routines ("after the routines, still visible").
-    openApp();
+    // Go STRAIGHT to the routines with a clean page-outline reveal. We do NOT
+    // peel the Today's Thought overlay here, so the Thought never flashes on the
+    // way in — it stays quiet until you tap the "💭 Thought" tab.
+    if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
+    document.getElementById("coverOverlay").classList.remove("show");
+    if (typeof centerToday === "function") centerToday();
+    playPageTrace();
   }
   window.showPlan = showPlan;
   window.planNext = planNext;
+  // Tapping the quiet "💭 Thought" tab: show Today's Thought as a page you chose
+  // to open (no auto-open timer). "Open MOWES →" / swipe takes you back.
+  function viewThought(){
+    if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
+    document.getElementById("coverThought").textContent = getTodaysThoughtText();
+    const ov = document.getElementById("coverOverlay");
+    ov.classList.remove("reveal", "wipeout");
+    ov.style.clipPath = ""; ov.style.webkitClipPath = ""; ov.style.animation = "";
+    ov.classList.add("show");
+  }
+  window.viewThought = viewThought;
 
   // The cover is the app's face — show it on every open
   document.getElementById("coverThought").textContent = getTodaysThoughtText();
