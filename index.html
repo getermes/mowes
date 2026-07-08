@@ -5735,6 +5735,13 @@
       { e:"🏠", l:"At home", d:"", v:"home" },
       { e:"🏋️", l:"At a gym", d:"", v:"gym" },
       { e:"🌳", l:"Outdoors", d:"", v:"outdoors" } ] },
+    { key:"equipment", emoji:"🏋️", title:"What do you have to work out with?", sub:"Pick all that apply.", multi:true, opts:[
+      { e:"🤲", l:"Dumbbells / hand weights", d:"", v:"dumbbells" },
+      { e:"🏋️", l:"Barbell (long bar)", d:"", v:"barbell" },
+      { e:"🏃", l:"Treadmill", d:"", v:"treadmill" },
+      { e:"🚴", l:"Stationary bike", d:"", v:"bike" },
+      { e:"🚶", l:"Walking or running outside", d:"", v:"walk_run" },
+      { e:"💪", l:"Just my body (no equipment)", d:"", v:"bodyweight" } ] },
     { key:"time", emoji:"⏱️", title:"How much time per session?", sub:"Pick all that apply.", multi:true, opts:[
       { e:"⚡", l:"15 min", d:"Quick", v:"15" },
       { e:"⏳", l:"30 min", d:"Standard", v:"30" },
@@ -5812,32 +5819,45 @@
     if (onbStep > 0){ onbStep--; renderOnbStep(); }
   }
   // Build a friendly, tailored "here's a good way to start" from the answers.
+  // Exercises that fit each piece of equipment/activity the user said they have.
+  const EQUIP_MOVES = {
+    dumbbells:  ["Dumbbell squats", "Dumbbell rows", "Shoulder press", "Bicep curls", "Weighted lunges"],
+    barbell:    ["Barbell squats", "Deadlifts", "Bench press", "Barbell rows", "Overhead press"],
+    treadmill:  ["Treadmill walk", "Treadmill jog", "Incline walk"],
+    bike:       ["Stationary bike ride", "Bike intervals"],
+    walk_run:   ["Brisk walk", "Jog / run", "Walk-run intervals"],
+    bodyweight: ["Push-ups", "Squats", "Plank", "Lunges", "Glute bridges"]
+  };
+  const CARDIO_EQUIP = ["treadmill", "bike", "walk_run"];
+  const STRENGTH_EQUIP = ["dumbbells", "barbell", "bodyweight"];
+  const EQUIP_NAME = { dumbbells:"dumbbells", barbell:"a barbell", treadmill:"a treadmill", bike:"a bike", walk_run:"outdoor walks/runs", bodyweight:"just your body" };
   function buildSuggestion(a){
-    // Where and Time can be multiple picks now — use the first choice to shape
-    // the plan, and treat a "15 min" pick as the shortest session.
-    const wheres = Array.isArray(a.where) ? a.where : (a.where ? [a.where] : ["home"]);
     const times = Array.isArray(a.time) ? a.time : (a.time ? [a.time] : ["30"]);
-    const primaryWhere = wheres[0] || "home";
     const shortest = times.indexOf("15") >= 0 ? "15" : (times.indexOf("30") >= 0 ? "30" : (times[0] || "30"));
     const nEx = shortest === "15" ? 2 : shortest === "45+" ? 4 : 3;
     const setsWord = a.experience === "beginner" ? "2 sets" : "3 sets";
-    const pools = {
-      home: ["Push-ups", "Squats", "Plank", "Lunges", "Glute bridges"],
-      gym: ["Chest press", "Squats", "Lat pulldown", "Dumbbell rows", "Leg press"],
-      outdoors: ["Brisk walk", "Bodyweight squats", "Lunges", "Step-ups", "Push-ups"]
-    };
-    let list = (pools[primaryWhere] || pools.home).slice();
-    if (a.goal === "lose_weight"){
-      const cardio = primaryWhere === "gym" ? "10-min treadmill walk" : "10–15 min brisk walk";
-      list = [cardio].concat(list.filter(x => x.toLowerCase().indexOf("walk") === -1));
+    // Pick exercises from ONLY the equipment/activities they told us they have.
+    let equip = Array.isArray(a.equipment) ? a.equipment.slice() : (a.equipment ? [a.equipment] : []);
+    if (!equip.length) equip = ["bodyweight"];
+    // Order by their goal: lose weight → cardio first; build strength → weights first.
+    if (a.goal === "lose_weight") equip.sort((x, y) => (CARDIO_EQUIP.indexOf(y) >= 0) - (CARDIO_EQUIP.indexOf(x) >= 0));
+    else if (a.goal === "strength") equip.sort((x, y) => (STRENGTH_EQUIP.indexOf(y) >= 0) - (STRENGTH_EQUIP.indexOf(x) >= 0));
+    // Round-robin so a mix of their gear shows up, up to nEx.
+    const pools = equip.map(k => (EQUIP_MOVES[k] || []).slice());
+    const exercises = [];
+    let i = 0, guard = 0;
+    while (exercises.length < nEx && pools.some(p => p.length) && guard++ < 60){
+      const p = pools[i % pools.length];
+      if (p && p.length) exercises.push(p.shift());
+      i++;
     }
-    const exercises = list.slice(0, nEx);
-    const daysText = a.days === "2-3" ? "2–3 days a week" : a.days === "4-5" ? "4–5 days a week" : "every day";
+    // Personalized text that reflects THEIR answers.
     const goalText = { lose_weight:"lose weight", strength:"build strength", active:"stay active", healthier:"feel healthier" }[a.goal] || "get moving";
-    const expText = { beginner:"Since you're just starting out, keep it simple and steady — no rush.",
-      some:"You've got some experience, so a solid full-body mix works well.",
-      experienced:"You know your way around — push the weight and pace when you're ready." }[a.experience] || "";
-    const body = "To " + goalText + ", aim for " + daysText + ". " + expText + " Try about " + nEx + " exercises, " + setsWord + " each:";
+    const daysText = a.days === "2-3" ? "2–3 days a week" : a.days === "4-5" ? "4–5 days a week" : "every day";
+    const gear = equip.map(k => EQUIP_NAME[k] || k);
+    const gearText = gear.length === 1 ? gear[0] : gear.slice(0, -1).join(", ") + " and " + gear[gear.length - 1];
+    const expText = { beginner:"Keep it simple and steady — no rush.", some:"A solid mix works well for you.", experienced:"Push the weight and pace when you're ready." }[a.experience] || "";
+    const body = "With " + gearText + ", and aiming to " + goalText + " " + daysText + " — here's a good start. " + expText + " Try about " + exercises.length + " exercises, " + setsWord + " each:";
     const nextStep = "Add these on your Weight Routine page (flip there with the bottom bar), then tap “Let’s go! 💪” to start your day.";
     return { body: body, exercises: exercises, nextStep: nextStep };
   }
