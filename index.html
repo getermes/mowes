@@ -1718,6 +1718,36 @@
     box-shadow: 0 4px 14px rgba(91,108,255,0.28);
   }
   .add-routine:active { transform: scale(0.99); }
+  .suggest-btn {
+    margin-top: 8px; width: 100%; padding: 12px;
+    border: 1px solid #d8dcf0; border-radius: 12px;
+    background: #fff; color: #5b6cff; font-weight: 700; font-size: 15px; cursor: pointer;
+  }
+  .suggest-btn:active { transform: scale(0.99); }
+
+  /* Beginner suggestions modal */
+  .suggest-intro { color: #6a7088; font-size: 13px; line-height: 1.5; margin: 0 0 14px; }
+  .suggest-cat { font-weight: 800; color: #3a4066; font-size: 15px; margin: 16px 0 8px; }
+  .suggest-cat:first-child { margin-top: 4px; }
+  .suggest-row {
+    border: 1px solid #e7eafb; border-radius: 14px; margin-bottom: 8px; overflow: hidden; background: #fbfcff;
+  }
+  .suggest-head {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 12px 14px; border: none; background: none; cursor: pointer; text-align: left;
+    font-weight: 700; color: #3a4066; font-size: 15px;
+  }
+  .suggest-head .sug-arrow { margin-left: auto; color: #9aa0bd; font-size: 12px; transition: transform 0.2s ease; }
+  .suggest-row.open .sug-arrow { transform: rotate(90deg); }
+  .suggest-body { display: none; padding: 0 14px 14px; }
+  .suggest-row.open .suggest-body { display: block; }
+  .suggest-how { color: #4a5068; font-size: 14px; line-height: 1.55; margin: 0 0 12px; }
+  .suggest-add {
+    border: none; border-radius: 10px; padding: 9px 14px; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; font-weight: 700; font-size: 14px;
+  }
+  .suggest-add:active { transform: scale(0.98); }
+  .suggest-added { color: #2faa6a; font-weight: 700; font-size: 14px; }
 
   /* Copy day */
   .routines-header {
@@ -2211,6 +2241,7 @@
         </div>
         <div id="routineList"></div>
         <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
+        <button class="suggest-btn" onclick="openSuggestions()">💡 Beginner Exercise Suggestions</button>
         <p class="support-cta" style="text-align:center; font-size:15px; font-weight:700; color:#5b6cff; margin:60px 0 6px; padding-top:28px; border-top:1px solid #d3d8f2;"><span class="us-beat">Help us</span> keep <span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span> free…</p>
         <div class="routine-support" style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top:4px;">
           <button type="button" class="coffee-btn" id="likeBtn" onclick="likeApp()" title="Like the app" aria-label="Like the app"><svg viewBox="0 0 24 24" fill="none" stroke="#ff2d55" stroke-width="2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>
@@ -2408,6 +2439,18 @@
             <button class="addpage-create" onclick="confirmAddPage()">Create page</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Beginner Exercise Suggestions -->
+    <div class="overlay" id="suggestOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>💡 Beginner Suggestions</h2>
+          <button class="close-btn" onclick="closeSuggestions()">&times;</button>
+        </div>
+        <p class="suggest-intro">Simple, safe moves to get started — great for beginners, staying in shape, gentle therapy, or training at home. Tap one to see how, then add it to your routine.</p>
+        <div id="suggestList"></div>
       </div>
     </div>
 
@@ -4038,6 +4081,77 @@
     weekData[selectedDay].push(blankRoutine());
     renderRoutines();
   }
+
+  // ---- Beginner Exercise Suggestions ----
+  const SUGGESTIONS = [
+    { cat: "🟢 Gentle Start — beginners, staying in shape, therapy", items: [
+      { name: "Chair Sit-to-Stand", how: "Sit tall in a sturdy chair, then stand up and slowly sit back down. Use your hands on the seat only if you need to. Great for leg strength and getting up more easily." },
+      { name: "Seated Marching", how: "Sit up straight and lift one knee, then the other, like marching in place. Keep it slow and steady. Warms up your hips and core." },
+      { name: "Wall Push-ups", how: "Stand about an arm's length from a wall, hands flat on it. Bend your elbows to lean in, then push back. A gentle way to build chest and arm strength." },
+      { name: "Heel & Toe Raises", how: "Hold a chair or counter for balance. Rise up onto your toes, then rock back onto your heels. Builds calves and balance." },
+      { name: "Shoulder Rolls", how: "Slowly roll your shoulders forward a few times, then backward. Loosens tight shoulders and the neck." },
+    ]},
+    { cat: "🏋️ Basic Weights — light dumbbells", items: [
+      { name: "Bicep Curls", how: "Hold a light weight in each hand, arms down. Curl them up toward your shoulders, then lower slowly. Builds the front of your arms." },
+      { name: "Overhead Press", how: "Hold the weights at your shoulders. Press them straight up overhead, then bring them back down. Strengthens shoulders." },
+      { name: "Front Raises", how: "Arms down with a weight in each hand. Lift them straight out in front of you to shoulder height, then lower. Works the shoulders." },
+      { name: "Bent-over Rows", how: "Lean forward slightly with a flat back. Pull the weights up toward your ribs, squeezing your back, then lower. Strengthens your upper back." },
+      { name: "Goblet Squat", how: "Hold one weight against your chest. Sit back into a squat like lowering into a chair, then stand. Strong legs and hips." },
+    ]},
+    { cat: "🚶 Home Cardio — treadmill, standing bike, walking", items: [
+      { name: "Easy Treadmill Walk", how: "Walk at a comfortable pace for 10–20 minutes — slow enough that you could still chat. A gentle, heart-healthy start." },
+      { name: "Incline Walk", how: "Set a small incline on the treadmill and walk steadily. A little more effort without any pounding on your joints." },
+      { name: "Standing Bike", how: "Pedal at a light, steady pace for 10–15 minutes to start. Easy on the knees and good for your heart." },
+      { name: "Walk–Rest Intervals", how: "Walk briskly for 2 minutes, then easy for 1 minute. Repeat a few times. A simple way to build stamina." },
+      { name: "March in Place", how: "No equipment needed — march on the spot, lifting your knees and pumping your arms. A great warm-up for the whole body." },
+    ]},
+  ];
+  function openSuggestions(){
+    const list = document.getElementById("suggestList");
+    if (list && !list.dataset.built){
+      SUGGESTIONS.forEach(group => {
+        const cat = document.createElement("div"); cat.className = "suggest-cat"; cat.textContent = group.cat;
+        list.appendChild(cat);
+        group.items.forEach(ex => {
+          const row = document.createElement("div"); row.className = "suggest-row";
+          const head = document.createElement("button"); head.type = "button"; head.className = "suggest-head";
+          head.innerHTML = "<span>" + ex.name + "</span><span class='sug-arrow'>▶</span>";
+          head.onclick = () => row.classList.toggle("open");
+          const body = document.createElement("div"); body.className = "suggest-body";
+          const how = document.createElement("p"); how.className = "suggest-how"; how.textContent = ex.how;
+          const add = document.createElement("button"); add.type = "button"; add.className = "suggest-add"; add.textContent = "＋ Add to my routine";
+          add.onclick = () => {
+            addSuggestionToRoutine(ex.name);
+            const done = document.createElement("span"); done.className = "suggest-added"; done.textContent = "✓ Added!";
+            add.replaceWith(done);
+            setTimeout(() => { done.replaceWith(add); }, 1600);
+          };
+          body.appendChild(how); body.appendChild(add);
+          row.appendChild(head); row.appendChild(body);
+          list.appendChild(row);
+        });
+      });
+      list.dataset.built = "1";
+    }
+    document.getElementById("suggestOverlay").classList.add("open");
+  }
+  function closeSuggestions(){ document.getElementById("suggestOverlay").classList.remove("open"); }
+  // Drop a suggested exercise into today's routine (reuse a trailing empty row if there is one)
+  function addSuggestionToRoutine(name){
+    if (!currentPageIsSheet()){
+      // if somehow not on a workout page, hop to the main Weight Routine page first
+      switchToPage("default");
+    }
+    captureDay();
+    const arr = weekData[selectedDay];
+    const last = arr[arr.length - 1];
+    if (last && !String(last.name || "").trim()) last.name = name;
+    else { const r = blankRoutine(); r.name = name; arr.push(r); }
+    renderRoutines();
+    captureDay(); saveData();
+  }
+  window.openSuggestions = openSuggestions;
+  window.closeSuggestions = closeSuggestions;
 
   // Move a routine up (dir = -1) or down (dir = +1) to reorder the list
   function moveRoutine(btn, dir){
