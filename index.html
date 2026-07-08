@@ -850,6 +850,22 @@
   /* Help can be opened from the cover (z-index 9000), so it must sit above it */
   #helpOverlay { z-index: 9500; }
 
+  /* Backup & Restore popup */
+  .backup-intro { color: #555; font-size: 14px; line-height: 1.5; margin: 4px 0 16px; }
+  .backup-btn {
+    width: 100%; border: none; border-radius: 14px; padding: 15px;
+    font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
+    box-shadow: 0 6px 18px rgba(91,108,255,0.20);
+  }
+  .backup-btn:active { transform: scale(0.98); }
+  .backup-save { background: linear-gradient(135deg, #5b6cff, #7a5bff); }
+  .backup-restore { background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 6px 18px rgba(39,185,138,0.22); }
+  .backup-sub { font-size: 12.5px; color: #777; margin: 8px 2px 0; text-align: center; }
+  .backup-warn { color: #b06a00; }
+  .backup-divider { display: flex; align-items: center; gap: 10px; color: #aaa; font-size: 13px; margin: 16px 0; }
+  .backup-divider::before, .backup-divider::after { content: ""; flex: 1; height: 1px; background: #e6e8f0; }
+  .backup-privacy { margin-top: 18px; background: #f1f3fb; border-radius: 12px; padding: 12px 14px; font-size: 12.5px; color: #555; line-height: 1.5; }
+
   .card {
     background: #fff;
     border-radius: 24px 24px 0 0;
@@ -2619,6 +2635,24 @@
       </div>
     </div>
 
+    <!-- Backup & Restore: save all your MOWES data to a file, or bring it back -->
+    <div class="overlay" id="backupOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>💾 Backup &amp; Restore</h2>
+          <button class="close-btn" onclick="closeBackup()">&times;</button>
+        </div>
+        <p class="backup-intro">Everything in MOWES lives only on this phone. Save a backup file so your routines, notes, photos and history are safe — for example if you lose your phone or clear your browser.</p>
+        <button class="backup-btn backup-save" onclick="doBackupSave()">💾 Save a backup file</button>
+        <p class="backup-sub" id="backupSaveMsg"></p>
+        <div class="backup-divider"><span>or</span></div>
+        <button class="backup-btn backup-restore" onclick="document.getElementById('backupFile').click()">📂 Restore from a backup</button>
+        <input type="file" id="backupFile" accept="application/json,.json" style="display:none" onchange="doBackupRestore(this)">
+        <p class="backup-sub backup-warn">Restoring replaces what's on this phone now with the backup's contents.</p>
+        <div class="backup-privacy">🔒 Your backup file stays with you — it's never sent anywhere. Keep it somewhere safe (like your Files, email to yourself, or cloud drive).</div>
+      </div>
+    </div>
+
     <!-- Page options dialog (rename / delete) -->
     <div class="overlay" id="pageToolsOverlay">
       <div class="card">
@@ -3260,6 +3294,10 @@
     hist.className = "pm-action"; hist.textContent = "🕘 History";
     hist.onclick = () => { closePagesMenu(); openHistory(); };
     menu.appendChild(hist);
+    const backup = document.createElement("button");
+    backup.className = "pm-action"; backup.textContent = "💾 Backup & Restore";
+    backup.onclick = () => { closePagesMenu(); openBackup(); };
+    menu.appendChild(backup);
     const add = document.createElement("button");
     add.className = "pm-add"; add.textContent = "＋ Add page";
     add.onclick = () => { closePagesMenu(); addPage(); };
@@ -4618,6 +4656,66 @@
     document.getElementById("lapMeasureOverlay").classList.add("open");
   }
   function closeLapMeasure(){ document.getElementById("lapMeasureOverlay").classList.remove("open"); }
+
+  // ---- Backup & Restore: save/load every "mowes_" key as one JSON file ----
+  function openBackup(){
+    const m = document.getElementById("backupSaveMsg");
+    if (m) m.textContent = "";
+    document.getElementById("backupOverlay").classList.add("open");
+  }
+  function closeBackup(){ document.getElementById("backupOverlay").classList.remove("open"); }
+  function collectMowesKeys(){
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (k && k.indexOf("mowes_") === 0) keys.push(k);
+    }
+    return keys;
+  }
+  function doBackupSave(){
+    const data = {};
+    collectMowesKeys().forEach(k => { data[k] = localStorage.getItem(k); });
+    const payload = { app: "MOWES", type: "mowes-backup", version: 1, savedAt: new Date().toISOString(), data: data };
+    const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const d = new Date(), pad = n => String(n).padStart(2, "0");
+    const fname = "mowes-backup-" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + ".json";
+    const a = document.createElement("a");
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+    const msg = document.getElementById("backupSaveMsg");
+    if (msg) msg.textContent = "✅ Saved " + fname + " — check your downloads and keep it somewhere safe.";
+  }
+  function doBackupRestore(input){
+    const file = input.files && input.files[0];
+    if (!file){ return; }
+    const reader = new FileReader();
+    reader.onload = function(){
+      let parsed;
+      try { parsed = JSON.parse(reader.result); }
+      catch(e){ alert("Sorry — that file isn't a valid MOWES backup."); input.value = ""; return; }
+      const data = parsed && parsed.data;
+      if (!(parsed && parsed.type === "mowes-backup" && data && typeof data === "object")){
+        alert("Sorry — that doesn't look like a MOWES backup file."); input.value = ""; return;
+      }
+      const count = Object.keys(data).length;
+      let when = "an earlier date";
+      try { if (parsed.savedAt) when = new Date(parsed.savedAt).toLocaleDateString(); } catch(e){}
+      if (!confirm("Restore this backup from " + when + "?\n\nThis REPLACES everything now in MOWES on this phone with the backup (" + count + " items). This can't be undone.")){
+        input.value = ""; return;
+      }
+      collectMowesKeys().forEach(k => localStorage.removeItem(k));
+      Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
+      input.value = "";
+      alert("✅ Restored! MOWES will now reload with your backup.");
+      location.reload();
+    };
+    reader.onerror = function(){ alert("Sorry — couldn't read that file."); input.value = ""; };
+    reader.readAsText(file);
+  }
+  window.openBackup = openBackup; window.closeBackup = closeBackup;
+  window.doBackupSave = doBackupSave; window.doBackupRestore = doBackupRestore;
   function pickStepSize(btn){
     [...document.querySelectorAll("#lmStepSize .lm-size")].forEach(x => x.classList.remove("on"));
     btn.classList.add("on"); lmStepM = parseFloat(btn.dataset.m) || 0.76; recomputeLap();
