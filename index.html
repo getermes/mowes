@@ -2048,6 +2048,13 @@
   .onb-dot.current { background: #5b6cff; transform: scale(1.35); }
   .onb-back { background: none; border: none; color: #8a90a8; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 16px; padding: 6px; }
   .onb-back[hidden] { display: none; }
+  .onb-suggest-list { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+  .onb-ex { background: #fff; border-radius: 12px; padding: 12px 14px; font-weight: 700; color: #3a4066; font-size: 15px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .onb-nextstep { text-align: left; font-size: 13.5px; color: #6a7088; line-height: 1.5; margin: 14px 2px 4px; }
+  .onb-go { display: block; width: 100%; margin-top: 16px; border: none; border-radius: 14px; padding: 16px;
+    font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
+  .onb-go:active { transform: scale(0.99); }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -5731,9 +5738,9 @@
       { e:"⏳", l:"30 min", d:"Standard", v:"30" },
       { e:"💪", l:"45+ min", d:"Full session", v:"45+" } ] }
   ];
-  let onbStep = 0, onbAnswers = {};
+  let onbStep = 0, onbAnswers = {}, onbSuggesting = false;
   function needsOnboarding(){ try { return !localStorage.getItem(ONBOARDING_KEY); } catch(e){ return false; } }
-  function showOnboarding(){ onbStep = 0; onbAnswers = {}; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
+  function showOnboarding(){ onbStep = 0; onbAnswers = {}; onbSuggesting = false; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
   function hideOnboarding(){ document.getElementById("onboardingOverlay").classList.remove("show"); }
   function renderOnbStep(){
     const q = ONB_QUESTIONS[onbStep];
@@ -5768,9 +5775,54 @@
     const q = ONB_QUESTIONS[onbStep];
     onbAnswers[q.key] = value;
     if (onbStep < ONB_QUESTIONS.length - 1){ onbStep++; renderOnbStep(); }
-    else finishOnboarding();
+    else { onbSuggesting = true; renderOnbSuggestion(); } // last question → tailored suggestion
   }
-  function onbPrev(){ if (onbStep > 0){ onbStep--; renderOnbStep(); } }
+  function onbPrev(){
+    if (onbSuggesting){ onbSuggesting = false; renderOnbStep(); return; }
+    if (onbStep > 0){ onbStep--; renderOnbStep(); }
+  }
+  // Build a friendly, tailored "here's a good way to start" from the answers.
+  function buildSuggestion(a){
+    const nEx = a.time === "15" ? 2 : a.time === "45+" ? 4 : 3;
+    const setsWord = a.experience === "beginner" ? "2 sets" : "3 sets";
+    const pools = {
+      home: ["Push-ups", "Squats", "Plank", "Lunges", "Glute bridges"],
+      gym: ["Chest press", "Squats", "Lat pulldown", "Dumbbell rows", "Leg press"],
+      outdoors: ["Brisk walk", "Bodyweight squats", "Lunges", "Step-ups", "Push-ups"]
+    };
+    let list = (pools[a.where] || pools.home).slice();
+    if (a.goal === "lose_weight"){
+      const cardio = a.where === "gym" ? "10-min treadmill walk" : "10–15 min brisk walk";
+      list = [cardio].concat(list.filter(x => x.toLowerCase().indexOf("walk") === -1));
+    }
+    const exercises = list.slice(0, nEx);
+    const daysText = a.days === "2-3" ? "2–3 days a week" : a.days === "4-5" ? "4–5 days a week" : "every day";
+    const goalText = { lose_weight:"lose weight", strength:"build strength", active:"stay active", healthier:"feel healthier" }[a.goal] || "get moving";
+    const expText = { beginner:"Since you're just starting out, keep it simple and steady — no rush.",
+      some:"You've got some experience, so a solid full-body mix works well.",
+      experienced:"You know your way around — push the weight and pace when you're ready." }[a.experience] || "";
+    const body = "To " + goalText + ", aim for " + daysText + ". " + expText + " Try about " + nEx + " exercises, " + setsWord + " each:";
+    const nextStep = "Add these on your Weight Routine page (flip there with the bottom bar), then tap “Let’s go! 💪” to start your day.";
+    return { body: body, exercises: exercises, nextStep: nextStep };
+  }
+  function renderOnbSuggestion(){
+    const s = buildSuggestion(onbAnswers);
+    document.getElementById("onbEmoji").textContent = "💡";
+    document.getElementById("onbTitle").textContent = "Here's a great way to start 💪";
+    const sub = document.getElementById("onbSub");
+    sub.textContent = s.body; sub.style.display = "";
+    const choices = document.getElementById("onbChoices");
+    let html = '<div class="onb-suggest-list">';
+    s.exercises.forEach(x => { html += '<div class="onb-ex">✅ ' + escapeHtml(x) + '</div>'; });
+    html += '</div>';
+    html += '<div class="onb-nextstep">' + escapeHtml(s.nextStep) + '</div>';
+    html += '<button class="onb-go" onclick="finishOnboarding()">Take me to my plan →</button>';
+    choices.innerHTML = html;
+    const back = document.getElementById("onbBack");
+    if (back) back.hidden = false;
+    const prog = document.getElementById("onbProgress");
+    if (prog){ prog.innerHTML = ""; ONB_QUESTIONS.forEach(() => { const d = document.createElement("div"); d.className = "onb-dot done"; prog.appendChild(d); }); }
+  }
   function finishOnboarding(){
     try {
       localStorage.setItem(ONB_ANSWERS_KEY, JSON.stringify(onbAnswers));
@@ -5779,7 +5831,7 @@
     hideOnboarding();
     openPlanPage(); // the guided start hands off to Today's Plan
   }
-  window.onbPick = onbPick; window.onbPrev = onbPrev;
+  window.onbPick = onbPick; window.onbPrev = onbPrev; window.finishOnboarding = finishOnboarding;
 
   function dismissWelcome(){
     leaveCoverPage();
