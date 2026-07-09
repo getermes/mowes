@@ -2150,7 +2150,9 @@
   .goal-badge.ontrack { background: #eafaf2; color: #1f8f5f; }
   .goal-badge.behind { background: #fdf1e7; color: #b06a00; }
   .goal-badge.done { background: #f3f0ff; color: #6a4bd6; }
-  .goals-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
+  .goals-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 10px 8px 18px; }
+  .goal-example { opacity: 0.82; border: 2px dashed #d6d9ec; box-shadow: none; }
+  .goal-ex-tag { flex: 0 0 auto; font-size: 11px; font-weight: 800; color: #9096ad; background: #eef0fb; border-radius: 20px; padding: 3px 10px; text-transform: uppercase; letter-spacing: 0.4px; }
   /* Goal form */
   .goal-lbl { display: block; font-weight: 800; color: #3a4066; font-size: 13.5px; margin: 12px 0 5px; }
   .goal-input { width: 100%; border: 2px solid #e6e8f0; border-radius: 12px; padding: 12px; font-size: 15px; }
@@ -6198,6 +6200,14 @@
   // ---- My Goals: number-based targets with a timeframe + progress tracking ----
   const GOAL_UNITS = ["lbs", "kg", "in", "mi", "km", "reps", "min"];
   const GOAL_TIMES = [{ m:1, l:"1 month" }, { m:3, l:"3 months" }, { m:6, l:"6 months" }, { m:12, l:"1 year" }];
+  // Sample goals (Taco's) shown as inspiration when the list is empty.
+  const GOAL_EXAMPLES = [
+    { name:"Dumbbell weight", start:5, target:10, unit:"lbs", when:"in 1 year" },
+    { name:"Barbell lift", start:20, target:40, unit:"lbs", when:"in 1 year" },
+    { name:"Long run", start:3, target:5, unit:"mi", when:"in 1 year" },
+    { name:"Squats (legs)", start:10, target:25, unit:"reps", when:"in 6 months" },
+    { name:"Arm curls", start:8, target:15, unit:"lbs", when:"in 6 months" }
+  ];
   let goalUnitSel = "lbs", goalTimeSel = 12;
   function loadGoals(){ try { return JSON.parse(localStorage.getItem("mowes_goals_v1") || "[]") || []; } catch(e){ return []; } }
   function saveGoals(arr){ try { localStorage.setItem("mowes_goals_v1", JSON.stringify(arr)); } catch(e){} }
@@ -6237,7 +6247,18 @@
     const box = document.getElementById("goalsList");
     if (!box) return;
     const goals = loadGoals();
-    if (!goals.length){ box.innerHTML = '<div class="goals-empty">No goals yet. Tap “＋ Add a goal” to set your first target — like <b>5 → 10 lbs in a year</b> — and MOWES will track your climb. 🎯</div>'; return; }
+    if (!goals.length){
+      let ex = '<div class="goals-empty">No goals yet — here are some <b>examples</b> to spark ideas. Tap “＋ Add a goal” above to build your own. 🎯</div>';
+      GOAL_EXAMPLES.forEach(g => {
+        ex += '<div class="goal-card goal-example">'
+          + '<div class="goal-top"><span class="goal-name">' + escapeHtml(g.name) + '</span><span class="goal-ex-tag">example</span></div>'
+          + '<div class="goal-range">' + g.start + ' → <b>' + g.target + ' ' + escapeHtml(g.unit) + '</b></div>'
+          + '<div class="goal-by">' + escapeHtml(g.when) + '</div>'
+          + '<div class="goal-bar"><div class="goal-bar-fill" style="width:30%"></div></div></div>';
+      });
+      box.innerHTML = ex;
+      return;
+    }
     let html = "";
     goals.forEach(g => {
       const start = +g.start, target = +g.target, current = (g.current == null ? start : +g.current);
