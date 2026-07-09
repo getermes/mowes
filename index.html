@@ -2103,6 +2103,10 @@
   .plan-item:first-of-type { border-top: none; }
   .plan-item-name { font-weight: 600; color: #3a4066; font-size: 15px; }
   .plan-item-detail { color: #8a90ac; font-size: 13px; margin-left: auto; white-space: nowrap; }
+  .plan-pick-note { color: #8a90ac; font-size: 12.5px; margin: 0 0 6px; }
+  .plan-pick { width: 100%; text-align: left; background: none; border: none; cursor: pointer; align-items: center; }
+  .plan-pick:active { background: #f5f6fc; }
+  .plan-pick-add { margin-left: auto; flex: 0 0 auto; color: #5b6cff; font-weight: 800; font-size: 13px; background: #eef0fb; border-radius: 8px; padding: 4px 9px; white-space: nowrap; }
   .plan-empty {
     text-align: center; color: #6a7088; font-size: 14px; line-height: 1.55;
     background: #fff; border-radius: 16px; padding: 26px 22px;
@@ -6172,10 +6176,16 @@
       const title = document.createElement("div"); title.className = "plan-group-title";
       title.textContent = "⭐ Your starter exercises";
       group.appendChild(title);
+      const hint = document.createElement("div"); hint.className = "plan-pick-note";
+      hint.textContent = "Tap one to set its reps/weight and make it a routine.";
+      group.appendChild(hint);
       picks.forEach(name => {
-        const item = document.createElement("div"); item.className = "plan-item";
+        const item = document.createElement("button"); item.className = "plan-item plan-pick";
         const nm = document.createElement("span"); nm.className = "plan-item-name"; nm.textContent = name;
         item.appendChild(nm);
+        const add = document.createElement("span"); add.className = "plan-pick-add"; add.textContent = "＋ reps";
+        item.appendChild(add);
+        item.onclick = () => addStarterAsRoutine(name);
         group.appendChild(item);
       });
       list.appendChild(group);
@@ -6205,6 +6215,33 @@
       list.appendChild(empty);
     }
   }
+  // Tap a starter exercise → it graduates into a real routine on the Weight
+  // Routine page (today), and we take you there to set its reps/weight.
+  function addStarterAsRoutine(name){
+    // Drop it from the starter picks (and today's pick-done), so there's no double.
+    let picks = [];
+    try { picks = JSON.parse(localStorage.getItem("mowes_picked_exercises_v1") || "[]") || []; } catch(e){}
+    picks = picks.filter(p => p !== name);
+    try { localStorage.setItem("mowes_picked_exercises_v1", JSON.stringify(picks)); } catch(e){}
+    togglePickDone(name, false);
+    // Go to the Weight Routine page (loads it fresh, selects today).
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage();
+    switchToPage("default");
+    selectedDay = todayKey;
+    // Add the routine for today, with its sets table already open to fill in.
+    const r = blankRoutine(); r.name = name; r.details.reps.on = true;
+    if (!weekData[todayKey]) weekData[todayKey] = [];
+    const day = weekData[todayKey];
+    if (day.length === 1 && !(day[0].name || "").trim()) day[0] = r; else day.push(r);
+    renderRoutines(); saveData(); renderPageBar();
+    // Scroll to the new routine so they can start on it.
+    setTimeout(() => {
+      const cards = document.querySelectorAll("#routineList .routine-card");
+      const last = cards[cards.length - 1];
+      if (last && last.scrollIntoView) last.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 60);
+  }
+  window.addStarterAsRoutine = addStarterAsRoutine;
   function showPlan(){
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
     renderPlan();
