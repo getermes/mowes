@@ -1976,26 +1976,29 @@
   .plan-overlay.plan-as-page { z-index: 1000; padding-bottom: 90px; }
 
   /* Bottom page bar — always there; flip between pages */
+  /* Bottom page bar: a scrollable strip of page chips. Swipe to browse (nothing
+     happens), tap a page to jump to it. High z-index so page flips never hide it. */
   .page-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 1500;
-    display: none; align-items: center; gap: 8px; padding: 8px 10px;
-    background: rgba(255,255,255,0.97); border-top: 1px solid #e6e8f0;
-    box-shadow: 0 -4px 18px rgba(60,64,102,0.12);
+    display: none; padding: 8px 0;
     padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255,255,255,0.98); border-top: 1px solid #e6e8f0;
+    box-shadow: 0 -4px 18px rgba(60,64,102,0.14);
   }
-  .page-bar.on { display: flex; }
-  .page-bar-arrow {
-    flex: 0 0 auto; width: 46px; height: 42px; border: none; border-radius: 12px;
-    background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; line-height: 1;
+  .page-bar.on { display: block; }
+  .page-bar-strip {
+    display: flex; gap: 8px; overflow-x: auto; padding: 0 12px;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
   }
-  .page-bar-arrow:active { transform: scale(0.95); }
-  .page-bar-arrow:disabled { opacity: 0.32; cursor: default; }
-  .page-bar-current {
-    flex: 1 1 auto; min-width: 0; height: 42px; border: none; border-radius: 12px;
-    background: #f5f6fc; color: #3a4066; font-weight: 800; font-size: 15px; cursor: pointer;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px;
+  .page-bar-strip::-webkit-scrollbar { display: none; }
+  .page-chip {
+    flex: 0 0 auto; border: none; border-radius: 12px; padding: 10px 15px;
+    background: #eef0fb; color: #5b6cff; font-size: 14px; font-weight: 700;
+    white-space: nowrap; cursor: pointer;
   }
-  body.has-page-bar { padding-bottom: 70px; }
+  .page-chip:active { transform: scale(0.97); }
+  .page-chip.active { background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; box-shadow: 0 4px 12px rgba(91,108,255,0.28); }
+  body.has-page-bar { padding-bottom: 74px; }
 
   /* Today's Workout — guided, check off each set as you go */
   .workout-overlay { position: fixed; inset: 0; z-index: 9800; display: none; overflow-y: auto;
@@ -2383,9 +2386,7 @@
 
   <!-- Bottom page bar: always there. Flip between pages (Today's Plan → routines → your other pages). -->
   <div class="page-bar" id="pageBar">
-    <button class="page-bar-arrow" id="pageBarPrev" onclick="pageBarStep(-1)" aria-label="Previous page">‹</button>
-    <div class="page-bar-current" id="pageBarCurrent">📋 Today's Plan</div>
-    <button class="page-bar-arrow" id="pageBarNext" onclick="pageBarStep(1)" aria-label="Next page">›</button>
+    <div class="page-bar-strip" id="pageBarStrip"></div>
   </div>
 
   <!-- Today's Workout: your real routine for today, step by step, check off as you go -->
@@ -3518,22 +3519,28 @@
     if (s.plan){ openPlanPage(); return; }
     if (s.setup){ openSetupPage(); return; }
     leaveCoverPage(); leavePlanPage(); leaveSetupPage();
-    if (s.id !== activePageId) goToPage(s.id);
+    // Instant switch (no page-flip animation) so the bar is never covered.
+    if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
   }
   function pageBarStep(dir){ goToStop(pageBarIndex() + dir); }
   function renderPageBar(){
-    const bar = document.getElementById("pageBar");
-    if (!bar) return;
+    const strip = document.getElementById("pageBarStrip");
+    if (!strip) return;
     const stops = pageBarStops();
     const idx = pageBarIndex();
-    const cur = stops[idx] || stops[0];
-    const label = document.getElementById("pageBarCurrent");
-    if (label && cur) label.textContent = (cur.icon || "") + cur.name;
-    const prev = document.getElementById("pageBarPrev"), next = document.getElementById("pageBarNext");
-    if (prev) prev.disabled = (idx <= 0);
-    if (next) next.disabled = (idx >= stops.length - 1);
+    strip.innerHTML = "";
+    stops.forEach((s, i) => {
+      const chip = document.createElement("button");
+      chip.className = "page-chip" + (i === idx ? " active" : "");
+      chip.textContent = (s.icon || "") + s.name;
+      chip.onclick = () => goToStop(i); // tap a page → boom, go there
+      strip.appendChild(chip);
+    });
     updatePageBarVisibility();
+    // Center the page you're on so it's easy to see where you are.
+    const active = strip.querySelector(".page-chip.active");
+    if (active && active.scrollIntoView) active.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
   }
   function updatePageBarVisibility(){
     const bar = document.getElementById("pageBar");
@@ -6169,8 +6176,7 @@
   onBookSwipe(document.getElementById("planOverlay"), dir => pageBarStep(dir === "fwd" ? 1 : -1));
   // Today's Thought: swipe left = into the workspace, swipe right = back to Today's Plan
   onBookSwipe(document.getElementById("coverOverlay"), dir => { if (dir === "fwd") openApp(); else openPlanPage(); });
-  // Bottom page bar: swipe it left = next page, swipe it right = previous page
-  onBookSwipe(document.getElementById("pageBar"), dir => pageBarStep(dir === "fwd" ? 1 : -1));
+  // (The bottom page bar scrolls natively now — swipe to browse, tap a page to go.)
 
   // Auto-save: any typing, toggle, or button tap in the routines saves your work
   const routineListEl = document.getElementById("routineList");
