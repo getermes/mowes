@@ -2091,6 +2091,40 @@
   .setup-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: 16px; }
   .onb-add-own { width: 100%; margin-top: 4px; background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px; padding: 13px; color: #5b6cff; font-weight: 800; font-size: 15px; cursor: pointer; }
   .onb-add-own:active { transform: scale(0.99); }
+
+  /* My Body page (a book page, sits under the bottom bar) */
+  .body-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
+  .body-overlay.show { display: block; }
+  .body-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .body-log-btn { display: block; width: 100%; margin: 4px 0 16px; border: none; border-radius: 14px; padding: 15px;
+    font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
+  .body-log-btn:active { transform: scale(0.99); }
+  .body-entry { background: #fff; border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .body-entry-date { font-weight: 800; color: #5b6cff; font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .body-entry-del { background: none; border: none; color: #cbb; font-size: 16px; cursor: pointer; }
+  .body-metric { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-top: 1px solid #f2f4fb; }
+  .body-metric:first-of-type { border-top: none; }
+  .body-metric-label { color: #3a4066; font-weight: 700; font-size: 14px; }
+  .body-metric-val { color: #3a4066; font-weight: 800; font-size: 14px; }
+  .body-metric-chg { font-size: 12.5px; font-weight: 800; margin-left: 8px; color: #8a90ad; }
+  .body-metric-chg.up, .body-metric-chg.down { color: #8a90ad; }
+  .body-entry-photo { margin-top: 10px; width: 100%; border-radius: 12px; }
+  .body-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
+  /* Log form */
+  .body-log-date { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 0 0 14px; }
+  .body-field { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+  .body-field-label { flex: 1 1 auto; font-weight: 700; color: #3a4066; font-size: 15px; }
+  .body-field input { flex: 0 0 92px; width: 92px; border: 2px solid #e6e8f0; border-radius: 10px; padding: 10px; font-size: 15px; text-align: right; }
+  .body-field-unit { flex: 0 0 auto; color: #8a90ad; font-size: 13px; width: 26px; }
+  .body-add-field { width: 100%; margin: 6px 0 2px; background: #fff; border: 2px dashed #c7cdf0; border-radius: 12px; padding: 11px; color: #5b6cff; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .body-photo-row { margin: 14px 0 4px; }
+  .body-photo-btn { width: 100%; background: #eef0fb; border: none; border-radius: 12px; padding: 12px; color: #5b6cff; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .body-photo-preview { display: block; width: 100%; border-radius: 12px; margin-top: 10px; }
+  .body-save-btn { display: block; width: 100%; margin-top: 16px; border: none; border-radius: 14px; padding: 15px;
+    font-size: 16px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 6px 18px rgba(39,185,138,0.22); }
+  .body-save-btn:active { transform: scale(0.99); }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2437,6 +2471,36 @@
       <p class="setup-hint">👆 Tap any answer above to change it.</p>
       <button class="setup-redo" onclick="editSetup()">↺ Redo all the questions</button>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
+    </div>
+  </div>
+
+  <!-- My Body: a book page to log measurements + progress photos over time -->
+  <div class="body-overlay" id="bodyOverlay">
+    <div class="body-inner">
+      <div class="setup-title">📏 My Body</div>
+      <div class="setup-sub">Track your measurements &amp; progress photos over time.</div>
+      <button class="body-log-btn" onclick="openBodyLog()">＋ Log today</button>
+      <div id="bodyHistory"></div>
+      <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
+    </div>
+  </div>
+
+  <!-- Log today's measurements (form) -->
+  <div class="overlay" id="bodyLogOverlay">
+    <div class="card">
+      <div class="card-header">
+        <h2>📏 Log today</h2>
+        <button class="close-btn" onclick="closeBodyLog()">&times;</button>
+      </div>
+      <p class="body-log-date" id="bodyLogDate"></p>
+      <div id="bodyLogFields"></div>
+      <button class="body-add-field" onclick="addBodyLogField()">＋ Add a measurement</button>
+      <div class="body-photo-row">
+        <input type="file" id="bodyPhotoInput" accept="image/*" style="display:none" onchange="bodyPhotoChosen(this)">
+        <button class="body-photo-btn" onclick="document.getElementById('bodyPhotoInput').click()">📷 Add a progress photo</button>
+        <img id="bodyPhotoPreview" class="body-photo-preview" style="display:none" alt="progress photo">
+      </div>
+      <button class="body-save-btn" onclick="saveBodyLog()">Save today's entry</button>
     </div>
   </div>
 
@@ -3465,7 +3529,7 @@
     // Cover, then Today's Plan, then every page of your book, then My Setup (last).
     return [{ cover:true, name:"Cover", icon:"📖 " }, { plan:true, name:"Today's Plan", icon:"📋 " }]
       .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-      .concat([{ setup:true, name:"My Setup", icon:"⚙️ " }]);
+      .concat([{ body:true, name:"My Body", icon:"📏 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
   }
   function coverShownAsPage(){
     const el = document.getElementById("welcomeOverlay");
@@ -3482,14 +3546,16 @@
   function pageBarIndex(){
     if (coverShownAsPage()) return 0;
     if (planShownAsPage()) return 1;
-    if (setupShownAsPage()) return pageBarStops().length - 1;
+    const stops = pageBarStops();
+    if (setupShownAsPage()) return stops.length - 1;
+    if (bodyShownAsPage()) return stops.length - 2;
     const i = pages.findIndex(p => p.id === activePageId);
     return i < 0 ? 1 : i + 2;
   }
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -3501,7 +3567,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -3514,7 +3580,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -3530,8 +3596,9 @@
     const s = stops[k];
     if (s.cover){ openCoverPage(); return; }
     if (s.plan){ openPlanPage(); return; }
+    if (s.body){ openBodyPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -5937,6 +6004,126 @@
     });
     body.innerHTML = html;
   }
+
+  // ---- My Body: log measurements + progress photos over time ----
+  const BODY_DEFAULTS = [{ label:"Weight", unit:"lbs" }, { label:"Waist", unit:"in" }, { label:"Arms", unit:"in" }, { label:"Chest", unit:"in" }];
+  let bodyPhotoTemp = "";
+  function loadBodyEntries(){ try { return JSON.parse(localStorage.getItem("mowes_body_v1") || "[]") || []; } catch(e){ return []; } }
+  function saveBodyEntries(arr){ try { localStorage.setItem("mowes_body_v1", JSON.stringify(arr)); } catch(e){} }
+  function bodyTodayStr(){ const d = new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
+  function bodyFieldLabels(){
+    const labels = BODY_DEFAULTS.map(x => ({ label:x.label, unit:x.unit }));
+    const entries = loadBodyEntries();
+    const last = entries[entries.length - 1];
+    if (last && last.items){ last.items.forEach(it => { if (!labels.find(l => l.label.toLowerCase() === (it.label || "").toLowerCase())) labels.push({ label:it.label, unit:it.unit || "" }); }); }
+    return labels;
+  }
+  function openBodyLog(){
+    bodyPhotoTemp = "";
+    const dateEl = document.getElementById("bodyLogDate");
+    try { if (dateEl) dateEl.textContent = new Date().toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric", year:"numeric" }); } catch(e){}
+    const wrap = document.getElementById("bodyLogFields");
+    const entries = loadBodyEntries();
+    const last = entries[entries.length - 1];
+    const lastVal = (label) => { if (!last || !last.items) return ""; const it = last.items.find(x => (x.label || "").toLowerCase() === label.toLowerCase()); return it ? it.value : ""; };
+    wrap.innerHTML = "";
+    bodyFieldLabels().forEach(f => {
+      const row = document.createElement("div"); row.className = "body-field";
+      const lv = lastVal(f.label);
+      row.innerHTML = '<span class="body-field-label">' + escapeHtml(f.label) + '</span>'
+        + '<input type="number" min="0" step="any" inputmode="decimal" data-label="' + escapeHtml(f.label) + '" data-unit="' + escapeHtml(f.unit || "") + '" placeholder="' + (lv !== "" ? escapeHtml(String(lv)) : "—") + '">'
+        + '<span class="body-field-unit">' + escapeHtml(f.unit || "") + '</span>';
+      wrap.appendChild(row);
+    });
+    const prev = document.getElementById("bodyPhotoPreview"); if (prev){ prev.style.display = "none"; prev.src = ""; }
+    document.getElementById("bodyLogOverlay").classList.add("open");
+  }
+  function closeBodyLog(){ document.getElementById("bodyLogOverlay").classList.remove("open"); }
+  function addBodyLogField(){
+    const label = (window.prompt("What do you want to measure? (e.g. Hips, Thighs, Belly)") || "").trim();
+    if (!label) return;
+    const wrap = document.getElementById("bodyLogFields");
+    const row = document.createElement("div"); row.className = "body-field";
+    row.innerHTML = '<span class="body-field-label">' + escapeHtml(label) + '</span>'
+      + '<input type="number" min="0" step="any" inputmode="decimal" data-label="' + escapeHtml(label) + '" data-unit="in" placeholder="—">'
+      + '<span class="body-field-unit">in</span>';
+    wrap.appendChild(row);
+  }
+  function bodyPhotoChosen(input){
+    const file = input.files && input.files[0]; input.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => shrinkImage(e.target.result, 900, 0.7, dataUrl => {
+      bodyPhotoTemp = dataUrl;
+      const prev = document.getElementById("bodyPhotoPreview");
+      if (prev){ prev.src = dataUrl; prev.style.display = "block"; }
+    });
+    reader.readAsDataURL(file);
+  }
+  function saveBodyLog(){
+    const items = [];
+    document.querySelectorAll("#bodyLogFields input").forEach(inp => {
+      const v = (inp.value || "").trim();
+      if (v !== "") items.push({ label: inp.dataset.label, value: v, unit: inp.dataset.unit || "" });
+    });
+    if (!items.length && !bodyPhotoTemp){ alert("Add at least one measurement or a photo. 🙂"); return; }
+    const entries = loadBodyEntries();
+    const today = bodyTodayStr();
+    const entry = { date: today, at: new Date().toISOString(), items: items };
+    if (bodyPhotoTemp) entry.photo = bodyPhotoTemp;
+    // If there's already an entry for today, replace it (one log per day).
+    const idx = entries.findIndex(e => e.date === today);
+    if (idx >= 0) entries[idx] = entry; else entries.push(entry);
+    saveBodyEntries(entries);
+    bodyPhotoTemp = "";
+    closeBodyLog();
+    renderBody();
+  }
+  function deleteBodyEntry(at){
+    if (!confirm("Delete this entry? This can't be undone.")) return;
+    saveBodyEntries(loadBodyEntries().filter(e => e.at !== at));
+    renderBody();
+  }
+  function renderBody(){
+    const box = document.getElementById("bodyHistory");
+    if (!box) return;
+    const entries = loadBodyEntries().slice(); // oldest→newest in storage
+    if (!entries.length){
+      box.innerHTML = '<div class="body-empty">No measurements yet. Tap “＋ Log today” to record where you are now — then watch your progress build up over time. 📈</div>';
+      return;
+    }
+    let html = "";
+    // newest first for display; compare each to the entry before it (older) for change
+    for (let i = entries.length - 1; i >= 0; i--){
+      const e = entries[i], prev = i > 0 ? entries[i - 1] : null;
+      let dateStr = e.date; try { dateStr = new Date(e.at || e.date).toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" }); } catch(err){}
+      html += '<div class="body-entry"><div class="body-entry-date"><span>' + escapeHtml(dateStr) + '</span><button class="body-entry-del" title="Delete" onclick="deleteBodyEntry(\'' + escapeHtml(e.at || e.date) + '\')">✕</button></div>';
+      (e.items || []).forEach(it => {
+        let chg = "";
+        if (prev && prev.items){
+          const p = prev.items.find(x => (x.label || "").toLowerCase() === (it.label || "").toLowerCase());
+          if (p){ const d = parseFloat(it.value) - parseFloat(p.value); if (!isNaN(d) && d !== 0){ chg = '<span class="body-metric-chg ' + (d > 0 ? "up" : "down") + '">' + (d > 0 ? "▲+" : "▼") + (Math.round(d * 100) / 100) + '</span>'; } }
+        }
+        html += '<div class="body-metric"><span class="body-metric-label">' + escapeHtml(it.label) + '</span><span class="body-metric-val">' + escapeHtml(String(it.value)) + ' ' + escapeHtml(it.unit || "") + chg + '</span></div>';
+      });
+      if (e.photo) html += '<img class="body-entry-photo" src="' + e.photo + '" alt="progress photo">';
+      html += '</div>';
+    }
+    box.innerHTML = html;
+  }
+  function openBodyPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage();
+    renderBody();
+    document.getElementById("bodyOverlay").classList.add("show");
+    renderPageBar();
+  }
+  function leaveBodyPage(){ const el = document.getElementById("bodyOverlay"); if (el) el.classList.remove("show"); }
+  function bodyShownAsPage(){ const el = document.getElementById("bodyOverlay"); return !!(el && el.classList.contains("show")); }
+  window.openBodyLog = openBodyLog; window.closeBodyLog = closeBodyLog; window.addBodyLogField = addBodyLogField;
+  window.bodyPhotoChosen = bodyPhotoChosen; window.saveBodyLog = saveBodyLog; window.deleteBodyEntry = deleteBodyEntry;
+
   function hideOnboarding(){ document.getElementById("onboardingOverlay").classList.remove("show"); }
   function renderOnbStep(){
     const q = ONB_QUESTIONS[onbStep];
