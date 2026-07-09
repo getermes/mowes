@@ -2125,6 +2125,43 @@
   .body-save-btn { display: block; width: 100%; margin-top: 16px; border: none; border-radius: 14px; padding: 15px;
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 6px 18px rgba(39,185,138,0.22); }
   .body-save-btn:active { transform: scale(0.99); }
+
+  /* My Goals page (a book page, sits under the bottom bar) */
+  .goals-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
+  .goals-overlay.show { display: block; }
+  .goals-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .goal-add-btn { display: block; width: 100%; margin: 4px 0 16px; border: none; border-radius: 14px; padding: 15px;
+    font-size: 16px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
+  .goal-add-btn:active { transform: scale(0.99); }
+  .goal-card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .goal-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .goal-name { font-weight: 900; color: #3a4066; font-size: 16px; }
+  .goal-del { background: none; border: none; color: #cbb; font-size: 16px; cursor: pointer; flex: 0 0 auto; }
+  .goal-range { color: #6a7088; font-size: 13.5px; margin: 3px 0 2px; }
+  .goal-by { color: #9096ad; font-size: 12.5px; margin-bottom: 10px; }
+  .goal-bar { height: 12px; background: #eef0fb; border-radius: 7px; overflow: hidden; }
+  .goal-bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, #5b6cff, #7a5bff); border-radius: 7px; transition: width 0.4s ease; }
+  .goal-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .goal-current { font-size: 13.5px; color: #3a4066; font-weight: 700; }
+  .goal-current b { color: #5b6cff; }
+  .goal-update { background: #eef0fb; border: none; color: #5b6cff; font-weight: 800; font-size: 13px; border-radius: 9px; padding: 6px 12px; cursor: pointer; }
+  .goal-badge { display: inline-block; margin-top: 10px; font-size: 12.5px; font-weight: 800; padding: 5px 11px; border-radius: 20px; }
+  .goal-badge.ontrack { background: #eafaf2; color: #1f8f5f; }
+  .goal-badge.behind { background: #fdf1e7; color: #b06a00; }
+  .goal-badge.done { background: #f3f0ff; color: #6a4bd6; }
+  .goals-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
+  /* Goal form */
+  .goal-lbl { display: block; font-weight: 800; color: #3a4066; font-size: 13.5px; margin: 12px 0 5px; }
+  .goal-input { width: 100%; border: 2px solid #e6e8f0; border-radius: 12px; padding: 12px; font-size: 15px; }
+  .goal-two { display: flex; gap: 10px; }
+  .goal-two > div { flex: 1 1 0; }
+  .goal-units, .goal-times { display: flex; flex-wrap: wrap; gap: 8px; }
+  .goal-chip { border: 2px solid #e6e8f0; background: #fff; border-radius: 11px; padding: 9px 14px; font-weight: 700; font-size: 14px; color: #3a4066; cursor: pointer; }
+  .goal-chip.on { border-color: #5b6cff; background: #eef1ff; color: #5b6cff; }
+  .goal-save-btn { display: block; width: 100%; margin-top: 18px; border: none; border-radius: 14px; padding: 15px;
+    font-size: 16px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
+  .goal-save-btn:active { transform: scale(0.99); }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2501,6 +2538,38 @@
         <img id="bodyPhotoPreview" class="body-photo-preview" style="display:none" alt="progress photo">
       </div>
       <button class="body-save-btn" onclick="saveBodyLog()">Save today's entry</button>
+    </div>
+  </div>
+
+  <!-- My Goals: number-based goals with a start, a target, a timeframe, and progress -->
+  <div class="goals-overlay" id="goalsOverlay">
+    <div class="goals-inner">
+      <div class="setup-title">🎯 My Goals</div>
+      <div class="setup-sub">Set where you want to get to — MOWES tracks your climb.</div>
+      <button class="goal-add-btn" onclick="openGoalForm()">＋ Add a goal</button>
+      <div id="goalsList"></div>
+      <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
+    </div>
+  </div>
+
+  <!-- Add / update a goal (form) -->
+  <div class="overlay" id="goalFormOverlay">
+    <div class="card">
+      <div class="card-header">
+        <h2>🎯 New goal</h2>
+        <button class="close-btn" onclick="closeGoalForm()">&times;</button>
+      </div>
+      <label class="goal-lbl">What are you working on?</label>
+      <input id="goalName" class="goal-input" type="text" placeholder="e.g. Dumbbell weight, 3-mile run, Squat">
+      <label class="goal-lbl">Unit</label>
+      <div class="goal-units" id="goalUnits"></div>
+      <div class="goal-two">
+        <div><label class="goal-lbl">Starting at</label><input id="goalStart" class="goal-input" type="number" step="any" inputmode="decimal" placeholder="e.g. 5"></div>
+        <div><label class="goal-lbl">Goal</label><input id="goalTarget" class="goal-input" type="number" step="any" inputmode="decimal" placeholder="e.g. 10"></div>
+      </div>
+      <label class="goal-lbl">By when</label>
+      <div class="goal-times" id="goalTimes"></div>
+      <button class="goal-save-btn" onclick="saveGoal()">Save goal</button>
     </div>
   </div>
 
@@ -3529,7 +3598,7 @@
     // Cover, then Today's Plan, then every page of your book, then My Setup (last).
     return [{ cover:true, name:"Cover", icon:"📖 " }, { plan:true, name:"Today's Plan", icon:"📋 " }]
       .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-      .concat([{ body:true, name:"My Body", icon:"📏 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
+      .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { body:true, name:"My Body", icon:"📏 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
   }
   function coverShownAsPage(){
     const el = document.getElementById("welcomeOverlay");
@@ -3549,13 +3618,14 @@
     const stops = pageBarStops();
     if (setupShownAsPage()) return stops.length - 1;
     if (bodyShownAsPage()) return stops.length - 2;
+    if (goalsShownAsPage()) return stops.length - 3;
     const i = pages.findIndex(p => p.id === activePageId);
     return i < 0 ? 1 : i + 2;
   }
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage(); leaveBodyPage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -3567,7 +3637,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage(); leaveBodyPage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -3580,7 +3650,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveBodyPage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -3596,9 +3666,10 @@
     const s = stops[k];
     if (s.cover){ openCoverPage(); return; }
     if (s.plan){ openPlanPage(); return; }
+    if (s.goals){ openGoalsPage(); return; }
     if (s.body){ openBodyPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -6114,7 +6185,7 @@
   function openBodyPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage();
     renderBody();
     document.getElementById("bodyOverlay").classList.add("show");
     renderPageBar();
@@ -6123,6 +6194,83 @@
   function bodyShownAsPage(){ const el = document.getElementById("bodyOverlay"); return !!(el && el.classList.contains("show")); }
   window.openBodyLog = openBodyLog; window.closeBodyLog = closeBodyLog; window.addBodyLogField = addBodyLogField;
   window.bodyPhotoChosen = bodyPhotoChosen; window.saveBodyLog = saveBodyLog; window.deleteBodyEntry = deleteBodyEntry;
+
+  // ---- My Goals: number-based targets with a timeframe + progress tracking ----
+  const GOAL_UNITS = ["lbs", "kg", "in", "mi", "km", "reps", "min"];
+  const GOAL_TIMES = [{ m:1, l:"1 month" }, { m:3, l:"3 months" }, { m:6, l:"6 months" }, { m:12, l:"1 year" }];
+  let goalUnitSel = "lbs", goalTimeSel = 12;
+  function loadGoals(){ try { return JSON.parse(localStorage.getItem("mowes_goals_v1") || "[]") || []; } catch(e){ return []; } }
+  function saveGoals(arr){ try { localStorage.setItem("mowes_goals_v1", JSON.stringify(arr)); } catch(e){} }
+  function renderGoalChips(){
+    const u = document.getElementById("goalUnits"); if (u){ u.innerHTML = ""; GOAL_UNITS.forEach(un => { const b = document.createElement("button"); b.className = "goal-chip" + (un === goalUnitSel ? " on" : ""); b.textContent = un; b.onclick = () => { goalUnitSel = un; renderGoalChips(); }; u.appendChild(b); }); }
+    const t = document.getElementById("goalTimes"); if (t){ t.innerHTML = ""; GOAL_TIMES.forEach(tm => { const b = document.createElement("button"); b.className = "goal-chip" + (tm.m === goalTimeSel ? " on" : ""); b.textContent = tm.l; b.onclick = () => { goalTimeSel = tm.m; renderGoalChips(); }; t.appendChild(b); }); }
+  }
+  function openGoalForm(){
+    document.getElementById("goalName").value = ""; document.getElementById("goalStart").value = ""; document.getElementById("goalTarget").value = "";
+    goalUnitSel = "lbs"; goalTimeSel = 12; renderGoalChips();
+    document.getElementById("goalFormOverlay").classList.add("open");
+  }
+  function closeGoalForm(){ document.getElementById("goalFormOverlay").classList.remove("open"); }
+  function saveGoal(){
+    const name = (document.getElementById("goalName").value || "").trim();
+    const start = parseFloat(document.getElementById("goalStart").value);
+    const target = parseFloat(document.getElementById("goalTarget").value);
+    if (!name){ alert("Give your goal a name. 🙂"); return; }
+    if (isNaN(start) || isNaN(target)){ alert("Enter a starting number and a goal number."); return; }
+    const g = { id: "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: name, unit: goalUnitSel || "", start: start, target: target, current: start, months: goalTimeSel || 12, startISO: new Date().toISOString() };
+    const goals = loadGoals(); goals.push(g); saveGoals(goals);
+    closeGoalForm(); renderGoals();
+  }
+  function goalDeadline(g){ try { const d = new Date(g.startISO); return new Date(d.getFullYear(), d.getMonth() + (g.months || 12), d.getDate()); } catch(e){ return null; } }
+  function goalElapsedFrac(g, dl){ try { const s = new Date(g.startISO).getTime(), e = dl.getTime(), now = new Date().getTime(); if (e <= s) return 1; return Math.max(0, Math.min(1, (now - s) / (e - s))); } catch(e){ return 0; } }
+  function updateGoalCurrent(id){
+    const goals = loadGoals(); const g = goals.find(x => x.id === id); if (!g) return;
+    const v = window.prompt("Where are you now? (" + (g.unit || "") + ")", g.current != null ? String(g.current) : String(g.start));
+    if (v == null) return; const n = parseFloat(v); if (isNaN(n)) return;
+    g.current = n; saveGoals(goals); renderGoals();
+  }
+  function deleteGoal(id){
+    if (!confirm("Delete this goal? This can't be undone.")) return;
+    saveGoals(loadGoals().filter(g => g.id !== id)); renderGoals();
+  }
+  function renderGoals(){
+    const box = document.getElementById("goalsList");
+    if (!box) return;
+    const goals = loadGoals();
+    if (!goals.length){ box.innerHTML = '<div class="goals-empty">No goals yet. Tap “＋ Add a goal” to set your first target — like <b>5 → 10 lbs in a year</b> — and MOWES will track your climb. 🎯</div>'; return; }
+    let html = "";
+    goals.forEach(g => {
+      const start = +g.start, target = +g.target, current = (g.current == null ? start : +g.current);
+      let progFrac = (target === start) ? (current >= target ? 1 : 0) : ((current - start) / (target - start));
+      progFrac = Math.max(0, Math.min(1, progFrac));
+      const reached = (target >= start) ? current >= target : current <= target;
+      const dl = goalDeadline(g), elapsed = dl ? goalElapsedFrac(g, dl) : 0;
+      const onTrack = reached || progFrac >= elapsed - 0.001;
+      let byStr = ""; try { if (dl) byStr = dl.toLocaleDateString(undefined, { month:"short", year:"numeric" }); } catch(e){}
+      const badge = reached ? '<span class="goal-badge done">🎉 Reached!</span>'
+        : (onTrack ? '<span class="goal-badge ontrack">🟢 On track</span>' : '<span class="goal-badge behind">🟠 A bit behind — keep pushing</span>');
+      html += '<div class="goal-card">'
+        + '<div class="goal-top"><span class="goal-name">' + escapeHtml(g.name) + '</span><button class="goal-del" title="Delete" onclick="deleteGoal(\'' + g.id + '\')">✕</button></div>'
+        + '<div class="goal-range">' + escapeHtml(String(start)) + ' → <b>' + escapeHtml(String(target)) + ' ' + escapeHtml(g.unit || "") + '</b></div>'
+        + '<div class="goal-by">by ' + escapeHtml(byStr) + '</div>'
+        + '<div class="goal-bar"><div class="goal-bar-fill" style="width:' + Math.round(progFrac * 100) + '%"></div></div>'
+        + '<div class="goal-row"><span class="goal-current">Now: <b>' + escapeHtml(String(current)) + ' ' + escapeHtml(g.unit || "") + '</b></span><button class="goal-update" onclick="updateGoalCurrent(\'' + g.id + '\')">Update</button></div>'
+        + badge + '</div>';
+    });
+    box.innerHTML = html;
+  }
+  function openGoalsPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage();
+    renderGoals();
+    document.getElementById("goalsOverlay").classList.add("show");
+    renderPageBar();
+  }
+  function leaveGoalsPage(){ const el = document.getElementById("goalsOverlay"); if (el) el.classList.remove("show"); }
+  function goalsShownAsPage(){ const el = document.getElementById("goalsOverlay"); return !!(el && el.classList.contains("show")); }
+  window.openGoalForm = openGoalForm; window.closeGoalForm = closeGoalForm; window.saveGoal = saveGoal;
+  window.updateGoalCurrent = updateGoalCurrent; window.deleteGoal = deleteGoal;
 
   function hideOnboarding(){ document.getElementById("onboardingOverlay").classList.remove("show"); }
   function renderOnbStep(){
