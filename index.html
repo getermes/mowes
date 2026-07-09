@@ -2121,6 +2121,11 @@
     box-shadow: 0 6px 16px rgba(91,108,255,0.28);
   }
   .plan-next:active { transform: scale(0.99); }
+  .plan-surprise {
+    display: block; width: 100%; margin-top: 12px; border: 2px dashed #c7b3ff; cursor: pointer;
+    background: #f6f2ff; color: #7a5bff; font-weight: 800; font-size: 15px; padding: 13px; border-radius: 14px;
+  }
+  .plan-surprise:active { transform: scale(0.99); }
 
   /* First-time-only ERMES welcome screen */
   .welcome-overlay {
@@ -2386,6 +2391,7 @@
       <div class="plan-mark">📋 Today's Plan</div>
       <div class="plan-day" id="planDay">Today</div>
       <div class="plan-list" id="planList"></div>
+      <button class="plan-surprise" onclick="surpriseMe()">🎁 Surprise me</button>
       <button class="plan-next" onclick="startWorkout()">Let's go! 💪</button>
     </div>
   </div>
@@ -3601,6 +3607,15 @@
       const doneSet = pickDoneToday().set;
       picks.forEach(name => {
         steps.push({ kind:"pick", name:name, groupKey:"__picks__", groupTitle:"⭐ Your starter exercises", rowLabel:name, detail:"", done: doneSet.has(name) });
+      });
+    }
+    // 1b) Today's MOWES surprise picks — also single check-offs.
+    let surprise = [];
+    try { surprise = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}")[currentWeekKey + "|" + todayKey] || []; } catch(e){}
+    if (surprise.length){
+      const doneSet = pickDoneToday().set;
+      surprise.forEach(name => {
+        steps.push({ kind:"pick", name:name, groupKey:"__surprise__", groupTitle:"🎁 Today's surprise", rowLabel:name, detail:"", done: doneSet.has(name) });
       });
     }
     // 2) The sets from the routines they've built for today.
@@ -6160,6 +6175,69 @@
     if (d.distance && d.distance.on && d.distance.val) return String(d.distance.val);
     return "";
   }
+  // ---- Surprise routine: MOWES smart-picks today's plan from your library ----
+  function surpriseCount(){
+    let a = {}; try { a = JSON.parse(localStorage.getItem("mowes_onboarding_answers_v1") || "{}") || {}; } catch(e){}
+    const times = Array.isArray(a.time) ? a.time : (a.time ? [a.time] : []);
+    const shortest = times.indexOf("15") >= 0 ? "15" : (times.indexOf("30") >= 0 ? "30" : (times[0] || "30"));
+    return shortest === "15" ? 2 : shortest === "45+" ? 4 : 3;
+  }
+  function surpriseDaySeed(){
+    const s = currentWeekKey + "|" + todayKey; let n = 0;
+    for (let i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) >>> 0;
+    return n;
+  }
+  function surpriseShuffle(arr, seed){
+    const a = arr.slice(); let s = seed >>> 0;
+    for (let i = a.length - 1; i > 0; i--){ s = (s * 1103515245 + 12345) & 0x7fffffff; const j = s % (i + 1); const t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  // Everything the user has built, across every page/day (deduped by name).
+  function gatherLibrary(){
+    const seen = {}, lib = [];
+    pages.filter(p => p.type === "sheet").forEach(pg => {
+      let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
+      Object.keys(all).forEach(wk => {
+        const week = all[wk] || {};
+        days.forEach(day => {
+          (week[day] || []).forEach(r => {
+            if (!r || !(r.name || "").trim()) return;
+            const key = r.name.trim().toLowerCase();
+            if (seen[key]) return; seen[key] = 1;
+            const det = r.details || {};
+            const cardio = (pg.id === "p_ex_walkrun") || !!(det.time && det.time.on) || !!(det.reps && det.reps.cols && det.reps.cols.distance);
+            lib.push({ name: r.name.trim(), cardio: cardio });
+          });
+        });
+      });
+    });
+    return lib;
+  }
+  function todaysSurprise(){
+    let store = {}; try { store = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}") || {}; } catch(e){}
+    return store[currentWeekKey + "|" + todayKey] || [];
+  }
+  function generateSurprise(){
+    const lib = gatherLibrary();
+    if (!lib.length) return false;
+    let a = {}; try { a = JSON.parse(localStorage.getItem("mowes_onboarding_answers_v1") || "{}") || {}; } catch(e){}
+    let ordered = surpriseShuffle(lib, surpriseDaySeed()); // vary day to day
+    if (a.goal === "lose_weight") ordered = ordered.slice().sort((x, y) => (y.cardio ? 1 : 0) - (x.cardio ? 1 : 0));
+    else if (a.goal === "strength") ordered = ordered.slice().sort((x, y) => (x.cardio ? 1 : 0) - (y.cardio ? 1 : 0));
+    const chosen = ordered.slice(0, Math.min(surpriseCount(), ordered.length)).map(r => r.name);
+    let store = {}; try { store = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}") || {}; } catch(e){}
+    store[currentWeekKey + "|" + todayKey] = chosen;
+    try { localStorage.setItem("mowes_surprise_v1", JSON.stringify(store)); } catch(e){}
+    return true;
+  }
+  function surpriseMe(){
+    if (!generateSurprise()){
+      alert("First build a few routines on your pages (💪 Weights, 🚶 Runs & Walks…). Then MOWES can surprise you with a plan picked from them. 🙂");
+      return;
+    }
+    renderPlan();
+  }
+  window.surpriseMe = surpriseMe;
   function renderPlan(){
     const dayEl = document.getElementById("planDay");
     if (dayEl) dayEl.textContent = dayTitle(todayKey);
@@ -6186,6 +6264,22 @@
         const add = document.createElement("span"); add.className = "plan-pick-add"; add.textContent = "＋ reps";
         item.appendChild(add);
         item.onclick = () => addStarterAsRoutine(name);
+        group.appendChild(item);
+      });
+      list.appendChild(group);
+    }
+    // 1b) Today's MOWES surprise pick (if generated).
+    const surprise = todaysSurprise();
+    if (surprise.length){
+      anything = true;
+      const group = document.createElement("div"); group.className = "plan-group";
+      const title = document.createElement("div"); title.className = "plan-group-title";
+      title.textContent = "🎁 Today's surprise";
+      group.appendChild(title);
+      surprise.forEach(name => {
+        const item = document.createElement("div"); item.className = "plan-item";
+        const nm = document.createElement("span"); nm.className = "plan-item-name"; nm.textContent = name;
+        item.appendChild(nm);
         group.appendChild(item);
       });
       list.appendChild(group);
