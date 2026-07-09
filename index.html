@@ -2079,16 +2079,18 @@
   .setup-inner { max-width: 400px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
   .setup-title { text-align: center; font-size: 26px; font-weight: 900; color: #5b6cff; }
   .setup-sub { text-align: center; color: #6a7088; font-size: 14px; margin: 4px 0 20px; }
-  .setup-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
-    background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .setup-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: #fff; border: none; border-radius: 14px; padding: 14px; margin-bottom: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .setup-row:active { transform: scale(0.995); background: #f7f8ff; }
   .setup-label { font-weight: 800; color: #3a4066; font-size: 14px; flex: 0 0 auto; }
-  .setup-value { color: #555; font-size: 14px; text-align: right; font-weight: 600; }
+  .setup-value { color: #555; font-size: 14px; text-align: right; font-weight: 600; flex: 1 1 auto; }
   .setup-value.empty { color: #aab; font-style: italic; font-weight: 500; }
-  .setup-edit { display: block; width: 100%; margin-top: 18px; border: none; border-radius: 14px; padding: 16px;
-    font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
-    background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
-  .setup-edit:active { transform: scale(0.99); }
+  .setup-edit-hint { flex: 0 0 auto; color: #9096ad; font-size: 15px; }
+  .setup-hint { text-align: center; font-size: 13px; color: #6a7088; font-weight: 600; margin: 16px 0 8px; }
+  .setup-redo { display: block; margin: 0 auto; background: none; border: none; color: #8a90a8; font-weight: 700; font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 6px; }
   .setup-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: 16px; }
+  .onb-add-own { width: 100%; margin-top: 4px; background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px; padding: 13px; color: #5b6cff; font-weight: 800; font-size: 15px; cursor: pointer; }
+  .onb-add-own:active { transform: scale(0.99); }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2422,7 +2424,8 @@
       <div class="setup-title">⚙️ My Setup</div>
       <div class="setup-sub">Your answers — add or change them anytime.</div>
       <div id="setupBody"></div>
-      <button class="setup-edit" onclick="editSetup()">✏️ Update my answers</button>
+      <p class="setup-hint">👆 Tap any answer above to change it.</p>
+      <button class="setup-redo" onclick="editSetup()">↺ Redo all the questions</button>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
     </div>
   </div>
@@ -5813,14 +5816,14 @@
       { e:"⏳", l:"30 min", d:"Standard", v:"30" },
       { e:"💪", l:"45+ min", d:"Full session", v:"45+" } ] }
   ];
-  let onbStep = 0, onbAnswers = {}, onbSuggesting = false, onbEditMode = false;
+  let onbStep = 0, onbAnswers = {}, onbSuggesting = false, onbEditMode = false, onbSingleEdit = null;
   let onbPicked = new Set(), onbExerciseList = [];
   const PICKED_EXERCISES_KEY = "mowes_picked_exercises_v1";
   function needsOnboarding(){ try { return !localStorage.getItem(ONBOARDING_KEY); } catch(e){ return false; } }
   function showOnboarding(){ onbStep = 0; onbAnswers = {}; onbSuggesting = false; onbEditMode = false; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
   // Re-open the questions to EDIT saved answers (from the My Setup page), pre-filled.
   function editSetup(){
-    onbStep = 0; onbSuggesting = false; onbEditMode = true;
+    onbStep = 0; onbSuggesting = false; onbEditMode = true; onbSingleEdit = null;
     let saved = {};
     try { saved = JSON.parse(localStorage.getItem(ONB_ANSWERS_KEY) || "{}") || {}; } catch(e){}
     onbAnswers = saved;
@@ -5829,6 +5832,40 @@
     document.getElementById("onboardingOverlay").classList.add("show");
   }
   window.editSetup = editSetup;
+  // Edit ONE answer (tapped from My Setup) — pops just that question, saves, returns.
+  function editSetupQuestion(key){
+    const i = ONB_QUESTIONS.findIndex(q => q.key === key);
+    if (i < 0) return;
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(ONB_ANSWERS_KEY) || "{}") || {}; } catch(e){}
+    onbAnswers = saved;
+    onbEditMode = true; onbSingleEdit = key; onbSuggesting = false; onbStep = i;
+    leaveSetupPage();
+    renderOnbStep();
+    document.getElementById("onboardingOverlay").classList.add("show");
+  }
+  function saveSingleEditAndReturn(){
+    try { localStorage.setItem(ONB_ANSWERS_KEY, JSON.stringify(onbAnswers)); } catch(e){}
+    onbSingleEdit = null; onbEditMode = false;
+    hideOnboarding();
+    openSetupPage();
+  }
+  function cancelSingleEdit(){
+    onbSingleEdit = null; onbEditMode = false;
+    hideOnboarding();
+    openSetupPage();
+  }
+  function onbAddCustom(){
+    const q = ONB_QUESTIONS[onbStep];
+    if (!q || !q.multi) return;
+    const name = (window.prompt("Add your own — type it and tap OK:") || "").trim();
+    if (!name) return;
+    let arr = Array.isArray(onbAnswers[q.key]) ? onbAnswers[q.key] : [];
+    if (arr.indexOf(name) < 0) arr.push(name);
+    onbAnswers[q.key] = arr;
+    renderOnbStep();
+  }
+  window.editSetupQuestion = editSetupQuestion; window.onbAddCustom = onbAddCustom;
   // Friendly text for a saved answer value (single value or array), from the option labels.
   function onbValueLabel(qKey, val){
     const q = ONB_QUESTIONS.find(x => x.key === qKey);
@@ -5847,8 +5884,10 @@
       const val = a[q.key];
       const empty = (val == null || (Array.isArray(val) && !val.length) || val === "");
       const display = empty ? "not set" : onbValueLabel(q.key, val);
-      html += '<div class="setup-row"><div class="setup-label">' + escapeHtml(SETUP_LABELS[q.key] || q.key) + '</div>'
-        + '<div class="setup-value' + (empty ? ' empty' : '') + '">' + escapeHtml(display) + '</div></div>';
+      html += '<button class="setup-row" onclick="editSetupQuestion(\'' + q.key + '\')">'
+        + '<div class="setup-label">' + escapeHtml(SETUP_LABELS[q.key] || q.key) + '</div>'
+        + '<div class="setup-value' + (empty ? ' empty' : '') + '">' + escapeHtml(display) + '</div>'
+        + '<div class="setup-edit-hint">✏️</div></button>';
     });
     body.innerHTML = html;
   }
@@ -5873,24 +5912,43 @@
       choices.appendChild(b);
     });
     if (isMulti){
+      // Show any "add your own" values the user typed, so they can remove them too.
+      const arr0 = Array.isArray(onbAnswers[q.key]) ? onbAnswers[q.key] : [];
+      const known = q.opts.map(o => o.v);
+      arr0.filter(v => known.indexOf(v) < 0).forEach(v => {
+        const b = document.createElement("button");
+        b.className = "onb-choice picked";
+        b.innerHTML = '<span class="onb-c-emoji">✏️</span><span class="onb-c-text"><span class="onb-c-label">' + escapeHtml(v) + '</span></span>';
+        b.onclick = () => onbToggle(v);
+        choices.appendChild(b);
+      });
+      const add = document.createElement("button");
+      add.className = "onb-add-own"; add.textContent = "＋ Add your own";
+      add.onclick = onbAddCustom;
+      choices.appendChild(add);
       const cont = document.createElement("button");
       cont.className = "onb-go";
-      cont.textContent = "Continue →";
+      cont.textContent = onbSingleEdit ? "Save ✓" : "Continue →";
       const arr = onbAnswers[q.key];
       cont.disabled = !(Array.isArray(arr) && arr.length);
       cont.onclick = onbContinue;
       choices.appendChild(cont);
     }
     const back = document.getElementById("onbBack");
-    if (back) back.hidden = (onbStep === 0);
+    if (back){
+      back.hidden = onbSingleEdit ? false : (onbStep === 0);
+      back.textContent = onbSingleEdit ? "✕ Cancel" : "‹ Back";
+    }
     const prog = document.getElementById("onbProgress");
     if (prog){
       prog.innerHTML = "";
-      ONB_QUESTIONS.forEach((_, i) => {
-        const d = document.createElement("div");
-        d.className = "onb-dot" + (i < onbStep ? " done" : i === onbStep ? " current" : "");
-        prog.appendChild(d);
-      });
+      if (!onbSingleEdit){
+        ONB_QUESTIONS.forEach((_, i) => {
+          const d = document.createElement("div");
+          d.className = "onb-dot" + (i < onbStep ? " done" : i === onbStep ? " current" : "");
+          prog.appendChild(d);
+        });
+      }
     }
   }
   function onbAdvance(){
@@ -5905,6 +5963,7 @@
   function onbPick(value){ // single-choice questions: pick and move on
     const q = ONB_QUESTIONS[onbStep];
     onbAnswers[q.key] = value;
+    if (onbSingleEdit){ saveSingleEditAndReturn(); return; } // editing one answer → save & back
     onbAdvance();
   }
   function onbToggle(value){ // multi-choice questions: toggle, then tap Continue
@@ -5919,9 +5978,11 @@
     const q = ONB_QUESTIONS[onbStep];
     const arr = onbAnswers[q.key];
     if (!(Array.isArray(arr) && arr.length)) return; // need at least one
+    if (onbSingleEdit){ saveSingleEditAndReturn(); return; } // editing one answer → save & back
     onbAdvance();
   }
   function onbPrev(){
+    if (onbSingleEdit){ cancelSingleEdit(); return; } // Back = cancel this one edit
     if (onbSuggesting){ onbSuggesting = false; renderOnbStep(); return; }
     if (onbStep > 0){ onbStep--; renderOnbStep(); }
   }
