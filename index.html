@@ -3574,8 +3574,32 @@
     }
     return all[currentWeekKey];
   }
+  // The "done" state for guided-start picks is tracked per calendar day (they
+  // reset each day, like a routine's checkmarks).
+  function pickDoneToday(){
+    let all = {};
+    try { all = JSON.parse(localStorage.getItem("mowes_pick_done_v1") || "{}") || {}; } catch(e){}
+    const key = currentWeekKey + "|" + todayKey;
+    return { all: all, key: key, set: new Set(all[key] || []) };
+  }
+  function togglePickDone(name, val){
+    const d = pickDoneToday();
+    if (val) d.set.add(name); else d.set.delete(name);
+    d.all[d.key] = [...d.set];
+    try { localStorage.setItem("mowes_pick_done_v1", JSON.stringify(d.all)); } catch(e){}
+  }
   function buildWorkoutSteps(){
     const steps = [];
+    // 1) Starter exercises picked in the guided start — each a single check-off.
+    let picks = [];
+    try { picks = JSON.parse(localStorage.getItem(PICKED_EXERCISES_KEY) || "[]") || []; } catch(e){}
+    if (picks.length){
+      const doneSet = pickDoneToday().set;
+      picks.forEach(name => {
+        steps.push({ kind:"pick", name:name, groupKey:"__picks__", groupTitle:"⭐ Your starter exercises", rowLabel:name, detail:"", done: doneSet.has(name) });
+      });
+    }
+    // 2) The sets from the routines they've built for today.
     pages.filter(p => p.type === "sheet").forEach(pg => {
       const week = ensureTodayWeek(pg.id);
       const routines = (week && week[todayKey]) || [];
@@ -3627,7 +3651,8 @@
     const st = workoutSteps[idx];
     if (!st) return;
     st.done = !st.done;
-    setStepDoneInStorage(st.pageId, st.ri, st.kind, st.si, st.done);
+    if (st.kind === "pick") togglePickDone(st.name, st.done);
+    else setStepDoneInStorage(st.pageId, st.ri, st.kind, st.si, st.done);
     renderWorkout();
   }
   function renderWorkout(){
@@ -3644,18 +3669,20 @@
       return;
     }
     if (wrap){ wrap.style.display = ""; document.getElementById("workoutBar").style.width = Math.round(done / total * 100) + "%"; }
-    if (pt){ pt.style.display = ""; pt.textContent = done + " of " + total + " sets done"; }
+    if (pt){ pt.style.display = ""; pt.textContent = done + " of " + total + " done"; }
     const firstUndone = workoutSteps.findIndex(s => !s.done);
     let html = "";
     if (done === total) html += '<div class="workout-done-banner">🎉 All done! Great work today.</div>';
     let lastKey = null;
     workoutSteps.forEach((s, i) => {
-      const exKey = s.pageId + "|" + s.ri + "|" + s.name;
-      if (exKey !== lastKey){ html += '<div class="wk-exercise">' + escapeHtml(s.name) + '</div>'; lastKey = exKey; }
+      const gk = s.groupKey || (s.pageId + "|" + s.ri + "|" + s.name);
+      const gt = s.groupTitle || s.name;
+      if (gk !== lastKey){ html += '<div class="wk-exercise">' + escapeHtml(gt) + '</div>'; lastKey = gk; }
+      const label = s.rowLabel || s.setLabel || "";
       const cls = "wk-step" + (s.done ? " done" : "") + (i === firstUndone ? " current" : "");
       html += '<div class="' + cls + '" onclick="toggleWorkoutStep(' + i + ')">'
         + '<div class="wk-check">' + (s.done ? "✓" : "") + '</div>'
-        + '<div class="wk-info"><div class="wk-set">' + escapeHtml(s.setLabel) + '</div>'
+        + '<div class="wk-info"><div class="wk-set">' + escapeHtml(label) + '</div>'
         + (s.detail ? '<div class="wk-detail">' + escapeHtml(s.detail) + '</div>' : '')
         + '</div></div>';
     });
