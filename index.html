@@ -6068,6 +6068,24 @@
     if (!list) return;
     list.innerHTML = "";
     let anything = false;
+    // 1) The exercises they picked in the guided start (their starting point).
+    let picks = [];
+    try { picks = JSON.parse(localStorage.getItem("mowes_picked_exercises_v1") || "[]") || []; } catch(e){}
+    if (picks.length){
+      anything = true;
+      const group = document.createElement("div"); group.className = "plan-group";
+      const title = document.createElement("div"); title.className = "plan-group-title";
+      title.textContent = "⭐ Your starter exercises";
+      group.appendChild(title);
+      picks.forEach(name => {
+        const item = document.createElement("div"); item.className = "plan-item";
+        const nm = document.createElement("span"); nm.className = "plan-item-name"; nm.textContent = name;
+        item.appendChild(nm);
+        group.appendChild(item);
+      });
+      list.appendChild(group);
+    }
+    // 2) The routines they've added for today on their routine pages.
     pages.filter(p => p.type === "sheet").forEach(pg => {
       const routines = todaysRoutinesFor(pg.id);
       if (!routines.length) return;
