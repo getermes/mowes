@@ -4732,9 +4732,20 @@
   // "+ Add set" opens a quick pop-up (how many sets, plus a value for each
   // active column) that builds the whole table at once. Boxes stay editable.
   let quickSetsField = null;
+  // "+ Add set" simply drops a fresh, blank row in the table for you to fill in —
+  // no pop-up, no double entry. Add one per set; each set is its own line.
   function addSet(btn){
-    quickSetsField = btn.closest(".detail-field");
-    openQuickSets();
+    const fieldEl = btn.closest(".detail-field");
+    if (!fieldEl) return;
+    const cfg = fieldEl._repsCfg || normReps({}).cfg;
+    const listWrap = fieldEl.querySelector(".sets-list");
+    const num = listWrap.querySelectorAll(".set-row").length + 1;
+    const row = buildSetRow(num, { reps:"", weight:"", time:"", distance:"", done:false }, cfg);
+    listWrap.appendChild(row);
+    captureDay(); saveData();
+    recalcLaps(fieldEl);
+    const firstInput = row.querySelector(".set-col");
+    if (firstInput) firstInput.focus();
   }
   function openQuickSets(){
     const cfg = (quickSetsField && quickSetsField._repsCfg) || normReps({}).cfg;
