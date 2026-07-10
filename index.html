@@ -2209,6 +2209,10 @@
   .rule-own-add { flex: 0 0 auto; border: none; border-radius: 10px; padding: 0 16px; font-size: 14px; font-weight: 800; color: #fff; background: linear-gradient(135deg, #5b6cff, #7a5bff); cursor: pointer; }
   .rule-own-item { display: flex; align-items: center; gap: 10px; background: #f7f8fd; border-radius: 11px; padding: 11px 13px; margin-top: 8px; font-size: 14px; color: #3a4066; }
   .rule-own-item span { flex: 1; line-height: 1.4; }
+  .rule-own-item.off span { color: #a3a8bd; text-decoration: line-through; }
+  .rule-switch.small { width: 42px; height: 24px; }
+  .rule-switch.small::after { width: 18px; height: 18px; }
+  .rule-switch.small.on::after { left: 21px; }
   .rule-own-del { flex: 0 0 auto; border: none; background: none; color: #b0b4c8; font-size: 18px; cursor: pointer; line-height: 1; }
   .rule-own-empty { color: #8a8fa3; font-size: 13px; margin-top: 10px; text-align: center; }
 
@@ -6665,7 +6669,10 @@
   const RULES_KEY = "mowes_rules_v1";
   function loadRules(){
     let r = {}; try { r = JSON.parse(localStorage.getItem(RULES_KEY) || "{}") || {}; } catch(e){}
-    return { noRepeat: !!r.noRepeat, restDays: Array.isArray(r.restDays) ? r.restDays : [], maxMin: (r.maxMin != null ? +r.maxMin : null), custom: Array.isArray(r.custom) ? r.custom : [] };
+    // Custom rules are {text, on}. Older versions saved plain strings — bring them forward.
+    const custom = (Array.isArray(r.custom) ? r.custom : []).map(c =>
+      (typeof c === "string") ? { text: c, on: true } : { text: (c && c.text) || "", on: c && c.on !== false });
+    return { noRepeat: !!r.noRepeat, restDays: Array.isArray(r.restDays) ? r.restDays : [], maxMin: (r.maxMin != null ? +r.maxMin : null), custom: custom };
   }
   function saveRules(r){ try { localStorage.setItem(RULES_KEY, JSON.stringify(r)); } catch(e){} }
   function renderRules(){
@@ -6697,9 +6704,12 @@
     const list = loadRules().custom;
     if (!list.length){ box.innerHTML = '<div class="rule-own-empty">No rules of your own yet — add one above. ✍️</div>'; return; }
     box.innerHTML = "";
-    list.forEach((txt, i) => {
-      const row = document.createElement("div"); row.className = "rule-own-item";
-      const s = document.createElement("span"); s.textContent = txt; row.appendChild(s);
+    list.forEach((c, i) => {
+      const row = document.createElement("div"); row.className = "rule-own-item" + (c.on ? "" : " off");
+      const sw = document.createElement("button"); sw.className = "rule-switch small" + (c.on ? " on" : ""); sw.title = c.on ? "On" : "Off";
+      sw.onclick = () => rulesToggleOwn(i);
+      row.appendChild(sw);
+      const s = document.createElement("span"); s.textContent = c.text; row.appendChild(s);
       const del = document.createElement("button"); del.className = "rule-own-del"; del.textContent = "✕"; del.title = "Remove";
       del.onclick = () => rulesDeleteOwn(i);
       row.appendChild(del);
@@ -6711,8 +6721,12 @@
     if (!input) return;
     const txt = (input.value || "").trim();
     if (!txt) return;
-    const r = loadRules(); r.custom.push(txt); saveRules(r);
+    const r = loadRules(); r.custom.push({ text: txt, on: true }); saveRules(r);
     input.value = "";
+    renderRuleOwnList();
+  }
+  function rulesToggleOwn(i){
+    const r = loadRules(); if (r.custom[i]) r.custom[i].on = !r.custom[i].on; saveRules(r);
     renderRuleOwnList();
   }
   function rulesDeleteOwn(i){
@@ -6755,7 +6769,7 @@
   function rulesShownAsPage(){ const el = document.getElementById("rulesOverlay"); return !!(el && el.classList.contains("show")); }
   window.rulesToggleNoRepeat = rulesToggleNoRepeat; window.rulesToggleRest = rulesToggleRest;
   window.rulesToggleMax = rulesToggleMax; window.rulesSetMaxMin = rulesSetMaxMin;
-  window.rulesAddOwn = rulesAddOwn; window.rulesDeleteOwn = rulesDeleteOwn;
+  window.rulesAddOwn = rulesAddOwn; window.rulesDeleteOwn = rulesDeleteOwn; window.rulesToggleOwn = rulesToggleOwn;
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
