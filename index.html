@@ -2223,6 +2223,9 @@
   .session-day { font-size: 20px; font-weight: 900; color: #3a4066; min-width: 130px; text-align: center; }
   .session-settings { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-bottom: 14px; font-size: 12.5px; color: #6a7088; }
   .session-settings input { width: 52px; border: 2px solid #e6e8f0; border-radius: 8px; padding: 5px; text-align: center; font-size: 13px; }
+  .session-toggles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: -4px 0 14px; }
+  .session-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4a5068; font-weight: 600; cursor: pointer; }
+  .session-toggle input { width: 18px; height: 18px; accent-color: #5b6cff; cursor: pointer; }
   .session-now { text-align: center; min-height: 10px; margin-bottom: 10px; }
   .session-now.on { min-height: auto; background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-radius: 18px; padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 22px rgba(91,108,255,0.28); }
   .session-now-name { font-size: 18px; font-weight: 900; }
@@ -2595,6 +2598,10 @@
         <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
         <label>Between ex. <input id="sessionExRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
         <label>New muscle <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
+      </div>
+      <div class="session-toggles">
+        <label class="session-toggle"><input type="checkbox" id="sessionWarmup" onchange="sessionSaveSettings()"> 🤸 Warm-up first</label>
+        <label class="session-toggle"><input type="checkbox" id="sessionCooldown" onchange="sessionSaveSettings()"> 🧘 Cool-down after</label>
       </div>
       <div class="session-now" id="sessionNow"></div>
       <div id="sessionList"></div>
@@ -6754,6 +6761,20 @@
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
   let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
   let sessionPaceVal = 1.5, sessionRestVal = 5, sessionExRestVal = 60, sessionTypeRestVal = 180, sessionRestMsg = "Rest";
+  let sessionWarmupOn = true, sessionCooldownOn = true;
+  // Quick, no-equipment warm-up (dynamic) and cool-down (static stretches). ~30s each.
+  const WARMUP_MOVES = [
+    { name:"March in place", sec:30, icon:"🚶", tip:"Lift your knees and swing your arms — get the blood moving." },
+    { name:"Arm circles", sec:30, icon:"🙆", tip:"Big slow circles forward, then backward. Loosen the shoulders." },
+    { name:"Leg swings", sec:30, icon:"🦵", tip:"Hold a wall and swing one leg front-to-back, then switch." },
+    { name:"Torso twists", sec:30, icon:"🔄", tip:"Feet planted, gently rotate side to side to wake up your core." }
+  ];
+  const COOLDOWN_MOVES = [
+    { name:"Hamstring stretch", sec:30, icon:"🧎", tip:"Reach toward your toes with soft knees. Breathe and relax into it." },
+    { name:"Shoulder stretch", sec:30, icon:"💪", tip:"Pull one arm across your chest and hold, then switch." },
+    { name:"Quad stretch", sec:30, icon:"🦵", tip:"Hold a wall, pull one heel toward your glute, then switch." },
+    { name:"Deep breathing", sec:30, icon:"🌬️", tip:"Slow breath in through the nose, longer breath out. Repeat 3–4 times." }
+  ];
   // GPS auto-distance for outdoor distance steps: measures how far you've gone and auto-advances at the target.
   let sessionGpsWatch = null, sessionGpsDistM = 0, sessionGpsLast = null, sessionGpsActive = false, sessionGpsTargetM = 0, sessionGpsMsgText = "";
   // Categorise an exercise by its name → a muscle "type" (for the switch-pause) and an icon.
@@ -6819,14 +6840,20 @@
   function bumpWorkoutCount(){ let n = 0; try { n = parseInt(localStorage.getItem("mowes_workout_count_v1") || "0", 10) || 0; } catch(e){} n++; try { localStorage.setItem("mowes_workout_count_v1", String(n)); } catch(e){} return n; }
   window.celebrate = celebrate; window.closeCelebrate = closeCelebrate;
   function sessionLoadSettings(){
-    try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; if (s.typerest != null) sessionTypeRestVal = +s.typerest; } catch(e){}
+    try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; if (s.typerest != null) sessionTypeRestVal = +s.typerest; if (s.warmup != null) sessionWarmupOn = !!s.warmup; if (s.cooldown != null) sessionCooldownOn = !!s.cooldown; } catch(e){}
     const p = document.getElementById("sessionPace"), r = document.getElementById("sessionRest"), e = document.getElementById("sessionExRest"), tp = document.getElementById("sessionTypeRest");
     if (p) p.value = sessionPaceVal; if (r) r.value = sessionRestVal; if (e) e.value = sessionExRestVal; if (tp) tp.value = sessionTypeRestVal;
+    const wu = document.getElementById("sessionWarmup"), cd = document.getElementById("sessionCooldown");
+    if (wu) wu.checked = sessionWarmupOn; if (cd) cd.checked = sessionCooldownOn;
   }
   function sessionSaveSettings(){
     const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10), e = parseInt(document.getElementById("sessionExRest").value, 10), tp = parseInt(document.getElementById("sessionTypeRest").value, 10);
     sessionPaceVal = (isNaN(p) || p <= 0) ? 1.5 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r; sessionExRestVal = (isNaN(e) || e < 0) ? 60 : e; sessionTypeRestVal = (isNaN(tp) || tp < 0) ? 180 : tp;
-    try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal, exrest: sessionExRestVal, typerest: sessionTypeRestVal })); } catch(e){}
+    const wu = document.getElementById("sessionWarmup"), cd = document.getElementById("sessionCooldown");
+    if (wu) sessionWarmupOn = !!wu.checked; if (cd) sessionCooldownOn = !!cd.checked;
+    try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal, exrest: sessionExRestVal, typerest: sessionTypeRestVal, warmup: sessionWarmupOn, cooldown: sessionCooldownOn })); } catch(e){}
+    // Rebuild so warm-up/cool-down appear or disappear immediately (only when not mid-run).
+    if (!sessionRunning) renderSession();
   }
   function sessionStepsFor(day){
     const steps = [];
@@ -6865,9 +6892,14 @@
         }
       });
     });
-    return steps;
+    // Wrap the workout with a warm-up (before) and cool-down (after) — only if there's a workout.
+    if (!steps.length) return steps;
+    const warm = sessionWarmupOn ? WARMUP_MOVES.map(m => ({ rid:"__warmup__", type:"warmup", name:m.name, label:"Warm-up", detail:m.tip, reps:0, time:0, dist:0, icon:m.icon, kind:"timed", fixedSec:m.sec })) : [];
+    const cool = sessionCooldownOn ? COOLDOWN_MOVES.map(m => ({ rid:"__cooldown__", type:"cooldown", name:m.name, label:"Cool-down", detail:m.tip, reps:0, time:0, dist:0, icon:m.icon, kind:"timed", fixedSec:m.sec })) : [];
+    return warm.concat(steps, cool);
   }
   function sessionStepDuration(st){
+    if (st.fixedSec > 0) return st.fixedSec;
     if (st.reps > 0) return Math.max(1, Math.round(st.reps * sessionPaceVal));
     if (st.time > 0) return Math.max(1, Math.round(st.time * 60));
     return 30; // default when we can't tell yet (laps/distance come later)
@@ -6962,9 +6994,16 @@
     const nextIdx = sessionIdx + 1;
     if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
     // Three rest tiers: between sets < between exercises < between muscle types.
+    // Warm-up/cool-down get quick, friendly transitions (not the long muscle-switch rest).
     const cur = sessionStepsArr[sessionIdx], nxt = sessionStepsArr[nextIdx];
     let rest;
-    if (cur.rid === nxt.rid){ rest = sessionRestVal; sessionRestLong = false; sessionRestMsg = "Rest"; }
+    if (cur.type === "warmup" || nxt.type === "warmup"){
+      rest = sessionRestVal; sessionRestLong = false;
+      sessionRestMsg = (nxt.type === "warmup") ? "Warming up" : "Warm-up done — let's go! 💪";
+    } else if (cur.type === "cooldown" || nxt.type === "cooldown"){
+      rest = sessionRestVal; sessionRestLong = false;
+      sessionRestMsg = (nxt.type === "cooldown") ? "Cooling down 🧘" : "Rest";
+    } else if (cur.rid === nxt.rid){ rest = sessionRestVal; sessionRestLong = false; sessionRestMsg = "Rest"; }
     else if (cur.type === nxt.type){ rest = sessionExRestVal; sessionRestLong = true; sessionRestMsg = "Rest before next exercise"; }
     else { rest = sessionTypeRestVal; sessionRestLong = true; sessionRestMsg = "Rest — switching to a new muscle group"; }
     if (rest > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = rest; sessionEndAt = Date.now() + rest * 1000; renderSession(); }
