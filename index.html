@@ -2183,6 +2183,35 @@
   .ach-verdict.behind { background: #fdf1e7; color: #b06a00; }
   .ach-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
 
+  /* My Rules — settings that shape how MOWES picks your day */
+  .rules-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
+  .rules-overlay.show { display: block; }
+  .rules-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .rule-card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .rule-top { display: flex; align-items: flex-start; gap: 12px; }
+  .rule-text { flex: 1; }
+  .rule-title { font-weight: 900; color: #3a4066; font-size: 15.5px; }
+  .rule-desc { color: #6a7088; font-size: 13px; line-height: 1.5; margin-top: 3px; }
+  .rule-switch { flex: 0 0 auto; width: 52px; height: 30px; border-radius: 20px; background: #d6dbef; border: none; cursor: pointer; position: relative; transition: background 0.2s; margin-top: 2px; }
+  .rule-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: left 0.2s; }
+  .rule-switch.on { background: linear-gradient(135deg, #5b6cff, #7a5bff); }
+  .rule-switch.on::after { left: 25px; }
+  .rule-extra { margin-top: 14px; padding-top: 14px; border-top: 1px solid #eef0f8; display: none; }
+  .rule-extra.show { display: block; }
+  .rule-days { display: flex; flex-wrap: wrap; gap: 7px; }
+  .rule-day { border: 1.5px solid #d6dbef; background: #f7f8fd; color: #5a6076; border-radius: 11px; padding: 8px 12px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .rule-day.on { background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-color: transparent; }
+  .rule-min-row { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #4a5068; }
+  .rule-min-row input { width: 74px; border: 1.5px solid #d6dbef; border-radius: 10px; padding: 9px 10px; font-size: 15px; text-align: center; }
+  .rule-own-row { display: flex; gap: 8px; }
+  .rule-own-row input { flex: 1; min-width: 0; border: 1.5px solid #d6dbef; border-radius: 10px; padding: 11px 12px; font-size: 15px; }
+  .rule-own-add { flex: 0 0 auto; border: none; border-radius: 10px; padding: 0 16px; font-size: 14px; font-weight: 800; color: #fff; background: linear-gradient(135deg, #5b6cff, #7a5bff); cursor: pointer; }
+  .rule-own-item { display: flex; align-items: center; gap: 10px; background: #f7f8fd; border-radius: 11px; padding: 11px 13px; margin-top: 8px; font-size: 14px; color: #3a4066; }
+  .rule-own-item span { flex: 1; line-height: 1.4; }
+  .rule-own-del { flex: 0 0 auto; border: none; background: none; color: #b0b4c8; font-size: 18px; cursor: pointer; line-height: 1; }
+  .rule-own-empty { color: #8a8fa3; font-size: 13px; margin-top: 10px; text-align: center; }
+
   /* Today's Session page (guided auto-advance) */
   .session-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
@@ -2711,6 +2740,68 @@
       <div class="setup-sub">Your progress so far — and where you're headed next.</div>
       <div id="achBody"></div>
       <p class="setup-note">🔒 Worked out on your phone from your own Goals &amp; My Body data.</p>
+    </div>
+  </div>
+
+  <!-- My Rules: settings that shape how "Surprise me" picks your day -->
+  <div class="rules-overlay" id="rulesOverlay">
+    <div class="rules-inner">
+      <div class="setup-title">📜 My Rules</div>
+      <div class="setup-sub">Your rules for when MOWES picks your day (🎁 Surprise me).</div>
+
+      <div class="rule-card">
+        <div class="rule-top">
+          <div class="rule-text">
+            <div class="rule-title">💪 No same muscle two days in a row</div>
+            <div class="rule-desc">MOWES avoids working the same muscle group you worked yesterday, so it gets time to recover.</div>
+          </div>
+          <button class="rule-switch" id="ruleNoRepeat" onclick="rulesToggleNoRepeat()"></button>
+        </div>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-top">
+          <div class="rule-text">
+            <div class="rule-title">🌙 Rest days</div>
+            <div class="rule-desc">Pick the days that are always rest days. On those days, Surprise me gives you a break.</div>
+          </div>
+          <button class="rule-switch" id="ruleRest" onclick="rulesToggleRest()"></button>
+        </div>
+        <div class="rule-extra" id="ruleRestExtra">
+          <div class="rule-days" id="ruleRestDays"></div>
+        </div>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-top">
+          <div class="rule-text">
+            <div class="rule-title">⏱️ Keep each day short</div>
+            <div class="rule-desc">Cap how long a surprise plan should take, so it fits your day.</div>
+          </div>
+          <button class="rule-switch" id="ruleMax" onclick="rulesToggleMax()"></button>
+        </div>
+        <div class="rule-extra" id="ruleMaxExtra">
+          <div class="rule-min-row">Keep it under <input id="ruleMaxMin" type="number" min="5" step="5" inputmode="numeric" onchange="rulesSetMaxMin(this.value)" oninput="rulesSetMaxMin(this.value)"> minutes</div>
+        </div>
+      </div>
+
+      <div class="rule-card">
+        <div class="rule-top">
+          <div class="rule-text">
+            <div class="rule-title">✍️ Your own rules</div>
+            <div class="rule-desc">Write any rule you want to remember. MOWES keeps them here for you (these are your notes — the switches above are the ones MOWES follows automatically).</div>
+          </div>
+        </div>
+        <div class="rule-extra show" style="border-top:none;padding-top:12px;">
+          <div class="rule-own-row">
+            <input id="ruleOwnInput" type="text" placeholder="e.g. Always stretch after legs" onkeydown="if(event.key==='Enter')rulesAddOwn()">
+            <button class="rule-own-add" onclick="rulesAddOwn()">＋ Add</button>
+          </div>
+          <div id="ruleOwnList"></div>
+        </div>
+      </div>
+
+      <p class="setup-note">🔒 Saved only on your phone. The switches shape the 🎁 Surprise me picks.</p>
     </div>
   </div>
 
@@ -3772,7 +3863,7 @@
     // Cover, then Today's Plan, then every page of your book, then My Setup (last).
     return [{ cover:true, name:"Cover", icon:"📖 " }, { plan:true, name:"Today's Plan", icon:"📋 " }, { session:true, name:"Today's Session", icon:"▶️ " }]
       .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-      .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
+      .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
   }
   function coverShownAsPage(){
     const el = document.getElementById("welcomeOverlay");
@@ -3791,6 +3882,7 @@
     if (planShownAsPage()) return 1;
     const stops = pageBarStops();
     if (setupShownAsPage()) return stops.findIndex(s => s.setup);
+    if (rulesShownAsPage()) return stops.findIndex(s => s.rules);
     if (bodyShownAsPage()) return stops.findIndex(s => s.body);
     if (achShownAsPage()) return stops.findIndex(s => s.ach);
     if (goalsShownAsPage()) return stops.findIndex(s => s.goals);
@@ -3801,7 +3893,7 @@
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -3813,7 +3905,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -3826,7 +3918,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -3846,8 +3938,9 @@
     if (s.goals){ openGoalsPage(); return; }
     if (s.ach){ openAchPage(); return; }
     if (s.body){ openBodyPage(); return; }
+    if (s.rules){ openRulesPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -6374,7 +6467,7 @@
   function openBodyPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
     renderBody();
     document.getElementById("bodyOverlay").classList.add("show");
     renderPageBar();
@@ -6473,7 +6566,7 @@
   function openGoalsPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
     renderGoals();
     document.getElementById("goalsOverlay").classList.add("show");
     renderPageBar();
@@ -6553,13 +6646,109 @@
   function openAchPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveRulesPage(); leaveSessionPage();
     renderAch();
     document.getElementById("achOverlay").classList.add("show");
     renderPageBar();
   }
   function leaveAchPage(){ const el = document.getElementById("achOverlay"); if (el) el.classList.remove("show"); }
   function achShownAsPage(){ const el = document.getElementById("achOverlay"); return !!(el && el.classList.contains("show")); }
+
+  // ---- My Rules: user rules that shape how "Surprise me" picks the day ----
+  const RULES_KEY = "mowes_rules_v1";
+  function loadRules(){
+    let r = {}; try { r = JSON.parse(localStorage.getItem(RULES_KEY) || "{}") || {}; } catch(e){}
+    return { noRepeat: !!r.noRepeat, restDays: Array.isArray(r.restDays) ? r.restDays : [], maxMin: (r.maxMin != null ? +r.maxMin : null), custom: Array.isArray(r.custom) ? r.custom : [] };
+  }
+  function saveRules(r){ try { localStorage.setItem(RULES_KEY, JSON.stringify(r)); } catch(e){} }
+  function renderRules(){
+    const r = loadRules();
+    const sw = (id, on) => { const e = document.getElementById(id); if (e) e.classList.toggle("on", !!on); };
+    sw("ruleNoRepeat", r.noRepeat);
+    sw("ruleRest", r.restDays.length > 0);
+    sw("ruleMax", r.maxMin != null);
+    const restExtra = document.getElementById("ruleRestExtra"); if (restExtra) restExtra.classList.toggle("show", r.restDays.length > 0);
+    const maxExtra = document.getElementById("ruleMaxExtra"); if (maxExtra) maxExtra.classList.toggle("show", r.maxMin != null);
+    const maxInput = document.getElementById("ruleMaxMin"); if (maxInput && document.activeElement !== maxInput) maxInput.value = (r.maxMin != null ? r.maxMin : 30);
+    // Day chips (Mon–Sun)
+    const box = document.getElementById("ruleRestDays");
+    if (box){
+      box.innerHTML = "";
+      days.forEach(d => {
+        const b = document.createElement("button");
+        b.className = "rule-day" + (r.restDays.indexOf(d) >= 0 ? " on" : "");
+        b.textContent = d;
+        b.onclick = () => rulesToggleRestDay(d);
+        box.appendChild(b);
+      });
+    }
+    renderRuleOwnList();
+  }
+  function renderRuleOwnList(){
+    const box = document.getElementById("ruleOwnList");
+    if (!box) return;
+    const list = loadRules().custom;
+    if (!list.length){ box.innerHTML = '<div class="rule-own-empty">No rules of your own yet — add one above. ✍️</div>'; return; }
+    box.innerHTML = "";
+    list.forEach((txt, i) => {
+      const row = document.createElement("div"); row.className = "rule-own-item";
+      const s = document.createElement("span"); s.textContent = txt; row.appendChild(s);
+      const del = document.createElement("button"); del.className = "rule-own-del"; del.textContent = "✕"; del.title = "Remove";
+      del.onclick = () => rulesDeleteOwn(i);
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+  }
+  function rulesAddOwn(){
+    const input = document.getElementById("ruleOwnInput");
+    if (!input) return;
+    const txt = (input.value || "").trim();
+    if (!txt) return;
+    const r = loadRules(); r.custom.push(txt); saveRules(r);
+    input.value = "";
+    renderRuleOwnList();
+  }
+  function rulesDeleteOwn(i){
+    const r = loadRules(); r.custom.splice(i, 1); saveRules(r);
+    renderRuleOwnList();
+  }
+  function rulesToggleNoRepeat(){ const r = loadRules(); r.noRepeat = !r.noRepeat; saveRules(r); renderRules(); }
+  function rulesToggleRest(){
+    const r = loadRules();
+    if (r.restDays.length) r.restDays = []; else r.restDays = ["Sun"]; // sensible default
+    saveRules(r); renderRules();
+  }
+  function rulesToggleRestDay(d){
+    const r = loadRules();
+    const i = r.restDays.indexOf(d);
+    if (i >= 0) r.restDays.splice(i, 1); else r.restDays.push(d);
+    saveRules(r); renderRules();
+  }
+  function rulesToggleMax(){
+    const r = loadRules();
+    r.maxMin = (r.maxMin != null) ? null : 30; // default 30 min
+    saveRules(r); renderRules();
+  }
+  function rulesSetMaxMin(v){
+    const r = loadRules();
+    const n = parseInt(v, 10);
+    if (!isNaN(n) && n > 0) r.maxMin = n;
+    saveRules(r);
+  }
+  function isRestDayToday(){ return loadRules().restDays.indexOf(todayKey) >= 0; }
+  function openRulesPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
+    renderRules();
+    document.getElementById("rulesOverlay").classList.add("show");
+    renderPageBar();
+  }
+  function leaveRulesPage(){ const el = document.getElementById("rulesOverlay"); if (el) el.classList.remove("show"); }
+  function rulesShownAsPage(){ const el = document.getElementById("rulesOverlay"); return !!(el && el.classList.contains("show")); }
+  window.rulesToggleNoRepeat = rulesToggleNoRepeat; window.rulesToggleRest = rulesToggleRest;
+  window.rulesToggleMax = rulesToggleMax; window.rulesSetMaxMin = rulesSetMaxMin;
+  window.rulesAddOwn = rulesAddOwn; window.rulesDeleteOwn = rulesDeleteOwn;
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
@@ -6885,7 +7074,7 @@
   function openSessionPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage();
     sessionSelDay = todayKey; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionRunning = false;
     if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionLoadSettings();
@@ -7171,7 +7360,7 @@
             if (seen[key]) return; seen[key] = 1;
             const det = r.details || {};
             const cardio = (pg.id === "p_ex_walkrun") || !!(det.time && det.time.on) || !!(det.reps && det.reps.cols && det.reps.cols.distance);
-            lib.push({ name: r.name.trim(), cardio: cardio });
+            lib.push({ name: r.name.trim(), cardio: cardio, type: exerciseCategory(r.name).type });
           });
         });
       });
@@ -7182,20 +7371,55 @@
     let store = {}; try { store = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}") || {}; } catch(e){}
     return store[currentWeekKey + "|" + todayKey] || [];
   }
+  // Which muscle groups were worked on a given day (from that day's saved surprise + routines).
+  function musclesWorkedOn(dayKey){
+    const set = {};
+    // yesterday's saved surprise picks
+    let store = {}; try { store = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}") || {}; } catch(e){}
+    (store[currentWeekKey + "|" + dayKey] || []).forEach(name => { set[exerciseCategory(name).type] = 1; });
+    // routines actually assigned to that day, across every sheet page
+    pages.filter(p => p.type === "sheet").forEach(pg => {
+      let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
+      const week = all[currentWeekKey] || {};
+      (week[dayKey] || []).forEach(r => { if (r && (r.name || "").trim()) set[exerciseCategory(r.name).type] = 1; });
+    });
+    return set;
+  }
   function generateSurprise(){
     const lib = gatherLibrary();
     if (!lib.length) return false;
     let a = {}; try { a = JSON.parse(localStorage.getItem("mowes_onboarding_answers_v1") || "{}") || {}; } catch(e){}
-    let ordered = surpriseShuffle(lib, surpriseDaySeed()); // vary day to day
+    const rules = loadRules();
+    let pool = lib;
+    // Rule: no same muscle group two days running — drop anything worked yesterday.
+    if (rules.noRepeat){
+      const yKey = days[(days.indexOf(todayKey) - 1 + days.length) % days.length];
+      const worked = musclesWorkedOn(yKey);
+      const filtered = lib.filter(r => !worked[r.type]);
+      if (filtered.length) pool = filtered; // only apply if something's left to pick
+    }
+    let ordered = surpriseShuffle(pool, surpriseDaySeed()); // vary day to day
     if (a.goal === "lose_weight") ordered = ordered.slice().sort((x, y) => (y.cardio ? 1 : 0) - (x.cardio ? 1 : 0));
     else if (a.goal === "strength") ordered = ordered.slice().sort((x, y) => (x.cardio ? 1 : 0) - (y.cardio ? 1 : 0));
-    const chosen = ordered.slice(0, Math.min(surpriseCount(), ordered.length)).map(r => r.name);
+    // Rule: keep each day short — cap the number of picks (~10 min each).
+    let count = surpriseCount();
+    if (rules.maxMin != null) count = Math.max(1, Math.min(count, Math.floor(rules.maxMin / 10) || 1));
+    const chosen = ordered.slice(0, Math.min(count, ordered.length)).map(r => r.name);
     let store = {}; try { store = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}") || {}; } catch(e){}
     store[currentWeekKey + "|" + todayKey] = chosen;
     try { localStorage.setItem("mowes_surprise_v1", JSON.stringify(store)); } catch(e){}
     return true;
   }
   function surpriseMe(){
+    // Rule: rest day — MOWES gives you the day off instead of a plan.
+    if (isRestDayToday()){
+      let store = {}; try { store = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}") || {}; } catch(e){}
+      store[currentWeekKey + "|" + todayKey] = [];
+      try { localStorage.setItem("mowes_surprise_v1", JSON.stringify(store)); } catch(e){}
+      renderPlan();
+      alert("Today's a rest day in your rules 🌙 — recovery is part of getting stronger. Enjoy the break!");
+      return;
+    }
     if (!generateSurprise()){
       alert("First build a few routines on your pages (💪 Weights, 🚶 Runs & Walks…). Then MOWES can surprise you with a plan picked from them. 🙂");
       return;
