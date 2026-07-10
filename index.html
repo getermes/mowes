@@ -2200,6 +2200,12 @@
   .session-now-detail { font-size: 14px; opacity: 0.92; margin-top: 3px; }
   .session-now-timer { font-size: 44px; font-weight: 900; line-height: 1.1; margin-top: 6px; }
   .session-now.rest { background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 8px 22px rgba(39,185,138,0.28); }
+  .session-gps-bar { height: 8px; border-radius: 6px; background: rgba(255,255,255,0.28); overflow: hidden; margin: 8px 0 6px; }
+  .session-gps-fill { height: 100%; background: #fff; border-radius: 6px; transition: width 0.4s ease; }
+  .session-gps-msg { font-size: 13px; opacity: 0.92; margin-bottom: 4px; }
+  .session-gps-btn { margin-top: 8px; border: none; border-radius: 12px; padding: 11px 20px; font-size: 15px; font-weight: 800; color: #5b6cff; background: #fff; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.12); }
+  .session-gps-btn:active { transform: scale(0.98); }
+  .session-gps-btn.stop { background: rgba(255,255,255,0.18); color: #fff; box-shadow: none; }
   .session-step { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 7px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
   .session-step.current { border: 2px solid #5b6cff; }
   .session-step.done { opacity: 0.55; }
@@ -6559,6 +6565,8 @@
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
   let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
   let sessionPaceVal = 1.5, sessionRestVal = 5, sessionExRestVal = 60, sessionTypeRestVal = 180, sessionRestMsg = "Rest";
+  // GPS auto-distance for outdoor distance steps: measures how far you've gone and auto-advances at the target.
+  let sessionGpsWatch = null, sessionGpsDistM = 0, sessionGpsLast = null, sessionGpsActive = false, sessionGpsTargetM = 0, sessionGpsMsgText = "";
   // Categorise an exercise by its name → a muscle "type" (for the switch-pause) and an icon.
   function exerciseCategory(name){
     const n = (name || "").toLowerCase();
@@ -6709,7 +6717,22 @@
           now.innerHTML = '<div class="session-now-name">' + meta + '</div><div class="session-now-detail">Lap ' + Math.min(sessionLapDone + 1, st.laps) + ' of ' + st.laps + ' — tap ✓ Lap each time</div><div class="session-now-timer">🌀 ' + sessionLapDone + '/' + st.laps + '</div>';
         } else if (st.kind === "manual"){
           now.className = "session-now on";
-          now.innerHTML = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-detail">Tap ✓ Done when you finish</div>';
+          const hasDist = (parseFloat(st.dist) || 0) > 0;
+          let inner = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '');
+          if (hasDist && sessionGpsActive){
+            const done = sessionGpsDistInUnit(st), target = parseFloat(st.dist) || 0;
+            const pct = target > 0 ? Math.min(100, Math.round(done / target * 100)) : 0;
+            inner += '<div class="session-now-timer">📍 ' + done.toFixed(2) + ' / ' + target + ' ' + escapeHtml(st.distUnit || 'mi') + '</div>'
+              + '<div class="session-gps-bar"><div class="session-gps-fill" style="width:' + pct + '%"></div></div>'
+              + '<div class="session-gps-msg" id="sessionGpsMsg">' + escapeHtml(sessionGpsMsgText || 'Getting your location… start moving. 🏃') + '</div>'
+              + '<button class="session-gps-btn stop" onclick="sessionGpsStop(true)">✕ Stop GPS</button>';
+          } else if (hasDist){
+            inner += '<div class="session-now-detail">Track it with GPS, or tap ✓ Done when you finish.</div>'
+              + '<button class="session-gps-btn" onclick="sessionGpsStart()">📍 Track with GPS</button>';
+          } else {
+            inner += '<div class="session-now-detail">Tap ✓ Done when you finish</div>';
+          }
+          now.innerHTML = inner;
         } else {
           now.className = "session-now on";
           now.innerHTML = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
@@ -6735,6 +6758,7 @@
     sessionCompleteStep(); // manual "Done"
   }
   function sessionEnterWork(idx){
+    sessionGpsStop(false);
     if (idx >= sessionStepsArr.length){ sessionFinish(); return; }
     sessionIdx = idx; sessionPhase = "work"; sessionLapDone = 0;
     const st = sessionStepsArr[idx];
@@ -6744,6 +6768,7 @@
   }
   function sessionCompleteStep(){
     if (sessionIdx < 0) return;
+    sessionGpsStop(false);
     sessionDone[sessionIdx] = true;
     const nextIdx = sessionIdx + 1;
     if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
@@ -6763,6 +6788,49 @@
     if (sessionLapDone >= (st.laps || 1)) sessionCompleteStep();
     else renderSession();
   }
+  // ---- GPS auto-distance: measure an outdoor distance step and auto-advance at the target ----
+  function sessionGpsUnitToM(u){ return (u === "km") ? 1000 : 1609.344; }
+  function sessionGpsDistInUnit(st){ return sessionGpsDistM / sessionGpsUnitToM((st && st.distUnit) || "mi"); }
+  function sessionGpsStart(){
+    const st = sessionStepsArr[sessionIdx];
+    if (!st || st.kind !== "manual") return;
+    if (!navigator.geolocation){ sessionGpsMsgText = "This phone can't use GPS here — tap ✓ Done instead."; renderSession(); return; }
+    sessionGpsDistM = 0; sessionGpsLast = null; sessionGpsActive = true;
+    sessionGpsTargetM = (parseFloat(st.dist) || 0) * sessionGpsUnitToM(st.distUnit || "mi");
+    sessionGpsMsgText = "Getting your location… start moving. 🏃";
+    if (sessionGpsWatch != null) navigator.geolocation.clearWatch(sessionGpsWatch);
+    sessionGpsWatch = navigator.geolocation.watchPosition(onSessionGpsPos, onSessionGpsErr, { enableHighAccuracy:true, maximumAge:1000, timeout:20000 });
+    renderSession();
+  }
+  function onSessionGpsPos(pos){
+    if (!sessionGpsActive) return;
+    const c = pos.coords;
+    if (c.accuracy && c.accuracy > 35) return;              // skip very fuzzy fixes
+    if (sessionGpsLast){
+      const seg = haversineM(sessionGpsLast.lat, sessionGpsLast.lon, c.latitude, c.longitude);
+      if (seg > 2 && seg < 60) sessionGpsDistM += seg;       // ignore jitter (<2m) & jumps (>60m)
+    }
+    sessionGpsLast = { lat: c.latitude, lon: c.longitude };
+    sessionGpsMsgText = "Recording… keep going! 🏃";
+    if (sessionGpsTargetM > 0 && sessionGpsDistM >= sessionGpsTargetM){
+      sessionGpsStop(false);
+      sessionCompleteStep();                                  // hit the target → auto-advance
+      return;
+    }
+    renderSession();
+  }
+  function onSessionGpsErr(err){
+    sessionGpsMsgText = (err && err.code === 1)
+      ? "Location was blocked — allow location, or tap ✓ Done."
+      : "Couldn't get GPS — make sure you're outside, or tap ✓ Done.";
+    renderSession();
+  }
+  function sessionGpsStop(rerender){
+    if (sessionGpsWatch != null){ navigator.geolocation.clearWatch(sessionGpsWatch); sessionGpsWatch = null; }
+    sessionGpsActive = false; sessionGpsLast = null;
+    if (rerender) renderSession();
+  }
+  window.sessionGpsStart = sessionGpsStart; window.sessionGpsStop = sessionGpsStop;
   function sessionStart(){
     if (!sessionStepsArr.length) return;
     if (sessionStepsArr.every((_, i) => sessionDone[i])){ sessionDone = {}; sessionIdx = -1; }
@@ -6782,6 +6850,7 @@
   function sessionPause(){
     const st = sessionStepsArr[sessionIdx];
     if (sessionPhase === "rest" || (st && st.kind === "timed")) sessionRemain = Math.max(0, Math.ceil((sessionEndAt - Date.now()) / 1000));
+    sessionGpsStop(false);
     sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; } renderSession();
   }
   function sessionTick(){
@@ -6796,6 +6865,7 @@
     else sessionEnterWork(sessionIdx); // sessionIdx already points at the upcoming step
   }
   function sessionFinish(){
+    sessionGpsStop(false);
     sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionLapDone = 0;
     renderSession();
