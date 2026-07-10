@@ -2182,6 +2182,37 @@
   .ach-verdict.good { background: #eafaf2; color: #1f8f5f; }
   .ach-verdict.behind { background: #fdf1e7; color: #b06a00; }
   .ach-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
+
+  /* Today's Session page (guided auto-advance) */
+  .session-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
+  .session-overlay.show { display: block; }
+  .session-inner { max-width: 420px; margin: 0 auto; padding: 30px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .session-daynav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
+  .session-arrow { width: 42px; height: 42px; border: none; border-radius: 12px; background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; }
+  .session-arrow:active { transform: scale(0.95); }
+  .session-day { font-size: 20px; font-weight: 900; color: #3a4066; min-width: 130px; text-align: center; }
+  .session-settings { display: flex; justify-content: center; gap: 14px; margin-bottom: 14px; font-size: 12.5px; color: #6a7088; }
+  .session-settings input { width: 52px; border: 2px solid #e6e8f0; border-radius: 8px; padding: 5px; text-align: center; font-size: 13px; }
+  .session-now { text-align: center; min-height: 10px; margin-bottom: 10px; }
+  .session-now.on { min-height: auto; background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-radius: 18px; padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 22px rgba(91,108,255,0.28); }
+  .session-now-name { font-size: 18px; font-weight: 900; }
+  .session-now-detail { font-size: 14px; opacity: 0.92; margin-top: 3px; }
+  .session-now-timer { font-size: 44px; font-weight: 900; line-height: 1.1; margin-top: 6px; }
+  .session-now.rest { background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 8px 22px rgba(39,185,138,0.28); }
+  .session-step { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 7px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .session-step.current { border: 2px solid #5b6cff; }
+  .session-step.done { opacity: 0.55; }
+  .session-step.done .session-step-name { text-decoration: line-through; }
+  .session-step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .session-step-main { flex: 1 1 auto; min-width: 0; }
+  .session-step-name { font-weight: 800; color: #3a4066; font-size: 14px; }
+  .session-step-detail { font-size: 12.5px; color: #8a90ad; margin-top: 1px; }
+  .session-start { display: block; width: 100%; margin-top: 14px; border: none; border-radius: 16px; padding: 17px;
+    font-size: 18px; font-weight: 900; color: #fff; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.28); }
+  .session-start.running { background: linear-gradient(135deg, #e5484d, #ff6b6b); box-shadow: 0 6px 18px rgba(229,72,77,0.28); }
+  .session-start:active { transform: scale(0.99); }
+  .session-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 26px 8px; }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2484,6 +2515,25 @@
       <div class="plan-list" id="planList"></div>
       <button class="plan-surprise" onclick="surpriseMe()">🎁 Surprise me</button>
       <button class="plan-next" onclick="startWorkout()">Let's go! 💪</button>
+    </div>
+  </div>
+
+  <!-- Today's Session: guided, auto-advancing run through the day's steps -->
+  <div class="session-overlay" id="sessionOverlay">
+    <div class="session-inner">
+      <div class="session-daynav">
+        <button class="session-arrow" onclick="sessionChangeDay(-1)">‹</button>
+        <div class="session-day" id="sessionDay">Today</div>
+        <button class="session-arrow" onclick="sessionChangeDay(1)">›</button>
+      </div>
+      <div class="session-settings">
+        <label>Pace <input id="sessionPace" type="number" min="0.2" step="0.1" inputmode="decimal" onchange="sessionSaveSettings()"> sec/rep</label>
+        <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
+      </div>
+      <div class="session-now" id="sessionNow"></div>
+      <div id="sessionList"></div>
+      <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">▶ Start</button>
+      <p class="setup-note">🔒 Runs on your phone. Tap Start and MOWES moves you through the day.</p>
     </div>
   </div>
 
@@ -3626,7 +3676,7 @@
   var appOpened = false; // becomes true once you've entered the workspace
   function pageBarStops(){
     // Cover, then Today's Plan, then every page of your book, then My Setup (last).
-    return [{ cover:true, name:"Cover", icon:"📖 " }, { plan:true, name:"Today's Plan", icon:"📋 " }]
+    return [{ cover:true, name:"Cover", icon:"📖 " }, { plan:true, name:"Today's Plan", icon:"📋 " }, { session:true, name:"Today's Session", icon:"▶️ " }]
       .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
       .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
   }
@@ -3650,13 +3700,14 @@
     if (bodyShownAsPage()) return stops.findIndex(s => s.body);
     if (achShownAsPage()) return stops.findIndex(s => s.ach);
     if (goalsShownAsPage()) return stops.findIndex(s => s.goals);
+    if (sessionShownAsPage()) return stops.findIndex(s => s.session);
     const i = pages.findIndex(p => p.id === activePageId);
-    return i < 0 ? 1 : i + 2;
+    return i < 0 ? 1 : i + 3;
   }
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -3668,7 +3719,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -3681,7 +3732,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -3697,11 +3748,12 @@
     const s = stops[k];
     if (s.cover){ openCoverPage(); return; }
     if (s.plan){ openPlanPage(); return; }
+    if (s.session){ openSessionPage(); return; }
     if (s.goals){ openGoalsPage(); return; }
     if (s.ach){ openAchPage(); return; }
     if (s.body){ openBodyPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -6228,7 +6280,7 @@
   function openBodyPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
     renderBody();
     document.getElementById("bodyOverlay").classList.add("show");
     renderPageBar();
@@ -6324,7 +6376,7 @@
   function openGoalsPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveSessionPage();
     renderGoals();
     document.getElementById("goalsOverlay").classList.add("show");
     renderPageBar();
@@ -6404,13 +6456,153 @@
   function openAchPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveSessionPage();
     renderAch();
     document.getElementById("achOverlay").classList.add("show");
     renderPageBar();
   }
   function leaveAchPage(){ const el = document.getElementById("achOverlay"); if (el) el.classList.remove("show"); }
   function achShownAsPage(){ const el = document.getElementById("achOverlay"); return !!(el && el.classList.contains("show")); }
+
+  // ---- Today's Session: guided auto-advance through the day's steps ----
+  let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
+  let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null;
+  let sessionPaceVal = 1.5, sessionRestVal = 5;
+  function sessionLoadSettings(){
+    try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; } catch(e){}
+    const p = document.getElementById("sessionPace"), r = document.getElementById("sessionRest");
+    if (p) p.value = sessionPaceVal; if (r) r.value = sessionRestVal;
+  }
+  function sessionSaveSettings(){
+    const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10);
+    sessionPaceVal = (isNaN(p) || p <= 0) ? 1.5 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r;
+    try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal })); } catch(e){}
+  }
+  function sessionStepsFor(day){
+    const steps = [];
+    pages.filter(p => p.type === "sheet").forEach(pg => {
+      let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
+      const week = all[currentWeekKey] || {};
+      (week[day] || []).forEach(r => {
+        if (!r || !(r.name || "").trim()) return;
+        const det = r.details || {}, reps = det.reps || {};
+        if (reps.on && reps.sets){
+          const wUnit = reps.weightUnit || "lbs";
+          reps.sets.forEach((s, i) => {
+            if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
+            const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min");
+            steps.push({ name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: parseFloat(s.reps) || 0, time: parseFloat(s.time) || 0 });
+          });
+        }
+        const tm = det.time || {};
+        if (tm.on && tm.rows){
+          tm.rows.forEach((row, i) => {
+            if (!row || (!row.label && !row.min && !row.miles)) return;
+            const parts = []; if (row.min) parts.push(row.min + " min"); if (row.miles) parts.push(row.miles + " mi");
+            steps.push({ name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: parseFloat(row.min) || 0 });
+          });
+        }
+      });
+    });
+    return steps;
+  }
+  function sessionStepDuration(st){
+    if (st.reps > 0) return Math.max(1, Math.round(st.reps * sessionPaceVal));
+    if (st.time > 0) return Math.max(1, Math.round(st.time * 60));
+    return 30; // default when we can't tell yet (laps/distance come later)
+  }
+  function sessionClock(s){ s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), ss = s % 60; return m + ":" + (ss < 10 ? "0" : "") + ss; }
+  function renderSession(){
+    const dayEl = document.getElementById("sessionDay");
+    if (dayEl) dayEl.textContent = dayTitle(sessionSelDay);
+    sessionStepsArr = sessionStepsFor(sessionSelDay);
+    const list = document.getElementById("sessionList"), now = document.getElementById("sessionNow"), btn = document.getElementById("sessionStartBtn");
+    if (!sessionStepsArr.length){
+      if (list) list.innerHTML = '<div class="session-empty">Nothing set for this day yet. Add exercises on your routine pages, then come back and tap Start. 💪</div>';
+      if (now){ now.className = "session-now"; now.innerHTML = ""; }
+      if (btn) btn.style.display = "none";
+      return;
+    }
+    if (btn) btn.style.display = "block";
+    let html = "";
+    sessionStepsArr.forEach((st, i) => {
+      const cls = "session-step" + (sessionDone[i] ? " done" : "") + (sessionRunning && i === sessionIdx ? " current" : "");
+      html += '<div class="' + cls + '"><div class="session-step-num">' + (i + 1) + '</div><div class="session-step-main">'
+        + '<div class="session-step-name">' + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>'
+        + (st.detail ? '<div class="session-step-detail">' + escapeHtml(st.detail) + '</div>' : '') + '</div></div>';
+    });
+    if (list) list.innerHTML = html;
+    if (now){
+      if (sessionRunning && sessionIdx >= 0 && sessionIdx < sessionStepsArr.length){
+        const st = sessionStepsArr[sessionIdx];
+        if (sessionPhase === "rest"){
+          now.className = "session-now on rest";
+          now.innerHTML = '<div class="session-now-name">Rest</div><div class="session-now-detail">Next: ' + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+        } else {
+          now.className = "session-now on";
+          now.innerHTML = '<div class="session-now-name">' + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+        }
+      } else { now.className = "session-now"; now.innerHTML = ""; }
+    }
+    if (btn){ btn.textContent = sessionRunning ? "⏸ Pause" : (Object.keys(sessionDone).length ? "▶ Resume" : "▶ Start"); btn.classList.toggle("running", sessionRunning); }
+  }
+  function sessionToggle(){ if (sessionRunning) sessionPause(); else sessionStart(); }
+  function sessionStart(){
+    if (!sessionStepsArr.length) return;
+    if (sessionStepsArr.every((_, i) => sessionDone[i])){ sessionDone = {}; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; }
+    if (sessionIdx < 0 || sessionIdx >= sessionStepsArr.length){
+      sessionIdx = sessionStepsArr.findIndex((_, i) => !sessionDone[i]);
+      if (sessionIdx < 0) sessionIdx = 0;
+      sessionPhase = "work"; sessionRemain = 0;
+    }
+    if (!sessionRemain) sessionRemain = (sessionPhase === "rest") ? sessionRestVal : sessionStepDuration(sessionStepsArr[sessionIdx]);
+    sessionRunning = true;
+    if (sessionTimer) clearInterval(sessionTimer);
+    sessionTimer = setInterval(sessionTick, 1000);
+    renderSession();
+  }
+  function sessionPause(){ sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; } renderSession(); }
+  function sessionTick(){
+    sessionRemain--;
+    if (sessionRemain > 0){ const now = document.getElementById("sessionNow"); if (now){ const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain); } return; }
+    if (sessionPhase === "work"){
+      sessionDone[sessionIdx] = true;
+      const nextIdx = sessionIdx + 1;
+      if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
+      if (sessionRestVal > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = sessionRestVal; }
+      else { sessionIdx = nextIdx; sessionPhase = "work"; sessionRemain = sessionStepDuration(sessionStepsArr[sessionIdx]); }
+    } else {
+      sessionPhase = "work"; sessionRemain = sessionStepDuration(sessionStepsArr[sessionIdx]);
+    }
+    renderSession();
+  }
+  function sessionFinish(){
+    sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
+    sessionIdx = -1; sessionRemain = 0; sessionPhase = "work";
+    renderSession();
+    const now = document.getElementById("sessionNow");
+    if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>'; }
+  }
+  function sessionChangeDay(offset){
+    sessionPause();
+    const i = days.indexOf(sessionSelDay); sessionSelDay = days[(i + offset + days.length) % days.length];
+    sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {};
+    renderSession();
+  }
+  function openSessionPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
+    sessionSelDay = todayKey; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionRunning = false;
+    if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
+    sessionLoadSettings();
+    renderSession();
+    document.getElementById("sessionOverlay").classList.add("show");
+    renderPageBar();
+  }
+  function leaveSessionPage(){ const el = document.getElementById("sessionOverlay"); if (el && el.classList.contains("show")){ el.classList.remove("show"); sessionPause(); } }
+  function sessionShownAsPage(){ const el = document.getElementById("sessionOverlay"); return !!(el && el.classList.contains("show")); }
+  window.sessionToggle = sessionToggle; window.sessionChangeDay = sessionChangeDay; window.sessionSaveSettings = sessionSaveSettings;
 
   function hideOnboarding(){ document.getElementById("onboardingOverlay").classList.remove("show"); }
   function renderOnbStep(){
