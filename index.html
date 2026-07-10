@@ -2213,6 +2213,12 @@
   .session-start.running { background: linear-gradient(135deg, #e5484d, #ff6b6b); box-shadow: 0 6px 18px rgba(229,72,77,0.28); }
   .session-start:active { transform: scale(0.99); }
   .session-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 26px 8px; }
+  .session-howto { flex: 0 0 auto; width: 32px; height: 32px; border: none; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-size: 15px; font-weight: 800; cursor: pointer; }
+  .session-howto:active { transform: scale(0.92); }
+  .howto-tip { font-size: 15px; line-height: 1.6; color: #3a4066; margin: 4px 0 16px; }
+  .howto-demo { display: block; text-align: center; background: #eef0fb; color: #5b6cff; font-weight: 800; font-size: 15px; padding: 13px; border-radius: 12px; text-decoration: none; }
+  .howto-demo:active { transform: scale(0.99); }
+  .howto-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: 14px; }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2541,6 +2547,19 @@
       <div id="sessionList"></div>
       <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">▶ Start</button>
       <p class="setup-note">🔒 Runs on your phone. Tap Start and MOWES moves you through the day.</p>
+    </div>
+  </div>
+
+  <!-- How-to: a quick form tip + demo link for an exercise -->
+  <div class="overlay" id="howtoOverlay">
+    <div class="card">
+      <div class="card-header">
+        <h2>❓ <span id="howtoName">Exercise</span></h2>
+        <button class="close-btn" onclick="closeHowTo()">&times;</button>
+      </div>
+      <p class="howto-tip" id="howtoTip"></p>
+      <a class="howto-demo" id="howtoDemo" href="#" target="_blank" rel="noopener">🔎 Find a demo video</a>
+      <p class="howto-note">Move slowly and with control — stop if anything hurts. 🙂</p>
     </div>
   </div>
 
@@ -6520,6 +6539,35 @@
     if (/run|jog|walk|bike|treadmill|cardio|sprint/.test(n)) return { type: "cardio", icon: "🏃" };
     return { type: "other", icon: "💪" };
   }
+  // Quick "how do I do this?" form tips, matched by exercise name.
+  const HOWTO_TIPS = [
+    { re: /push ?-?up/, tip: "Hands under your shoulders, body in a straight line from head to heels. Lower until your chest nearly touches the floor, then push back up. Keep your core tight — don't let your hips sag. On your knees is a fine easier version." },
+    { re: /chair dip|\btricep|\bdip/, tip: "Sit on the edge of a sturdy chair, hands next to your hips gripping the seat. Slide your hips off the front, bend your elbows to lower down (elbows pointing back), then press back up. Keep it slow and controlled." },
+    { re: /curl|bicep/, tip: "Stand tall, elbows tucked at your sides. Curl the weights up by bending only your elbows, squeeze at the top, then lower slowly. Don't swing your body or use momentum." },
+    { re: /squat/, tip: "Feet about shoulder-width, toes slightly out. Push your hips back and down like sitting into a chair, keep your chest up and knees tracking over your toes. Drive up through your heels. Go as low as feels comfortable." },
+    { re: /lunge/, tip: "Step one foot forward and lower until both knees are about 90°. Keep the front knee over your ankle and your torso upright. Push back to standing, then switch legs (or alternate)." },
+    { re: /shoulder press|overhead press/, tip: "Start with the weights at shoulder height, palms forward. Press straight up until your arms are nearly straight, then lower with control. Keep your core tight and don't arch your back." },
+    { re: /bench|chest press/, tip: "Lie back, weights at chest level. Press up until your arms are nearly straight, then lower slowly to your chest. Keep your wrists straight and shoulders down." },
+    { re: /\brow\b|\blat|pull/, tip: "Hinge slightly at the hips, back flat. Pull the weight toward your waist by squeezing your shoulder blades together, then lower slowly. Keep your neck relaxed." },
+    { re: /plank/, tip: "Forearms under your shoulders, body in one straight line. Squeeze your glutes and brace your core. Don't let your hips sag down or pike up. Breathe steadily and hold." },
+    { re: /run|jog/, tip: "Relax your shoulders and land midfoot under your body (not way out in front). Keep an easy, steady pace — you should be able to say a few words. Breathe naturally." },
+    { re: /walk/, tip: "Stand tall, relaxed shoulders, natural arm swing. Walk at a brisk but comfortable pace to recover between runs, or as steady cardio on its own." }
+  ];
+  function howToTip(name){
+    const n = (name || "").toLowerCase();
+    for (var i = 0; i < HOWTO_TIPS.length; i++){ if (HOWTO_TIPS[i].re.test(n)) return HOWTO_TIPS[i].tip; }
+    return null;
+  }
+  function openHowTo(name){
+    document.getElementById("howtoName").textContent = name || "This exercise";
+    const tip = howToTip(name);
+    document.getElementById("howtoTip").textContent = tip || "Do the movement slowly and with control, keep your core tight, and stop if anything hurts. Tap below to see a demo.";
+    const link = document.getElementById("howtoDemo");
+    if (link) link.href = "https://www.youtube.com/results?search_query=" + encodeURIComponent("how to " + (name || "exercise") + " proper form");
+    document.getElementById("howtoOverlay").classList.add("open");
+  }
+  function closeHowTo(){ document.getElementById("howtoOverlay").classList.remove("open"); }
+  window.openHowTo = openHowTo; window.closeHowTo = closeHowTo;
   function sessionLoadSettings(){
     try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; if (s.typerest != null) sessionTypeRestVal = +s.typerest; } catch(e){}
     const p = document.getElementById("sessionPace"), r = document.getElementById("sessionRest"), e = document.getElementById("sessionExRest"), tp = document.getElementById("sessionTypeRest");
@@ -6592,7 +6640,8 @@
       const cls = "session-step" + (sessionDone[i] ? " done" : "") + (sessionRunning && i === sessionIdx ? " current" : "");
       html += '<div class="' + cls + '"><div class="session-step-num">' + (i + 1) + '</div><div class="session-step-main">'
         + '<div class="session-step-name">' + (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>'
-        + (st.detail ? '<div class="session-step-detail">' + escapeHtml(st.detail) + '</div>' : '') + '</div></div>';
+        + (st.detail ? '<div class="session-step-detail">' + escapeHtml(st.detail) + '</div>' : '') + '</div>'
+        + '<button class="session-howto" title="How to do this" onclick="sessionHowToStep(' + i + ')">❓</button></div>';
     });
     if (list) list.innerHTML = html;
     if (now){
@@ -6719,6 +6768,8 @@
   }
   function leaveSessionPage(){ const el = document.getElementById("sessionOverlay"); if (el && el.classList.contains("show")){ el.classList.remove("show"); sessionPause(); } }
   function sessionShownAsPage(){ const el = document.getElementById("sessionOverlay"); return !!(el && el.classList.contains("show")); }
+  function sessionHowToStep(i){ const st = sessionStepsArr[i]; if (st) openHowTo(st.name); }
+  window.sessionHowToStep = sessionHowToStep;
   window.sessionToggle = sessionToggle; window.sessionChangeDay = sessionChangeDay; window.sessionSaveSettings = sessionSaveSettings;
   // When the app comes back to the foreground, catch the timer up to real time.
   document.addEventListener("visibilitychange", function(){ if (!document.hidden && sessionRunning) sessionTick(); });
