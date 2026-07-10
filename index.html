@@ -2192,7 +2192,7 @@
   .session-arrow { width: 42px; height: 42px; border: none; border-radius: 12px; background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; }
   .session-arrow:active { transform: scale(0.95); }
   .session-day { font-size: 20px; font-weight: 900; color: #3a4066; min-width: 130px; text-align: center; }
-  .session-settings { display: flex; justify-content: center; gap: 14px; margin-bottom: 14px; font-size: 12.5px; color: #6a7088; }
+  .session-settings { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-bottom: 14px; font-size: 12.5px; color: #6a7088; }
   .session-settings input { width: 52px; border: 2px solid #e6e8f0; border-radius: 8px; padding: 5px; text-align: center; font-size: 13px; }
   .session-now { text-align: center; min-height: 10px; margin-bottom: 10px; }
   .session-now.on { min-height: auto; background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-radius: 18px; padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 22px rgba(91,108,255,0.28); }
@@ -2532,6 +2532,7 @@
       <div class="session-settings">
         <label>Pace <input id="sessionPace" type="number" min="0.2" step="0.1" inputmode="decimal" onchange="sessionSaveSettings()"> sec/rep</label>
         <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
+        <label>Between ex. <input id="sessionExRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
       </div>
       <div class="session-now" id="sessionNow"></div>
       <div id="sessionList"></div>
@@ -6469,25 +6470,26 @@
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
-  let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0;
-  let sessionPaceVal = 1.5, sessionRestVal = 5;
+  let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false;
+  let sessionPaceVal = 1.5, sessionRestVal = 5, sessionExRestVal = 60;
   function sessionLoadSettings(){
-    try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; } catch(e){}
-    const p = document.getElementById("sessionPace"), r = document.getElementById("sessionRest");
-    if (p) p.value = sessionPaceVal; if (r) r.value = sessionRestVal;
+    try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; } catch(e){}
+    const p = document.getElementById("sessionPace"), r = document.getElementById("sessionRest"), e = document.getElementById("sessionExRest");
+    if (p) p.value = sessionPaceVal; if (r) r.value = sessionRestVal; if (e) e.value = sessionExRestVal;
   }
   function sessionSaveSettings(){
-    const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10);
-    sessionPaceVal = (isNaN(p) || p <= 0) ? 1.5 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r;
-    try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal })); } catch(e){}
+    const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10), e = parseInt(document.getElementById("sessionExRest").value, 10);
+    sessionPaceVal = (isNaN(p) || p <= 0) ? 1.5 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r; sessionExRestVal = (isNaN(e) || e < 0) ? 60 : e;
+    try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal, exrest: sessionExRestVal })); } catch(e){}
   }
   function sessionStepsFor(day){
     const steps = [];
     pages.filter(p => p.type === "sheet").forEach(pg => {
       let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
       const week = all[currentWeekKey] || {};
-      (week[day] || []).forEach(r => {
+      (week[day] || []).forEach((r, ri) => {
         if (!r || !(r.name || "").trim()) return;
+        const rid = pg.id + ":" + ri; // which routine/exercise this step belongs to
         const det = r.details || {}, reps = det.reps || {};
         if (reps.on && reps.sets){
           const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
@@ -6495,7 +6497,7 @@
             if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
             const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0;
             const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min"); if (nDist) parts.push(s.distance + " " + dUnit);
-            const step = { name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: "💪" };
+            const step = { rid: rid, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: "💪" };
             if (cols.distance && lapLen > 0 && nReps > 0){ step.kind = "laps"; step.laps = Math.round(nReps); step.icon = "🌀"; step.detail = Math.round(nReps) + " laps" + (s.weight ? " · " + s.weight + " " + wUnit : ""); }
             else if (nReps > 0 || nTime > 0){ step.kind = "timed"; }
             else if (nDist > 0){ step.kind = "manual"; }
@@ -6511,7 +6513,7 @@
             const lbl = (row.label || "").toLowerCase();
             const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
             const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
-            steps.push({ name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual") });
+            steps.push({ rid: rid, name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual") });
           });
         }
       });
@@ -6550,7 +6552,7 @@
         const meta = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
         if (sessionPhase === "rest"){
           now.className = "session-now on rest";
-          now.innerHTML = '<div class="session-now-name">Rest</div><div class="session-now-detail">Next: ' + meta + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+          now.innerHTML = '<div class="session-now-name">' + (sessionRestLong ? "Rest before next exercise" : "Rest") + '</div><div class="session-now-detail">Next: ' + meta + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
         } else if (st.kind === "laps"){
           now.className = "session-now on";
           now.innerHTML = '<div class="session-now-name">' + meta + '</div><div class="session-now-detail">Lap ' + Math.min(sessionLapDone + 1, st.laps) + ' of ' + st.laps + ' — tap ✓ Lap each time</div><div class="session-now-timer">🌀 ' + sessionLapDone + '/' + st.laps + '</div>';
@@ -6593,7 +6595,11 @@
     sessionDone[sessionIdx] = true;
     const nextIdx = sessionIdx + 1;
     if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
-    if (sessionRestVal > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = sessionRestVal; renderSession(); }
+    // Longer "between exercises" rest when the next step is a different routine.
+    const sameEx = sessionStepsArr[sessionIdx].rid === sessionStepsArr[nextIdx].rid;
+    const rest = sameEx ? sessionRestVal : sessionExRestVal;
+    sessionRestLong = !sameEx;
+    if (rest > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = rest; renderSession(); }
     else { sessionEnterWork(nextIdx); }
   }
   function sessionLapTick(){
