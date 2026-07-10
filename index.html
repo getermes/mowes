@@ -6494,7 +6494,7 @@
           reps.sets.forEach((s, i) => {
             if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
             const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min");
-            steps.push({ name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: parseFloat(s.reps) || 0, time: parseFloat(s.time) || 0 });
+            steps.push({ name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: parseFloat(s.reps) || 0, time: parseFloat(s.time) || 0, icon: "💪" });
           });
         }
         const tm = det.time || {};
@@ -6502,7 +6502,9 @@
           tm.rows.forEach((row, i) => {
             if (!row || (!row.label && !row.min && !row.miles)) return;
             const parts = []; if (row.min) parts.push(row.min + " min"); if (row.miles) parts.push(row.miles + " mi");
-            steps.push({ name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: parseFloat(row.min) || 0 });
+            const lbl = (row.label || "").toLowerCase();
+            const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
+            steps.push({ name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: parseFloat(row.min) || 0, icon: icon });
           });
         }
       });
@@ -6531,7 +6533,7 @@
     sessionStepsArr.forEach((st, i) => {
       const cls = "session-step" + (sessionDone[i] ? " done" : "") + (sessionRunning && i === sessionIdx ? " current" : "");
       html += '<div class="' + cls + '"><div class="session-step-num">' + (i + 1) + '</div><div class="session-step-main">'
-        + '<div class="session-step-name">' + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>'
+        + '<div class="session-step-name">' + (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>'
         + (st.detail ? '<div class="session-step-detail">' + escapeHtml(st.detail) + '</div>' : '') + '</div></div>';
     });
     if (list) list.innerHTML = html;
@@ -6540,10 +6542,10 @@
         const st = sessionStepsArr[sessionIdx];
         if (sessionPhase === "rest"){
           now.className = "session-now on rest";
-          now.innerHTML = '<div class="session-now-name">Rest</div><div class="session-now-detail">Next: ' + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+          now.innerHTML = '<div class="session-now-name">Rest</div><div class="session-now-detail">Next: ' + (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
         } else {
           now.className = "session-now on";
-          now.innerHTML = '<div class="session-now-name">' + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+          now.innerHTML = '<div class="session-now-name">' + (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
         }
       } else { now.className = "session-now"; now.innerHTML = ""; }
     }
