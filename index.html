@@ -6469,7 +6469,7 @@
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
-  let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null;
+  let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0;
   let sessionPaceVal = 1.5, sessionRestVal = 5;
   function sessionLoadSettings(){
     try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; } catch(e){}
@@ -6490,11 +6490,17 @@
         if (!r || !(r.name || "").trim()) return;
         const det = r.details || {}, reps = det.reps || {};
         if (reps.on && reps.sets){
-          const wUnit = reps.weightUnit || "lbs";
+          const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
           reps.sets.forEach((s, i) => {
             if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
-            const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min");
-            steps.push({ name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: parseFloat(s.reps) || 0, time: parseFloat(s.time) || 0, icon: "💪" });
+            const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0;
+            const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min"); if (nDist) parts.push(s.distance + " " + dUnit);
+            const step = { name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: "💪" };
+            if (cols.distance && lapLen > 0 && nReps > 0){ step.kind = "laps"; step.laps = Math.round(nReps); step.icon = "🌀"; step.detail = Math.round(nReps) + " laps" + (s.weight ? " · " + s.weight + " " + wUnit : ""); }
+            else if (nReps > 0 || nTime > 0){ step.kind = "timed"; }
+            else if (nDist > 0){ step.kind = "manual"; }
+            else { step.kind = "timed"; }
+            steps.push(step);
           });
         }
         const tm = det.time || {};
@@ -6504,7 +6510,8 @@
             const parts = []; if (row.min) parts.push(row.min + " min"); if (row.miles) parts.push(row.miles + " mi");
             const lbl = (row.label || "").toLowerCase();
             const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
-            steps.push({ name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: parseFloat(row.min) || 0, icon: icon });
+            const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
+            steps.push({ name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual") });
           });
         }
       });
@@ -6540,50 +6547,91 @@
     if (now){
       if (sessionRunning && sessionIdx >= 0 && sessionIdx < sessionStepsArr.length){
         const st = sessionStepsArr[sessionIdx];
+        const meta = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
         if (sessionPhase === "rest"){
           now.className = "session-now on rest";
-          now.innerHTML = '<div class="session-now-name">Rest</div><div class="session-now-detail">Next: ' + (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+          now.innerHTML = '<div class="session-now-name">Rest</div><div class="session-now-detail">Next: ' + meta + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+        } else if (st.kind === "laps"){
+          now.className = "session-now on";
+          now.innerHTML = '<div class="session-now-name">' + meta + '</div><div class="session-now-detail">Lap ' + Math.min(sessionLapDone + 1, st.laps) + ' of ' + st.laps + ' — tap ✓ Lap each time</div><div class="session-now-timer">🌀 ' + sessionLapDone + '/' + st.laps + '</div>';
+        } else if (st.kind === "manual"){
+          now.className = "session-now on";
+          now.innerHTML = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-detail">Tap ✓ Done when you finish</div>';
         } else {
           now.className = "session-now on";
-          now.innerHTML = '<div class="session-now-name">' + (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+          now.innerHTML = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
         }
       } else { now.className = "session-now"; now.innerHTML = ""; }
     }
-    if (btn){ btn.textContent = sessionRunning ? "⏸ Pause" : (Object.keys(sessionDone).length ? "▶ Resume" : "▶ Start"); btn.classList.toggle("running", sessionRunning); }
+    if (btn){
+      let t = "▶ Start", pauseLook = false;
+      if (sessionRunning){
+        const st = sessionStepsArr[sessionIdx];
+        if (sessionPhase === "rest" || !st || st.kind === "timed"){ t = "⏸ Pause"; pauseLook = true; }
+        else if (st.kind === "laps") t = "✓ Lap (" + sessionLapDone + "/" + st.laps + ")";
+        else t = "✓ Done — next";
+      } else if (Object.keys(sessionDone).length) t = "▶ Resume";
+      btn.textContent = t; btn.classList.toggle("running", pauseLook);
+    }
   }
-  function sessionToggle(){ if (sessionRunning) sessionPause(); else sessionStart(); }
+  function sessionToggle(){
+    if (!sessionRunning){ sessionStart(); return; }
+    const st = sessionStepsArr[sessionIdx];
+    if (sessionPhase === "rest" || !st || st.kind === "timed"){ sessionPause(); return; }
+    if (st.kind === "laps"){ sessionLapTick(); return; }
+    sessionCompleteStep(); // manual "Done"
+  }
+  function sessionEnterWork(idx){
+    if (idx >= sessionStepsArr.length){ sessionFinish(); return; }
+    sessionIdx = idx; sessionPhase = "work"; sessionLapDone = 0;
+    const st = sessionStepsArr[idx];
+    sessionRemain = (st.kind === "timed") ? sessionStepDuration(st) : 0;
+    renderSession();
+  }
+  function sessionCompleteStep(){
+    if (sessionIdx < 0) return;
+    sessionDone[sessionIdx] = true;
+    const nextIdx = sessionIdx + 1;
+    if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
+    if (sessionRestVal > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = sessionRestVal; renderSession(); }
+    else { sessionEnterWork(nextIdx); }
+  }
+  function sessionLapTick(){
+    const st = sessionStepsArr[sessionIdx];
+    if (!st || st.kind !== "laps") return;
+    sessionLapDone++;
+    if (sessionLapDone >= (st.laps || 1)) sessionCompleteStep();
+    else renderSession();
+  }
   function sessionStart(){
     if (!sessionStepsArr.length) return;
-    if (sessionStepsArr.every((_, i) => sessionDone[i])){ sessionDone = {}; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; }
-    if (sessionIdx < 0 || sessionIdx >= sessionStepsArr.length){
-      sessionIdx = sessionStepsArr.findIndex((_, i) => !sessionDone[i]);
-      if (sessionIdx < 0) sessionIdx = 0;
-      sessionPhase = "work"; sessionRemain = 0;
-    }
-    if (!sessionRemain) sessionRemain = (sessionPhase === "rest") ? sessionRestVal : sessionStepDuration(sessionStepsArr[sessionIdx]);
+    if (sessionStepsArr.every((_, i) => sessionDone[i])){ sessionDone = {}; sessionIdx = -1; }
     sessionRunning = true;
     if (sessionTimer) clearInterval(sessionTimer);
     sessionTimer = setInterval(sessionTick, 1000);
-    renderSession();
+    if (sessionIdx < 0 || sessionIdx >= sessionStepsArr.length){
+      const first = sessionStepsArr.findIndex((_, i) => !sessionDone[i]);
+      sessionEnterWork(first < 0 ? 0 : first);
+    } else { renderSession(); } // resume where we paused
   }
   function sessionPause(){ sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; } renderSession(); }
   function sessionTick(){
-    sessionRemain--;
-    if (sessionRemain > 0){ const now = document.getElementById("sessionNow"); if (now){ const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain); } return; }
+    // Only timed work + rest count down; laps/manual wait for the user's tap.
     if (sessionPhase === "work"){
-      sessionDone[sessionIdx] = true;
-      const nextIdx = sessionIdx + 1;
-      if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
-      if (sessionRestVal > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = sessionRestVal; }
-      else { sessionIdx = nextIdx; sessionPhase = "work"; sessionRemain = sessionStepDuration(sessionStepsArr[sessionIdx]); }
+      const st = sessionStepsArr[sessionIdx];
+      if (!st || st.kind !== "timed") return;
+      sessionRemain--;
+      if (sessionRemain > 0){ const now = document.getElementById("sessionNow"); if (now){ const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain); } return; }
+      sessionCompleteStep();
     } else {
-      sessionPhase = "work"; sessionRemain = sessionStepDuration(sessionStepsArr[sessionIdx]);
+      sessionRemain--;
+      if (sessionRemain > 0){ const now = document.getElementById("sessionNow"); if (now){ const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain); } return; }
+      sessionEnterWork(sessionIdx); // sessionIdx already points at the upcoming step
     }
-    renderSession();
   }
   function sessionFinish(){
     sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
-    sessionIdx = -1; sessionRemain = 0; sessionPhase = "work";
+    sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionLapDone = 0;
     renderSession();
     const now = document.getElementById("sessionNow");
     if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>'; }
