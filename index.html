@@ -2533,6 +2533,7 @@
         <label>Pace <input id="sessionPace" type="number" min="0.2" step="0.1" inputmode="decimal" onchange="sessionSaveSettings()"> sec/rep</label>
         <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
         <label>Between ex. <input id="sessionExRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
+        <label>New muscle <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
       </div>
       <div class="session-now" id="sessionNow"></div>
       <div id="sessionList"></div>
@@ -3222,6 +3223,39 @@
       }
     } catch(e){ allWeeks = {}; }
   }
+  // First run only: seed a realistic sample week (5 weight days basics + 2 run/walk
+  // days) so a brand-new user opens the app to a working plan. Never clobbers a
+  // user who already has routines.
+  function seedSamplePlan(){
+    try { if (localStorage.getItem("mowes_sample_plan_v1")) return; } catch(e){ return; }
+    let wAll = {}; try { wAll = JSON.parse(localStorage.getItem(WEEKS_KEY) || "{}") || {}; } catch(e){}
+    const hasReal = Object.keys(wAll).some(wk => days.some(d => ((wAll[wk] && wAll[wk][d]) || []).some(r => r && (r.name || "").trim())));
+    if (hasReal){ try { localStorage.setItem("mowes_sample_plan_v1", "1"); } catch(e){} return; }
+    const reps = (name, arr) => { const r = blankRoutine(); r.name = name; r.details.reps.on = true; r.details.reps.cols = { reps:true, weight: arr.some(s => s.w), time:false, distance:false }; r.details.reps.sets = arr.map(s => ({ reps:String(s.r), weight: s.w ? String(s.w) : "", time:"", distance:"", done:false })); return r; };
+    const timeR = (name, min) => { const r = blankRoutine(); r.name = name; r.details.reps.on = true; r.details.reps.cols = { reps:false, weight:false, time:true, distance:false }; r.details.reps.sets = [{ reps:"", weight:"", time:String(min), distance:"", done:false }]; return r; };
+    const interval = (name, rows) => { const r = blankRoutine(); r.name = name; r.details.time.on = true; r.details.time.rows = rows.map(x => ({ label:x.l, min:String(x.m), miles:"", done:false })); return r; };
+    const weightDay = () => [
+      reps("Push-ups", [{r:10},{r:10},{r:10}]),
+      reps("Chair dips", [{r:10},{r:10},{r:10}]),
+      reps("Dumbbell curls", [{r:12,w:10},{r:12,w:10},{r:12,w:10}]),
+      reps("Squats", [{r:15},{r:15},{r:15}]),
+      reps("Lunges", [{r:10},{r:10},{r:10}]),
+      reps("Shoulder press", [{r:10,w:10},{r:10,w:10},{r:10,w:10}]),
+      timeR("Plank", 1)
+    ];
+    const runWalk = () => [ interval("Run & Walk", [{l:"Walk",m:5},{l:"Run",m:10},{l:"Walk",m:3},{l:"Run",m:10},{l:"Walk",m:5}]) ];
+    const wWeek = {}; days.forEach(d => wWeek[d] = [blankRoutine()]);
+    wWeek["Mon"] = weightDay(); wWeek["Wed"] = weightDay(); wWeek["Fri"] = weightDay();
+    wAll[currentWeekKey] = wWeek;
+    try { localStorage.setItem(WEEKS_KEY, JSON.stringify(wAll)); } catch(e){}
+    let rAll = {}; try { rAll = JSON.parse(localStorage.getItem(sheetKeyFor("p_ex_walkrun")) || "{}") || {}; } catch(e){}
+    const rWeek = {}; days.forEach(d => rWeek[d] = [blankRoutine()]);
+    rWeek["Tue"] = runWalk(); rWeek["Thu"] = runWalk();
+    rAll[currentWeekKey] = rWeek;
+    try { localStorage.setItem(sheetKeyFor("p_ex_walkrun"), JSON.stringify(rAll)); } catch(e){}
+    try { localStorage.setItem("mowes_sample_plan_v1", "1"); } catch(e){}
+  }
+  seedSamplePlan();
   loadAllWeeks();
 
   // Make sure this week exists. If it's a brand-new week, repeat last week's
@@ -6471,16 +6505,28 @@
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
   let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
-  let sessionPaceVal = 1.5, sessionRestVal = 5, sessionExRestVal = 60;
+  let sessionPaceVal = 1.5, sessionRestVal = 5, sessionExRestVal = 60, sessionTypeRestVal = 180, sessionRestMsg = "Rest";
+  // Categorise an exercise by its name → a muscle "type" (for the switch-pause) and an icon.
+  function exerciseCategory(name){
+    const n = (name || "").toLowerCase();
+    if (/squat|lunge|\bleg|calf|glute|hamstring|quad|step ?-?up/.test(n)) return { type: "legs", icon: "🦵" };
+    if (/plank|crunch|sit ?-?up|\babs\b|core|twist|mountain/.test(n)) return { type: "core", icon: "🧘" };
+    if (/push ?-?up|chest|bench|\bfly\b|pec/.test(n)) return { type: "chest", icon: "💪" };
+    if (/shoulder|overhead|lateral|delt/.test(n)) return { type: "shoulders", icon: "🏋️" };
+    if (/curl|bicep|tricep|\bdip/.test(n)) return { type: "arms", icon: "💪" };
+    if (/row|pull|\blat|deadlift|\bback\b/.test(n)) return { type: "back", icon: "🏋️" };
+    if (/run|jog|walk|bike|treadmill|cardio|sprint/.test(n)) return { type: "cardio", icon: "🏃" };
+    return { type: "other", icon: "💪" };
+  }
   function sessionLoadSettings(){
-    try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; } catch(e){}
-    const p = document.getElementById("sessionPace"), r = document.getElementById("sessionRest"), e = document.getElementById("sessionExRest");
-    if (p) p.value = sessionPaceVal; if (r) r.value = sessionRestVal; if (e) e.value = sessionExRestVal;
+    try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; if (s.typerest != null) sessionTypeRestVal = +s.typerest; } catch(e){}
+    const p = document.getElementById("sessionPace"), r = document.getElementById("sessionRest"), e = document.getElementById("sessionExRest"), tp = document.getElementById("sessionTypeRest");
+    if (p) p.value = sessionPaceVal; if (r) r.value = sessionRestVal; if (e) e.value = sessionExRestVal; if (tp) tp.value = sessionTypeRestVal;
   }
   function sessionSaveSettings(){
-    const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10), e = parseInt(document.getElementById("sessionExRest").value, 10);
-    sessionPaceVal = (isNaN(p) || p <= 0) ? 1.5 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r; sessionExRestVal = (isNaN(e) || e < 0) ? 60 : e;
-    try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal, exrest: sessionExRestVal })); } catch(e){}
+    const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10), e = parseInt(document.getElementById("sessionExRest").value, 10), tp = parseInt(document.getElementById("sessionTypeRest").value, 10);
+    sessionPaceVal = (isNaN(p) || p <= 0) ? 1.5 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r; sessionExRestVal = (isNaN(e) || e < 0) ? 60 : e; sessionTypeRestVal = (isNaN(tp) || tp < 0) ? 180 : tp;
+    try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal, exrest: sessionExRestVal, typerest: sessionTypeRestVal })); } catch(e){}
   }
   function sessionStepsFor(day){
     const steps = [];
@@ -6490,6 +6536,7 @@
       (week[day] || []).forEach((r, ri) => {
         if (!r || !(r.name || "").trim()) return;
         const rid = pg.id + ":" + ri; // which routine/exercise this step belongs to
+        const cat = exerciseCategory(r.name);
         const det = r.details || {}, reps = det.reps || {};
         if (reps.on && reps.sets){
           const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
@@ -6497,7 +6544,7 @@
             if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
             const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0;
             const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min"); if (nDist) parts.push(s.distance + " " + dUnit);
-            const step = { rid: rid, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: "💪" };
+            const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: cat.icon };
             if (cols.distance && lapLen > 0 && nReps > 0){ step.kind = "laps"; step.laps = Math.round(nReps); step.icon = "🌀"; step.detail = Math.round(nReps) + " laps" + (s.weight ? " · " + s.weight + " " + wUnit : ""); }
             else if (nReps > 0 || nTime > 0){ step.kind = "timed"; }
             else if (nDist > 0){ step.kind = "manual"; }
@@ -6513,7 +6560,7 @@
             const lbl = (row.label || "").toLowerCase();
             const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
             const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
-            steps.push({ rid: rid, name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual") });
+            steps.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual") });
           });
         }
       });
@@ -6552,7 +6599,7 @@
         const meta = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
         if (sessionPhase === "rest"){
           now.className = "session-now on rest";
-          now.innerHTML = '<div class="session-now-name">' + (sessionRestLong ? "Rest before next exercise" : "Rest") + '</div><div class="session-now-detail">Next: ' + meta + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+          now.innerHTML = '<div class="session-now-name">' + escapeHtml(sessionRestMsg) + '</div><div class="session-now-detail">Next: ' + meta + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
         } else if (st.kind === "laps"){
           now.className = "session-now on";
           now.innerHTML = '<div class="session-now-name">' + meta + '</div><div class="session-now-detail">Lap ' + Math.min(sessionLapDone + 1, st.laps) + ' of ' + st.laps + ' — tap ✓ Lap each time</div><div class="session-now-timer">🌀 ' + sessionLapDone + '/' + st.laps + '</div>';
@@ -6596,10 +6643,12 @@
     sessionDone[sessionIdx] = true;
     const nextIdx = sessionIdx + 1;
     if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
-    // Longer "between exercises" rest when the next step is a different routine.
-    const sameEx = sessionStepsArr[sessionIdx].rid === sessionStepsArr[nextIdx].rid;
-    const rest = sameEx ? sessionRestVal : sessionExRestVal;
-    sessionRestLong = !sameEx;
+    // Three rest tiers: between sets < between exercises < between muscle types.
+    const cur = sessionStepsArr[sessionIdx], nxt = sessionStepsArr[nextIdx];
+    let rest;
+    if (cur.rid === nxt.rid){ rest = sessionRestVal; sessionRestLong = false; sessionRestMsg = "Rest"; }
+    else if (cur.type === nxt.type){ rest = sessionExRestVal; sessionRestLong = true; sessionRestMsg = "Rest before next exercise"; }
+    else { rest = sessionTypeRestVal; sessionRestLong = true; sessionRestMsg = "Rest — switching to a new muscle group"; }
     if (rest > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = rest; sessionEndAt = Date.now() + rest * 1000; renderSession(); }
     else { sessionEnterWork(nextIdx); }
   }
