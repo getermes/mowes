@@ -2164,6 +2164,24 @@
   .goal-save-btn { display: block; width: 100%; margin-top: 18px; border: none; border-radius: 14px; padding: 15px;
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
   .goal-save-btn:active { transform: scale(0.99); }
+
+  /* Achievements page (a book page, sits under the bottom bar) */
+  .ach-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
+  .ach-overlay.show { display: block; }
+  .ach-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .ach-section { font-size: 14px; font-weight: 900; color: #5b6cff; margin: 18px 2px 8px; }
+  .ach-card { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .ach-name { font-weight: 900; color: #3a4066; font-size: 15px; margin-bottom: 8px; }
+  .ach-line { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; font-size: 13.5px; }
+  .ach-line .lbl { color: #6a7088; }
+  .ach-line .val { color: #3a4066; font-weight: 800; }
+  .ach-proj { margin-top: 8px; background: #f1f3fb; border-radius: 11px; padding: 10px 12px; font-size: 13px; color: #3a4066; line-height: 1.5; }
+  .ach-proj b { color: #5b6cff; }
+  .ach-verdict { display: inline-block; margin-top: 8px; font-size: 12.5px; font-weight: 800; padding: 5px 11px; border-radius: 20px; }
+  .ach-verdict.good { background: #eafaf2; color: #1f8f5f; }
+  .ach-verdict.behind { background: #fdf1e7; color: #b06a00; }
+  .ach-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2572,6 +2590,16 @@
       <label class="goal-lbl">By when</label>
       <div class="goal-times" id="goalTimes"></div>
       <button class="goal-save-btn" onclick="saveGoal()">Save goal</button>
+    </div>
+  </div>
+
+  <!-- Achievements: a progression report + next-month projections from your Goals & My Body -->
+  <div class="ach-overlay" id="achOverlay">
+    <div class="ach-inner">
+      <div class="setup-title">📈 Achievements</div>
+      <div class="setup-sub">Your progress so far — and where you're headed next.</div>
+      <div id="achBody"></div>
+      <p class="setup-note">🔒 Worked out on your phone from your own Goals &amp; My Body data.</p>
     </div>
   </div>
 
@@ -3600,7 +3628,7 @@
     // Cover, then Today's Plan, then every page of your book, then My Setup (last).
     return [{ cover:true, name:"Cover", icon:"📖 " }, { plan:true, name:"Today's Plan", icon:"📋 " }]
       .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-      .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { body:true, name:"My Body", icon:"📏 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
+      .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
   }
   function coverShownAsPage(){
     const el = document.getElementById("welcomeOverlay");
@@ -3618,16 +3646,17 @@
     if (coverShownAsPage()) return 0;
     if (planShownAsPage()) return 1;
     const stops = pageBarStops();
-    if (setupShownAsPage()) return stops.length - 1;
-    if (bodyShownAsPage()) return stops.length - 2;
-    if (goalsShownAsPage()) return stops.length - 3;
+    if (setupShownAsPage()) return stops.findIndex(s => s.setup);
+    if (bodyShownAsPage()) return stops.findIndex(s => s.body);
+    if (achShownAsPage()) return stops.findIndex(s => s.ach);
+    if (goalsShownAsPage()) return stops.findIndex(s => s.goals);
     const i = pages.findIndex(p => p.id === activePageId);
     return i < 0 ? 1 : i + 2;
   }
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -3639,7 +3668,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -3652,7 +3681,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -3669,9 +3698,10 @@
     if (s.cover){ openCoverPage(); return; }
     if (s.plan){ openPlanPage(); return; }
     if (s.goals){ openGoalsPage(); return; }
+    if (s.ach){ openAchPage(); return; }
     if (s.body){ openBodyPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -6198,7 +6228,7 @@
   function openBodyPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage();
     renderBody();
     document.getElementById("bodyOverlay").classList.add("show");
     renderPageBar();
@@ -6294,7 +6324,7 @@
   function openGoalsPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage();
     renderGoals();
     document.getElementById("goalsOverlay").classList.add("show");
     renderPageBar();
@@ -6303,6 +6333,84 @@
   function goalsShownAsPage(){ const el = document.getElementById("goalsOverlay"); return !!(el && el.classList.contains("show")); }
   window.openGoalForm = openGoalForm; window.closeGoalForm = closeGoalForm; window.saveGoal = saveGoal;
   window.updateGoalCurrent = updateGoalCurrent; window.deleteGoal = deleteGoal;
+
+  // ---- Achievements: progression report + next-month projections ----
+  function achDate(iso){ try { return new Date(iso).toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" }); } catch(e){ return ""; } }
+  function achR1(n){ return Math.round(n * 10) / 10; }
+  function renderAch(){
+    const box = document.getElementById("achBody");
+    if (!box) return;
+    const goals = loadGoals();
+    const bodyEntries = loadBodyEntries();
+    let html = "";
+    // --- Goals: progress + projection to target ---
+    if (goals.length){
+      html += '<div class="ach-section">🎯 Your goals</div>';
+      goals.forEach(g => {
+        const start = +g.start, target = +g.target, current = (g.current == null ? start : +g.current);
+        const dl = goalDeadline(g), now = new Date().getTime(), t0 = new Date(g.startISO).getTime();
+        const elapsedDays = Math.max(0, (now - t0) / 86400000);
+        const progressed = current - start, remaining = target - current, dir = Math.sign(target - start);
+        const reached = (target >= start) ? current >= target : current <= target;
+        let projHtml = "";
+        if (reached){
+          projHtml = '<span class="ach-verdict good">🎉 Reached!</span>';
+        } else if (elapsedDays >= 1 && progressed !== 0 && Math.sign(progressed) === dir){
+          const perDay = progressed / elapsedDays;
+          const nextMonth = achR1(current + perDay * 30.44);
+          const daysToTarget = remaining / perDay;
+          if (daysToTarget > 0 && isFinite(daysToTarget)){
+            const projDate = new Date(now + daysToTarget * 86400000);
+            const onPace = dl ? (projDate.getTime() <= dl.getTime()) : true;
+            projHtml = '<div class="ach-proj">At your current pace, you\'ll reach <b>' + target + ' ' + escapeHtml(g.unit || "") + '</b> around <b>' + achDate(projDate.toISOString()) + '</b>. Next month: ~<b>' + nextMonth + ' ' + escapeHtml(g.unit || "") + '</b>.</div>'
+              + (onPace ? '<span class="ach-verdict good">🟢 On pace for your ' + (dl ? achDate(dl.toISOString()) : "") + ' goal</span>' : '<span class="ach-verdict behind">🟠 A bit behind to hit ' + (dl ? achDate(dl.toISOString()) : "the deadline") + '</span>');
+          } else {
+            projHtml = '<div class="ach-proj">Next month at this pace: ~<b>' + nextMonth + ' ' + escapeHtml(g.unit || "") + '</b>.</div>';
+          }
+        } else {
+          projHtml = '<div class="ach-proj">Tap <b>Update</b> on this goal to log progress — then MOWES will project when you\'ll hit it. 📈</div>';
+        }
+        html += '<div class="ach-card"><div class="ach-name">' + escapeHtml(g.name) + '</div>'
+          + '<div class="ach-line"><span class="lbl">Day 1</span><span class="val">' + start + ' ' + escapeHtml(g.unit || "") + '</span></div>'
+          + '<div class="ach-line"><span class="lbl">Now</span><span class="val">' + current + ' ' + escapeHtml(g.unit || "") + '</span></div>'
+          + '<div class="ach-line"><span class="lbl">Goal</span><span class="val">' + target + ' ' + escapeHtml(g.unit || "") + (dl ? ' · by ' + achDate(dl.toISOString()) : "") + '</span></div>'
+          + projHtml + '</div>';
+      });
+    }
+    // --- Body trends: first → now → projected, per measurement with 2+ logs ---
+    const series = {};
+    bodyEntries.forEach(e => { (e.items || []).forEach(it => { const v = parseFloat(it.value); if (!isNaN(v)) (series[it.label] = series[it.label] || []).push({ v: v, at: e.at || e.date, unit: it.unit || "" }); }); });
+    const trends = Object.keys(series).filter(k => series[k].length >= 2);
+    if (trends.length){
+      html += '<div class="ach-section">📏 Body trends</div>';
+      trends.forEach(label => {
+        const arr = series[label].slice().sort((a, b) => new Date(a.at) - new Date(b.at));
+        const first = arr[0], last = arr[arr.length - 1], unit = last.unit || "";
+        const days = (new Date(last.at) - new Date(first.at)) / 86400000, delta = last.v - first.v;
+        const perDay = days > 0 ? delta / days : 0, nextMonth = achR1(last.v + perDay * 30.44);
+        const chg = delta !== 0 ? ((delta > 0 ? "▲+" : "▼") + Math.abs(achR1(delta))) : "—";
+        html += '<div class="ach-card"><div class="ach-name">' + escapeHtml(label) + '</div>'
+          + '<div class="ach-line"><span class="lbl">Day 1 · ' + achDate(first.at) + '</span><span class="val">' + first.v + ' ' + escapeHtml(unit) + '</span></div>'
+          + '<div class="ach-line"><span class="lbl">Now · ' + achDate(last.at) + '</span><span class="val">' + last.v + ' ' + escapeHtml(unit) + '  ' + chg + '</span></div>'
+          + '<div class="ach-proj">At this pace, next month: ~<b>' + nextMonth + ' ' + escapeHtml(unit) + '</b>.</div></div>';
+      });
+    }
+    if (!html){
+      box.innerHTML = '<div class="ach-empty">Your progress report builds here. Set a <b>🎯 Goal</b> and log a few <b>📏 My Body</b> measurements — then MOWES shows your climb and projects what\'s next. 📈</div>';
+      return;
+    }
+    box.innerHTML = html;
+  }
+  function openAchPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage();
+    renderAch();
+    document.getElementById("achOverlay").classList.add("show");
+    renderPageBar();
+  }
+  function leaveAchPage(){ const el = document.getElementById("achOverlay"); if (el) el.classList.remove("show"); }
+  function achShownAsPage(){ const el = document.getElementById("achOverlay"); return !!(el && el.classList.contains("show")); }
 
   function hideOnboarding(){ document.getElementById("onboardingOverlay").classList.remove("show"); }
   function renderOnbStep(){
