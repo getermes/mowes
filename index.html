@@ -6470,7 +6470,7 @@
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
-  let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false;
+  let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
   let sessionPaceVal = 1.5, sessionRestVal = 5, sessionExRestVal = 60;
   function sessionLoadSettings(){
     try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; } catch(e){}
@@ -6588,6 +6588,7 @@
     sessionIdx = idx; sessionPhase = "work"; sessionLapDone = 0;
     const st = sessionStepsArr[idx];
     sessionRemain = (st.kind === "timed") ? sessionStepDuration(st) : 0;
+    sessionEndAt = (st.kind === "timed") ? (Date.now() + sessionRemain * 1000) : 0; // real-clock deadline
     renderSession();
   }
   function sessionCompleteStep(){
@@ -6599,7 +6600,7 @@
     const sameEx = sessionStepsArr[sessionIdx].rid === sessionStepsArr[nextIdx].rid;
     const rest = sameEx ? sessionRestVal : sessionExRestVal;
     sessionRestLong = !sameEx;
-    if (rest > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = rest; renderSession(); }
+    if (rest > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = rest; sessionEndAt = Date.now() + rest * 1000; renderSession(); }
     else { sessionEnterWork(nextIdx); }
   }
   function sessionLapTick(){
@@ -6618,22 +6619,28 @@
     if (sessionIdx < 0 || sessionIdx >= sessionStepsArr.length){
       const first = sessionStepsArr.findIndex((_, i) => !sessionDone[i]);
       sessionEnterWork(first < 0 ? 0 : first);
-    } else { renderSession(); } // resume where we paused
-  }
-  function sessionPause(){ sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; } renderSession(); }
-  function sessionTick(){
-    // Only timed work + rest count down; laps/manual wait for the user's tap.
-    if (sessionPhase === "work"){
-      const st = sessionStepsArr[sessionIdx];
-      if (!st || st.kind !== "timed") return;
-      sessionRemain--;
-      if (sessionRemain > 0){ const now = document.getElementById("sessionNow"); if (now){ const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain); } return; }
-      sessionCompleteStep();
     } else {
-      sessionRemain--;
-      if (sessionRemain > 0){ const now = document.getElementById("sessionNow"); if (now){ const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain); } return; }
-      sessionEnterWork(sessionIdx); // sessionIdx already points at the upcoming step
+      // Resuming: restart the real-clock deadline from the remaining time.
+      const st = sessionStepsArr[sessionIdx];
+      if (sessionPhase === "rest" || (st && st.kind === "timed")) sessionEndAt = Date.now() + sessionRemain * 1000;
+      renderSession();
     }
+  }
+  function sessionPause(){
+    const st = sessionStepsArr[sessionIdx];
+    if (sessionPhase === "rest" || (st && st.kind === "timed")) sessionRemain = Math.max(0, Math.ceil((sessionEndAt - Date.now()) / 1000));
+    sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; } renderSession();
+  }
+  function sessionTick(){
+    // Countdown is driven by the REAL CLOCK, so it stays accurate even if the
+    // phone throttles/pauses the 1-sec timer or you switch away and come back.
+    const st = sessionStepsArr[sessionIdx];
+    const isCountdown = (sessionPhase === "rest") || (sessionPhase === "work" && st && st.kind === "timed");
+    if (!isCountdown) return; // laps/manual: wait for the user's tap
+    sessionRemain = Math.max(0, Math.ceil((sessionEndAt - Date.now()) / 1000));
+    if (sessionRemain > 0){ const now = document.getElementById("sessionNow"); if (now){ const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain); } return; }
+    if (sessionPhase === "work") sessionCompleteStep();
+    else sessionEnterWork(sessionIdx); // sessionIdx already points at the upcoming step
   }
   function sessionFinish(){
     sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
@@ -6662,6 +6669,9 @@
   function leaveSessionPage(){ const el = document.getElementById("sessionOverlay"); if (el && el.classList.contains("show")){ el.classList.remove("show"); sessionPause(); } }
   function sessionShownAsPage(){ const el = document.getElementById("sessionOverlay"); return !!(el && el.classList.contains("show")); }
   window.sessionToggle = sessionToggle; window.sessionChangeDay = sessionChangeDay; window.sessionSaveSettings = sessionSaveSettings;
+  // When the app comes back to the foreground, catch the timer up to real time.
+  document.addEventListener("visibilitychange", function(){ if (!document.hidden && sessionRunning) sessionTick(); });
+  window.addEventListener("focus", function(){ if (sessionRunning) sessionTick(); });
 
   function hideOnboarding(){ document.getElementById("onboardingOverlay").classList.remove("show"); }
   function renderOnbStep(){
