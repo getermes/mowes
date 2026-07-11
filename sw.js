@@ -1,5 +1,5 @@
 // Service worker: lets the app work offline (e.g. on a walk/run with no signal)
-const CACHE = "mowes-v15";
+const CACHE = "mowes-v16";
 const ASSETS = [
   "./",
   "./index.html",
@@ -32,13 +32,29 @@ self.addEventListener("fetch", e => {
   const wantsHtml = req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
   if (wantsHtml) {
     e.respondWith(
-      // "no-store" skips the browser's own cache so we always pull the freshest
-      // app page from the network when online (falls back to cache when offline).
-      fetch(req, { cache: "no-store" }).then(resp => {
-        const copy = resp.clone();
-        caches.open(CACHE).then(c => c.put("./index.html", copy)).catch(() => {});
-        return resp;
-      }).catch(() => caches.match("./index.html"))
+      // Network-first so the newest version loads when online — but if the
+      // connection is weak/slow, don't hang: after ~3s fall back to the saved
+      // copy so the app always opens fast (e.g. on a walk/run with poor signal).
+      // The network fetch still finishes in the background and refreshes the
+      // cache for next time. On a first-ever visit (no saved copy yet) we wait
+      // for the network since there's nothing to fall back to.
+      new Promise(resolve => {
+        let settled = false;
+        const done = r => { if (!settled) { settled = true; resolve(r); } };
+        const timer = setTimeout(() => {
+          caches.match("./index.html").then(cached => { if (cached) done(cached); });
+        }, 3000);
+        // "no-store" skips the browser's own cache so we always pull the freshest page.
+        fetch(req, { cache: "no-store" }).then(resp => {
+          clearTimeout(timer);
+          const copy = resp.clone();
+          caches.open(CACHE).then(c => c.put("./index.html", copy)).catch(() => {});
+          done(resp);
+        }).catch(() => {
+          clearTimeout(timer);
+          caches.match("./index.html").then(cached => done(cached));
+        });
+      })
     );
     return;
   }
