@@ -2056,6 +2056,7 @@
   .onb-suggest-list { display: flex; flex-direction: column; gap: 8px; text-align: left; }
   .onb-ex { background: #fff; border-radius: 12px; padding: 12px 14px; font-weight: 700; color: #3a4066; font-size: 15px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
   /* Pick-your-own exercise checklist */
+  .onb-pick-guide { text-align: center; font-size: 16px; font-weight: 800; color: #2b2f45; background: #eef0ff; border: 1.5px solid #c9d0ff; border-radius: 12px; padding: 11px 12px; margin: 6px 2px 12px; }
   .onb-pick-list { text-align: left; }
   .onb-ex-group { font-size: 13px; font-weight: 800; color: #5b6cff; margin: 14px 2px 6px; }
   .onb-pick { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
@@ -7332,12 +7333,13 @@
     document.getElementById("onbEmoji").textContent = "💡";
     document.getElementById("onbTitle").textContent = "Here's a great way to start 💪";
     const sub = document.getElementById("onbSub");
-    sub.textContent = s.body + " Tap to pick the ones you want — we've checked a good start, change it however you like.";
+    sub.textContent = s.body + " We've checked a good start for you — keep it, or change it however you like.";
     sub.style.display = "";
     // A checklist of exercises that fit THEIR equipment — they pick their own.
     const groups = equipMovesFor(onbAnswers);
     onbExerciseList = [];
-    let html = '<div class="onb-pick-list">';
+    let html = '<div class="onb-pick-guide">👆 Pick your choices — from 1 to all of them</div>';
+    html += '<div class="onb-pick-list">';
     groups.forEach(g => {
       html += '<div class="onb-ex-group">' + escapeHtml(g.name) + '</div>';
       g.moves.forEach(m => {
