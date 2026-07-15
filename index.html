@@ -7330,16 +7330,15 @@
   }
   function renderOnbSuggestion(){
     const s = buildSuggestion(onbAnswers);
-    document.getElementById("onbEmoji").textContent = "💡";
-    document.getElementById("onbTitle").textContent = "Here's a great way to start 💪";
+    document.getElementById("onbEmoji").textContent = "👆";
+    document.getElementById("onbTitle").textContent = "What do you want to do in your week?";
     const sub = document.getElementById("onbSub");
-    sub.textContent = s.body + " We've checked a good start for you — keep it, or change it however you like.";
+    sub.textContent = "Pick all that apply.";
     sub.style.display = "";
     // A checklist of exercises that fit THEIR equipment — they pick their own.
     const groups = equipMovesFor(onbAnswers);
     onbExerciseList = [];
-    let html = '<div class="onb-pick-guide">👆 Pick your choices — from 1 to all of them</div>';
-    html += '<div class="onb-pick-list">';
+    let html = '<div class="onb-pick-list">';
     groups.forEach(g => {
       html += '<div class="onb-ex-group">' + escapeHtml(g.name) + '</div>';
       g.moves.forEach(m => {
