@@ -2124,7 +2124,16 @@
   .body-photo-btn { width: 100%; background: #eef0fb; border: none; border-radius: 12px; padding: 12px; color: #5b6cff; font-weight: 800; font-size: 14px; cursor: pointer; }
   .body-photo-preview { display: block; width: 100%; border-radius: 12px; margin-top: 10px; }
   .body-pics-section { margin-top: 22px; border-top: 1px solid #e6e8f4; padding-top: 16px; }
-  .body-pics-title { font-size: 16px; font-weight: 800; color: #3a4066; margin-bottom: 12px; }
+  .body-pics-title { font-size: 16px; font-weight: 800; color: #3a4066; margin-bottom: 6px; }
+  .body-pics-note { font-size: 12px; color: #8a8fa3; margin: 0 0 12px; line-height: 1.45; }
+  .body-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .bodypic { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(60,64,102,0.08); }
+  .bodypic-imgwrap { position: relative; aspect-ratio: 1 / 1; background: #e7ebfb; }
+  .bodypic-imgwrap img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer; }
+  .bodypic-del { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border: none; border-radius: 50%; background: rgba(0,0,0,0.55); color: #fff; font-size: 13px; cursor: pointer; line-height: 1; }
+  .bodypic-cap { padding: 7px 9px 9px; font-size: 11.5px; color: #6a7088; line-height: 1.45; }
+  .bodypic-linked { color: #5b6cff; font-weight: 700; margin-top: 2px; }
+  .bodypic-loc { color: #5b6cff; text-decoration: none; font-weight: 600; }
   .body-save-btn { display: block; width: 100%; margin-top: 16px; border: none; border-radius: 14px; padding: 15px;
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 6px 18px rgba(39,185,138,0.22); }
   .body-save-btn:active { transform: scale(0.99); }
@@ -2702,6 +2711,7 @@
       <!-- Progress photos gallery (folded in from the old Pictures page) -->
       <div class="body-pics-section">
         <div class="body-pics-title">📸 Progress photos</div>
+        <p class="body-pics-note">📍 Each photo remembers the date &amp; place it was taken — saved only on your phone.</p>
         <div class="pics-actions">
           <button type="button" class="pics-add" onclick="document.getElementById('bodyPicsCam').click()">📷 Take a photo</button>
           <button type="button" class="pics-add pics-add-alt" onclick="document.getElementById('bodyPicsInput').click()">🖼️ From phone</button>
@@ -2709,7 +2719,7 @@
         <input type="file" id="bodyPicsCam" accept="image/*" capture="environment" style="display:none" onchange="addBodyPics(this)">
         <input type="file" id="bodyPicsInput" accept="image/*" multiple style="display:none" onchange="addBodyPics(this)">
         <p class="pics-empty" id="bodyPicsEmpty">No photos yet. Take a photo or add one from your phone — they stay on your device. 🔒</p>
-        <div class="pics-grid" id="bodyPicsGrid"></div>
+        <div class="body-gallery" id="bodyPicsGrid"></div>
       </div>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
     </div>
@@ -3776,37 +3786,93 @@
   }
   window.addPics = addPics;
 
-  // ---- My Body & Pics: a progress-photo gallery (folded in from the Pictures page) ----
+  // ---- My Body & Pics: one photo album, each photo stamped with date/time + place,
+  //      and (if taken from "Log today") linked to that day's measurements. ----
   const BODY_PICS_KEY = "mowes_body_pics";
+  const PHOTO_LOCATION_ON = true; // ask the phone for its spot when a photo is taken
   let bodyPicsData = [];
+  // Ask the phone for its current location (once per photo/batch). Resolves to
+  // {lat,lon} or null — null if location is off, denied, unavailable, or slow.
+  function getPhotoLocation(){
+    return new Promise(resolve => {
+      if (!PHOTO_LOCATION_ON || !navigator.geolocation){ resolve(null); return; }
+      let done = false;
+      const finish = v => { if (!done){ done = true; resolve(v); } };
+      try {
+        navigator.geolocation.getCurrentPosition(
+          pos => finish({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+          () => finish(null),
+          { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+        );
+      } catch(e){ finish(null); }
+      setTimeout(() => finish(null), 9000);
+    });
+  }
   function loadBodyPics(){
-    try { bodyPicsData = JSON.parse(localStorage.getItem(BODY_PICS_KEY) || "[]") || []; }
-    catch(e){ bodyPicsData = []; }
-    if (!Array.isArray(bodyPicsData)) bodyPicsData = [];
+    let raw = [];
+    try { raw = JSON.parse(localStorage.getItem(BODY_PICS_KEY) || "[]") || []; }
+    catch(e){ raw = []; }
+    if (!Array.isArray(raw)) raw = [];
+    // Migrate old plain-string photos to objects.
+    bodyPicsData = raw.map(p => (typeof p === "string") ? { src:p, at:null, loc:null, logDate:null } : p);
+    migrateEntryPhotosIntoAlbum();
+  }
+  // One-time: pull any old per-entry measurement photos into the album, linked by date.
+  function migrateEntryPhotosIntoAlbum(){
+    try { if (localStorage.getItem("mowes_body_pics_migrated_v1")) return; } catch(e){ return; }
+    const entries = loadBodyEntries(); let changed = false;
+    entries.forEach(e => {
+      if (e.photo){
+        bodyPicsData.push({ src:e.photo, at:e.at || null, loc:null, logDate:e.date || null });
+        delete e.photo; changed = true;
+      }
+    });
+    if (changed){ saveBodyEntries(entries); saveBodyPics(); }
+    try { localStorage.setItem("mowes_body_pics_migrated_v1", "1"); } catch(e){}
   }
   function saveBodyPics(){
     try { localStorage.setItem(BODY_PICS_KEY, JSON.stringify(bodyPicsData)); }
     catch(e){ alert("Your phone's storage for this app is full — remove a few photos to add more."); }
+  }
+  function bodyPicCaption(p){
+    if (!p || !p.at) return "";
+    try {
+      const d = new Date(p.at);
+      return d.toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" })
+        + " · " + d.toLocaleTimeString(undefined, { hour:"numeric", minute:"2-digit" });
+    } catch(e){ return ""; }
   }
   function renderBodyPics(){
     const grid = document.getElementById("bodyPicsGrid"), empty = document.getElementById("bodyPicsEmpty");
     if (!grid) return;
     grid.innerHTML = "";
     if (empty) empty.style.display = bodyPicsData.length ? "none" : "block";
-    bodyPicsData.forEach((src, i) => {
-      const cell = document.createElement("div"); cell.className = "pics-cell";
-      const img = document.createElement("img"); img.src = src; img.alt = "progress photo"; img.onclick = () => openPicViewer(src);
-      const del = document.createElement("button"); del.className = "pics-del"; del.textContent = "✕"; del.title = "Remove photo"; del.onclick = () => removeBodyPic(i);
-      cell.appendChild(img); cell.appendChild(del); grid.appendChild(cell);
-    });
+    for (let i = bodyPicsData.length - 1; i >= 0; i--){ // newest first
+      const p = bodyPicsData[i];
+      const cell = document.createElement("div"); cell.className = "bodypic";
+      const wrap = document.createElement("div"); wrap.className = "bodypic-imgwrap";
+      const img = document.createElement("img"); img.src = p.src; img.alt = "progress photo"; img.onclick = () => openPicViewer(p.src);
+      const del = document.createElement("button"); del.className = "bodypic-del"; del.textContent = "✕"; del.title = "Remove photo"; del.onclick = () => removeBodyPic(i);
+      wrap.appendChild(img); wrap.appendChild(del);
+      const cap = document.createElement("div"); cap.className = "bodypic-cap";
+      let capHtml = "";
+      const when = bodyPicCaption(p);
+      if (when) capHtml += '<div>' + escapeHtml(when) + '</div>';
+      if (p.logDate) capHtml += '<div class="bodypic-linked">📏 Linked to your measurements</div>';
+      if (p.loc && typeof p.loc.lat === "number") capHtml += '<div><a class="bodypic-loc" href="https://www.google.com/maps?q=' + p.loc.lat + ',' + p.loc.lon + '" target="_blank" rel="noopener">📍 View place</a></div>';
+      cap.innerHTML = capHtml || '<div>Photo</div>';
+      cell.appendChild(wrap); cell.appendChild(cap);
+      grid.appendChild(cell);
+    }
   }
-  function addBodyPics(input){
+  async function addBodyPics(input){
     const files = [...(input.files || [])]; input.value = "";
     if (!files.length) return;
+    const loc = await getPhotoLocation();
     let pending = files.length;
     files.forEach(file => {
       const reader = new FileReader();
-      reader.onload = e => { shrinkImage(e.target.result, 1000, 0.72, dataUrl => { bodyPicsData.push(dataUrl); if (--pending === 0){ saveBodyPics(); renderBodyPics(); } }); };
+      reader.onload = e => { shrinkImage(e.target.result, 1000, 0.72, dataUrl => { bodyPicsData.push({ src:dataUrl, at:new Date().toISOString(), loc:loc, logDate:null }); if (--pending === 0){ saveBodyPics(); renderBodyPics(); } }); };
       reader.onerror = () => { if (--pending === 0){ saveBodyPics(); renderBodyPics(); } };
       reader.readAsDataURL(file);
     });
@@ -6521,7 +6587,7 @@
     });
     reader.readAsDataURL(file);
   }
-  function saveBodyLog(){
+  async function saveBodyLog(){
     const items = [];
     document.querySelectorAll("#bodyLogFields input").forEach(inp => {
       const v = (inp.value || "").trim();
@@ -6531,14 +6597,20 @@
     const entries = loadBodyEntries();
     const today = bodyTodayStr();
     const entry = { date: today, at: new Date().toISOString(), items: items };
-    if (bodyPhotoTemp) entry.photo = bodyPhotoTemp;
     // If there's already an entry for today, replace it (one log per day).
     const idx = entries.findIndex(e => e.date === today);
     if (idx >= 0) entries[idx] = entry; else entries.push(entry);
     saveBodyEntries(entries);
+    // A photo taken from Log today goes into the album AND is linked to today's measurements.
+    if (bodyPhotoTemp){
+      const loc = await getPhotoLocation();
+      bodyPicsData.push({ src: bodyPhotoTemp, at: new Date().toISOString(), loc: loc, logDate: today });
+      saveBodyPics();
+    }
     bodyPhotoTemp = "";
     closeBodyLog();
     renderBody();
+    renderBodyPics();
   }
   function deleteBodyEntry(at){
     if (!confirm("Delete this entry? This can't be undone.")) return;
@@ -6567,7 +6639,9 @@
         }
         html += '<div class="body-metric"><span class="body-metric-label">' + escapeHtml(it.label) + '</span><span class="body-metric-val">' + escapeHtml(String(it.value)) + ' ' + escapeHtml(it.unit || "") + chg + '</span></div>';
       });
-      if (e.photo) html += '<img class="body-entry-photo" src="' + e.photo + '" alt="progress photo">';
+      // Photos linked to this measurement day (taken from Log today) — pulled from the album.
+      const linked = bodyPicsData.filter(p => p && p.logDate && p.logDate === e.date);
+      linked.forEach(p => { html += '<img class="body-entry-photo" src="' + p.src + '" alt="progress photo">'; });
       html += '</div>';
     }
     box.innerHTML = html;
@@ -6576,8 +6650,9 @@
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
     leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    loadBodyPics();
     renderBody();
-    loadBodyPics(); renderBodyPics();
+    renderBodyPics();
     document.getElementById("bodyOverlay").classList.add("show");
     renderPageBar();
   }
