@@ -2681,7 +2681,7 @@
   <!-- My Setup: a book page (last in the bar) to review/change your guided-start answers anytime -->
   <div class="setup-overlay" id="setupOverlay">
     <div class="setup-inner">
-      <div class="setup-title">⚙️ My Setup</div>
+      <div class="setup-title">⚙️ My Set-up</div>
       <div class="setup-sub">Your answers — add or change them anytime.</div>
       <div id="setupBody"></div>
       <p class="setup-hint">👆 Tap any answer above to change it.</p>
@@ -3888,13 +3888,31 @@
   const LEAN_ON = true;
   const FULL_PREVIEW = (function(){ try { return /(^|[?&#])full(\b|=)/i.test((location.search || "") + (location.hash || "")); } catch(e){ return false; } })();
   const LEAN_MODE = LEAN_ON && !FULL_PREVIEW;
+  // Rebuilding the app one page at a time: flip a page to true here to switch it back
+  // on in the lean version. (The ?full preview always shows every page, regardless.)
+  const PAGES_ON = {
+    setup: true,   // ⚙️ My Set-up — review/change your guided-start answers
+    rules: false,  // 📜 My Rules
+    goals: false,  // 🎯 My Goals
+    ach:   false,  // 📈 Achievements
+    body:  false   // 📏 My Body
+  };
   function pageBarStops(){
     const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's Session", icon:"▶️ " }];
-    if (LEAN_MODE) return base;
-    // Full app: Cover, Today's Session, then the book pages, then My Goals … My Setup.
-    return base
-      .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-      .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
+    if (!LEAN_MODE){
+      // Full app (and the ?full preview): Cover, Today's Session, the book pages, then My Goals … My Set-up.
+      return base
+        .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
+        .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Set-up", icon:"⚙️ " }]);
+    }
+    // Lean core (Cover + Today's Session) plus any pages we've switched back on so far.
+    const stops = base.slice();
+    if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals", icon:"🎯 " });
+    if (PAGES_ON.ach)   stops.push({ ach:true, name:"Achievements", icon:"📈 " });
+    if (PAGES_ON.body)  stops.push({ body:true, name:"My Body", icon:"📏 " });
+    if (PAGES_ON.rules) stops.push({ rules:true, name:"My Rules", icon:"📜 " });
+    if (PAGES_ON.setup) stops.push({ setup:true, name:"My Set-up", icon:"⚙️ " });
+    return stops;
   }
   function coverShownAsPage(){
     const el = document.getElementById("welcomeOverlay");
