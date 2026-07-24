@@ -2123,6 +2123,8 @@
   .body-photo-row { margin: 14px 0 4px; }
   .body-photo-btn { width: 100%; background: #eef0fb; border: none; border-radius: 12px; padding: 12px; color: #5b6cff; font-weight: 800; font-size: 14px; cursor: pointer; }
   .body-photo-preview { display: block; width: 100%; border-radius: 12px; margin-top: 10px; }
+  .body-pics-section { margin-top: 22px; border-top: 1px solid #e6e8f4; padding-top: 16px; }
+  .body-pics-title { font-size: 16px; font-weight: 800; color: #3a4066; margin-bottom: 12px; }
   .body-save-btn { display: block; width: 100%; margin-top: 16px; border: none; border-radius: 14px; padding: 15px;
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 6px 18px rgba(39,185,138,0.22); }
   .body-save-btn:active { transform: scale(0.99); }
@@ -2690,13 +2692,25 @@
     </div>
   </div>
 
-  <!-- My Body: a book page to log measurements + progress photos over time -->
+  <!-- My Body & Pics: log measurements + a progress-photo gallery, over time -->
   <div class="body-overlay" id="bodyOverlay">
     <div class="body-inner">
-      <div class="setup-title">📏 My Body</div>
+      <div class="setup-title">📏 My Body &amp; Pics</div>
       <div class="setup-sub">Track your measurements &amp; progress photos over time.</div>
       <button class="body-log-btn" onclick="openBodyLog()">＋ Log today</button>
       <div id="bodyHistory"></div>
+      <!-- Progress photos gallery (folded in from the old Pictures page) -->
+      <div class="body-pics-section">
+        <div class="body-pics-title">📸 Progress photos</div>
+        <div class="pics-actions">
+          <button type="button" class="pics-add" onclick="document.getElementById('bodyPicsCam').click()">📷 Take a photo</button>
+          <button type="button" class="pics-add pics-add-alt" onclick="document.getElementById('bodyPicsInput').click()">🖼️ From phone</button>
+        </div>
+        <input type="file" id="bodyPicsCam" accept="image/*" capture="environment" style="display:none" onchange="addBodyPics(this)">
+        <input type="file" id="bodyPicsInput" accept="image/*" multiple style="display:none" onchange="addBodyPics(this)">
+        <p class="pics-empty" id="bodyPicsEmpty">No photos yet. Take a photo or add one from your phone — they stay on your device. 🔒</p>
+        <div class="pics-grid" id="bodyPicsGrid"></div>
+      </div>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
     </div>
   </div>
@@ -3762,6 +3776,49 @@
   }
   window.addPics = addPics;
 
+  // ---- My Body & Pics: a progress-photo gallery (folded in from the Pictures page) ----
+  const BODY_PICS_KEY = "mowes_body_pics";
+  let bodyPicsData = [];
+  function loadBodyPics(){
+    try { bodyPicsData = JSON.parse(localStorage.getItem(BODY_PICS_KEY) || "[]") || []; }
+    catch(e){ bodyPicsData = []; }
+    if (!Array.isArray(bodyPicsData)) bodyPicsData = [];
+  }
+  function saveBodyPics(){
+    try { localStorage.setItem(BODY_PICS_KEY, JSON.stringify(bodyPicsData)); }
+    catch(e){ alert("Your phone's storage for this app is full — remove a few photos to add more."); }
+  }
+  function renderBodyPics(){
+    const grid = document.getElementById("bodyPicsGrid"), empty = document.getElementById("bodyPicsEmpty");
+    if (!grid) return;
+    grid.innerHTML = "";
+    if (empty) empty.style.display = bodyPicsData.length ? "none" : "block";
+    bodyPicsData.forEach((src, i) => {
+      const cell = document.createElement("div"); cell.className = "pics-cell";
+      const img = document.createElement("img"); img.src = src; img.alt = "progress photo"; img.onclick = () => openPicViewer(src);
+      const del = document.createElement("button"); del.className = "pics-del"; del.textContent = "✕"; del.title = "Remove photo"; del.onclick = () => removeBodyPic(i);
+      cell.appendChild(img); cell.appendChild(del); grid.appendChild(cell);
+    });
+  }
+  function addBodyPics(input){
+    const files = [...(input.files || [])]; input.value = "";
+    if (!files.length) return;
+    let pending = files.length;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => { shrinkImage(e.target.result, 1000, 0.72, dataUrl => { bodyPicsData.push(dataUrl); if (--pending === 0){ saveBodyPics(); renderBodyPics(); } }); };
+      reader.onerror = () => { if (--pending === 0){ saveBodyPics(); renderBodyPics(); } };
+      reader.readAsDataURL(file);
+    });
+  }
+  function removeBodyPic(i){
+    if (i < 0 || i >= bodyPicsData.length) return;
+    bodyPicsData.splice(i, 1);
+    saveBodyPics();
+    renderBodyPics();
+  }
+  window.addBodyPics = addBodyPics;
+
   // ---- Exercise Videos page (saved YouTube links; open in YouTube on tap) ----
   let videosData = []; // array of { url, id, title } — just links, stored on this device
   function youtubeId(url){
@@ -3895,7 +3952,7 @@
     rules: true,   // 📜 My Rules — rules that shape how picks are chosen
     goals: false,  // 🎯 My Goals
     ach:   false,  // 📈 Achievements
-    body:  false   // 📏 My Body
+    body:  true    // 📏 My Body & Pics (measurements + progress-photo gallery)
   };
   function pageBarStops(){
     const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's Session", icon:"▶️ " }];
@@ -3903,13 +3960,13 @@
       // Full app (and the ?full preview): Cover, Today's Session, the book pages, then My Goals … My Set-up.
       return base
         .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-        .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Set-up", icon:"⚙️ " }]);
+        .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body & Pics", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Set-up", icon:"⚙️ " }]);
     }
     // Lean core (Cover + Today's Session) plus any pages we've switched back on so far.
     const stops = base.slice();
     if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals", icon:"🎯 " });
     if (PAGES_ON.ach)   stops.push({ ach:true, name:"Achievements", icon:"📈 " });
-    if (PAGES_ON.body)  stops.push({ body:true, name:"My Body", icon:"📏 " });
+    if (PAGES_ON.body)  stops.push({ body:true, name:"My Body & Pics", icon:"📏 " });
     if (PAGES_ON.rules) stops.push({ rules:true, name:"My Rules", icon:"📜 " });
     if (PAGES_ON.setup) stops.push({ setup:true, name:"My Set-up", icon:"⚙️ " });
     return stops;
@@ -6520,6 +6577,7 @@
     appOpened = true;
     leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
     renderBody();
+    loadBodyPics(); renderBodyPics();
     document.getElementById("bodyOverlay").classList.add("show");
     renderPageBar();
   }
