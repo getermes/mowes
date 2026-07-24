@@ -2226,7 +2226,7 @@
   .session-arrow { width: 42px; height: 42px; border: none; border-radius: 12px; background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; }
   .session-arrow:active { transform: scale(0.95); }
   .session-day { font-size: 20px; font-weight: 900; color: #3a4066; min-width: 130px; text-align: center; }
-  .session-settings { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-bottom: 14px; font-size: 12.5px; color: #6a7088; }
+  .session-settings { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: 16px; margin-bottom: 4px; font-size: 12.5px; color: #6a7088; }
   .session-settings input { width: 52px; border: 2px solid #e6e8f0; border-radius: 8px; padding: 5px; text-align: center; font-size: 13px; }
   .session-toggles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: -4px 0 14px; }
   .session-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4a5068; font-weight: 600; cursor: pointer; }
@@ -2604,12 +2604,6 @@
         <div class="session-day" id="sessionDay">Today</div>
         <button class="session-arrow" onclick="sessionChangeDay(1)">›</button>
       </div>
-      <div class="session-settings">
-        <label>Pace <input id="sessionPace" type="number" min="0.2" step="0.1" inputmode="decimal" onchange="sessionSaveSettings()"> sec/rep</label>
-        <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
-        <label>Between ex. <input id="sessionExRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
-        <label>New muscle <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
-      </div>
       <div class="session-toggles">
         <label class="session-toggle"><input type="checkbox" id="sessionWarmup" onchange="sessionSaveSettings()"> 🤸 Warm-up first</label>
         <label class="session-toggle"><input type="checkbox" id="sessionCooldown" onchange="sessionSaveSettings()"> 🧘 Cool-down after</label>
@@ -2619,6 +2613,12 @@
       <button class="session-surprise" onclick="sessionSurprise()">🎁 Surprise me</button>
       <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">▶ Start</button>
       <p class="setup-note">🔒 Runs on your phone. Tap Start and MOWES moves you through the day.</p>
+      <div class="session-settings">
+        <label>Pace <input id="sessionPace" type="number" min="0.2" step="0.1" inputmode="decimal" onchange="sessionSaveSettings()"> sec/rep</label>
+        <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
+        <label>Between ex. <input id="sessionExRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
+        <label>New muscle <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
+      </div>
     </div>
   </div>
 
