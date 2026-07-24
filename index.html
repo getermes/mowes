@@ -3879,11 +3879,13 @@
   // ---- Bottom page bar: flip between pages (Today's Plan → routines → others) ----
   var appOpened = false; // becomes true once you've entered the workspace
   function pageBarStops(){
-    // Cover, then Today's Session, then every page of your book, then My Setup (last).
-    // NOTE: the old "Today's Plan" page is hidden (kept in the code, just not a stop here).
-    return [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's Session", icon:"▶️ " }]
-      .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-      .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
+    // LEAN VERSION (rest of the app on hold): show ONLY the Cover and Today's Session.
+    // Everything else is kept in the code but hidden from the bar for now — the user's
+    // routine/book pages, My Goals, Achievements, My Body, My Rules, and My Setup.
+    // To bring the full app back, just un-comment the two .concat(...) lines below.
+    return [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's Session", icon:"▶️ " }];
+    //  .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
+    //  .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Setup", icon:"⚙️ " }]);
   }
   function coverShownAsPage(){
     const el = document.getElementById("welcomeOverlay");
