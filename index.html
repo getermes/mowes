@@ -3881,8 +3881,13 @@
   // LEAN VERSION switch: when true, the rest of the app is on hold — the bottom bar
   // shows ONLY the Cover + Today's Session, and Today's Session shows ONLY what the
   // user picked in the guided start (plus Surprise me), not the sample routine pages.
-  // Flip to false to bring the full app back (all pages + built routines).
-  const LEAN_MODE = true;
+  //
+  // Secret preview: add "?full" to the web address (e.g. .../mowes/?full) to see the
+  // WHOLE app — all pages + built routines — handy for deciding what to add back next.
+  // The normal public link stays lean. To make the full app public, set LEAN_ON = false.
+  const LEAN_ON = true;
+  const FULL_PREVIEW = (function(){ try { return /(^|[?&#])full(\b|=)/i.test((location.search || "") + (location.hash || "")); } catch(e){ return false; } })();
+  const LEAN_MODE = LEAN_ON && !FULL_PREVIEW;
   function pageBarStops(){
     const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's Session", icon:"▶️ " }];
     if (LEAN_MODE) return base;
