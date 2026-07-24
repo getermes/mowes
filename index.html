@@ -2981,6 +2981,18 @@
       <!-- Notes page (shown only when the current page is a notes page) -->
       <div class="notes-view" id="notesView">
         <textarea class="notes-area" id="notesArea" placeholder="Write anything here — notes, goals, ideas… Saved on your phone."></textarea>
+        <!-- Picture notes: attach photos to this notes page -->
+        <div class="body-pics-section">
+          <div class="body-pics-title">📷 Photos</div>
+          <div class="pics-actions">
+            <button type="button" class="pics-add" onclick="document.getElementById('notesPicsCam').click()">📷 Take a photo</button>
+            <button type="button" class="pics-add pics-add-alt" onclick="document.getElementById('notesPicsInput').click()">🖼️ From phone</button>
+          </div>
+          <input type="file" id="notesPicsCam" accept="image/*" capture="environment" style="display:none" onchange="addNotesPics(this)">
+          <input type="file" id="notesPicsInput" accept="image/*" multiple style="display:none" onchange="addNotesPics(this)">
+          <p class="pics-empty" id="notesPicsEmpty">No photos yet. Add a picture note — it stays on your device. 🔒</p>
+          <div class="pics-grid" id="notesPicsGrid"></div>
+        </div>
       </div>
 
       <!-- Shopping-list page (shown only when the current page is a list page) -->
@@ -3598,11 +3610,56 @@
     activePageId = id;
     const area = document.getElementById("notesArea");
     if (area) area.value = localStorage.getItem(notesKeyFor(id)) || "";
+    loadNotesPics(id); renderNotesPics();
   }
   function saveNotes(){
     if (!currentPageIsNotes()) return;
     try { localStorage.setItem(notesKeyFor(activePageId), document.getElementById("notesArea").value); } catch(e){}
   }
+  // Picture notes: a simple photo gallery attached to a notes page (one set per page).
+  let notesPicsData = [], notesPicsPageId = null;
+  function notesPicsKeyFor(id){ return "mowes_notes_pics_" + id; }
+  function loadNotesPics(id){
+    notesPicsPageId = id;
+    try { notesPicsData = JSON.parse(localStorage.getItem(notesPicsKeyFor(id)) || "[]") || []; }
+    catch(e){ notesPicsData = []; }
+    if (!Array.isArray(notesPicsData)) notesPicsData = [];
+  }
+  function saveNotesPics(){
+    if (!notesPicsPageId) return;
+    try { localStorage.setItem(notesPicsKeyFor(notesPicsPageId), JSON.stringify(notesPicsData)); }
+    catch(e){ alert("Your phone's storage for this app is full — remove a few photos to add more."); }
+  }
+  function renderNotesPics(){
+    const grid = document.getElementById("notesPicsGrid"), empty = document.getElementById("notesPicsEmpty");
+    if (!grid) return;
+    grid.innerHTML = "";
+    if (empty) empty.style.display = notesPicsData.length ? "none" : "block";
+    notesPicsData.forEach((src, i) => {
+      const cell = document.createElement("div"); cell.className = "pics-cell";
+      const img = document.createElement("img"); img.src = src; img.alt = "note photo"; img.onclick = () => openPicViewer(src);
+      const del = document.createElement("button"); del.className = "pics-del"; del.textContent = "✕"; del.title = "Remove photo"; del.onclick = () => removeNotesPic(i);
+      cell.appendChild(img); cell.appendChild(del); grid.appendChild(cell);
+    });
+  }
+  function addNotesPics(input){
+    const files = [...(input.files || [])]; input.value = "";
+    if (!files.length) return;
+    let pending = files.length;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => shrinkImage(e.target.result, 1000, 0.72, dataUrl => { notesPicsData.push(dataUrl); if (--pending === 0){ saveNotesPics(); renderNotesPics(); } });
+      reader.onerror = () => { if (--pending === 0){ saveNotesPics(); renderNotesPics(); } };
+      reader.readAsDataURL(file);
+    });
+  }
+  function removeNotesPic(i){
+    if (i < 0 || i >= notesPicsData.length) return;
+    notesPicsData.splice(i, 1);
+    saveNotesPics();
+    renderNotesPics();
+  }
+  window.addNotesPics = addNotesPics;
 
   // ---- Shopping-list page ----
   let listData = []; // array of { text, done }
@@ -4016,7 +4073,8 @@
     rules: true,    // 📜 My Rules — rules that shape how picks are chosen
     goals: true,    // 🎯 My Goals & Achievement (Achievements is now a section here)
     body:  true,    // 📏 My Body & Pics (measurements + progress-photo gallery)
-    shopping: true  // 🛒 My Shopping (the Shopping List book page, id p_ex_shopping)
+    shopping: true, // 🛒 My Shopping (the Shopping List book page, id p_ex_shopping)
+    notes: true     // 📝 My Notes (the Note taking book page, id p_ex_notes — text + pics)
   };
   function pageBarStops(){
     const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's Session", icon:"▶️ " }];
@@ -4031,6 +4089,7 @@
     if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals & Achievement", icon:"🎯 " });
     if (PAGES_ON.body)  stops.push({ body:true, name:"My Body & Pics", icon:"📏 " });
     if (PAGES_ON.shopping){ const sp = pages.find(p => p.id === "p_ex_shopping"); if (sp) stops.push({ id: sp.id, name:"My Shopping", icon:"🛒 " }); }
+    if (PAGES_ON.notes){ const np = pages.find(p => p.id === "p_ex_notes"); if (np) stops.push({ id: np.id, name:"My Notes", icon:"📝 " }); }
     if (PAGES_ON.rules) stops.push({ rules:true, name:"My Rules", icon:"📜 " });
     if (PAGES_ON.setup) stops.push({ setup:true, name:"My Set-up", icon:"⚙️ " });
     return stops;
