@@ -2747,10 +2747,16 @@
   <!-- My Goals: number-based goals with a start, a target, a timeframe, and progress -->
   <div class="goals-overlay" id="goalsOverlay">
     <div class="goals-inner">
-      <div class="setup-title">🎯 My Goals</div>
+      <div class="setup-title">🎯 My Goals &amp; Achievement</div>
       <div class="setup-sub">Set where you want to get to — MOWES tracks your climb.</div>
       <button class="goal-add-btn" onclick="openGoalForm()">＋ Add a goal</button>
       <div id="goalsList"></div>
+      <!-- Achievements: a progress report worked out from your Goals + My Body -->
+      <div class="body-pics-section">
+        <div class="body-pics-title">📈 Achievements</div>
+        <p class="body-pics-note">Your progress so far — and where you're headed next.</p>
+        <div id="achBody"></div>
+      </div>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
     </div>
   </div>
@@ -2776,15 +2782,7 @@
     </div>
   </div>
 
-  <!-- Achievements: a progression report + next-month projections from your Goals & My Body -->
-  <div class="ach-overlay" id="achOverlay">
-    <div class="ach-inner">
-      <div class="setup-title">📈 Achievements</div>
-      <div class="setup-sub">Your progress so far — and where you're headed next.</div>
-      <div id="achBody"></div>
-      <p class="setup-note">🔒 Worked out on your phone from your own Goals &amp; My Body data.</p>
-    </div>
-  </div>
+  <!-- (Achievements merged into "My Goals & Achievement" — see the goalsOverlay above.) -->
 
   <!-- My Rules: settings that shape how "Surprise me" picks your day -->
   <div class="rules-overlay" id="rulesOverlay">
@@ -4016,8 +4014,7 @@
   const PAGES_ON = {
     setup: true,   // ⚙️ My Set-up — review/change your guided-start answers
     rules: true,   // 📜 My Rules — rules that shape how picks are chosen
-    goals: false,  // 🎯 My Goals
-    ach:   false,  // 📈 Achievements
+    goals: true,   // 🎯 My Goals & Achievement (Achievements is now a section here)
     body:  true    // 📏 My Body & Pics (measurements + progress-photo gallery)
   };
   function pageBarStops(){
@@ -4026,12 +4023,11 @@
       // Full app (and the ?full preview): Cover, Today's Session, the book pages, then My Goals … My Set-up.
       return base
         .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-        .concat([{ goals:true, name:"My Goals", icon:"🎯 " }, { ach:true, name:"Achievements", icon:"📈 " }, { body:true, name:"My Body & Pics", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Set-up", icon:"⚙️ " }]);
+        .concat([{ goals:true, name:"My Goals & Achievement", icon:"🎯 " }, { body:true, name:"My Body & Pics", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Set-up", icon:"⚙️ " }]);
     }
     // Lean core (Cover + Today's Session) plus any pages we've switched back on so far.
     const stops = base.slice();
-    if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals", icon:"🎯 " });
-    if (PAGES_ON.ach)   stops.push({ ach:true, name:"Achievements", icon:"📈 " });
+    if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals & Achievement", icon:"🎯 " });
     if (PAGES_ON.body)  stops.push({ body:true, name:"My Body & Pics", icon:"📏 " });
     if (PAGES_ON.rules) stops.push({ rules:true, name:"My Rules", icon:"📜 " });
     if (PAGES_ON.setup) stops.push({ setup:true, name:"My Set-up", icon:"⚙️ " });
@@ -6752,6 +6748,7 @@
     appOpened = true;
     leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
     renderGoals();
+    renderAch();
     document.getElementById("goalsOverlay").classList.add("show");
     renderPageBar();
   }
@@ -6828,12 +6825,8 @@
     box.innerHTML = html;
   }
   function openAchPage(){
-    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
-    appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveRulesPage(); leaveSessionPage();
-    renderAch();
-    document.getElementById("achOverlay").classList.add("show");
-    renderPageBar();
+    // Achievements is now part of "My Goals & Achievement" — send there.
+    openGoalsPage();
   }
   function leaveAchPage(){ const el = document.getElementById("achOverlay"); if (el) el.classList.remove("show"); }
   function achShownAsPage(){ const el = document.getElementById("achOverlay"); return !!(el && el.classList.contains("show")); }
