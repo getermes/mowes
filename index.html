@@ -2251,7 +2251,7 @@
   .session-step-main { flex: 1 1 auto; min-width: 0; }
   .session-step-name { font-weight: 800; color: #3a4066; font-size: 14px; }
   .session-step-detail { font-size: 12.5px; color: #8a90ad; margin-top: 1px; }
-  .session-start { display: block; width: 100%; margin-top: 14px; border: none; border-radius: 16px; padding: 17px;
+  .session-start { display: block; width: 100%; margin: 4px 0 20px; border: none; border-radius: 16px; padding: 17px;
     font-size: 18px; font-weight: 900; color: #fff; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.28); }
   .session-start.running { background: linear-gradient(135deg, #e5484d, #ff6b6b); box-shadow: 0 6px 18px rgba(229,72,77,0.28); }
   .session-start:active { transform: scale(0.99); }
@@ -2604,6 +2604,7 @@
         <div class="session-day" id="sessionDay">Today</div>
         <button class="session-arrow" onclick="sessionChangeDay(1)">›</button>
       </div>
+      <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">▶ Start</button>
       <div class="session-toggles">
         <label class="session-toggle"><input type="checkbox" id="sessionWarmup" onchange="sessionSaveSettings()"> 🤸 Warm-up first</label>
         <label class="session-toggle"><input type="checkbox" id="sessionCooldown" onchange="sessionSaveSettings()"> 🧘 Cool-down after</label>
@@ -2611,7 +2612,6 @@
       <div class="session-now" id="sessionNow"></div>
       <div id="sessionList"></div>
       <button class="session-surprise" onclick="sessionSurprise()">🎁 Surprise me</button>
-      <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">▶ Start</button>
       <p class="setup-note">🔒 Runs on your phone. Tap Start and MOWES moves you through the day.</p>
       <div class="session-settings">
         <label>Pace <input id="sessionPace" type="number" min="0.2" step="0.1" inputmode="decimal" onchange="sessionSaveSettings()"> sec/rep</label>
@@ -7002,9 +7002,6 @@
     }
     if (btn) btn.style.display = "block";
     let html = "";
-    if (sessionStepsArr.some(s => s.starter)){
-      html += '<div class="session-starter-note">✨ MOWES filled in a starter workout for you — just tap Start and follow along. Change the pace/rest above anytime, or build your own on your pages.</div>';
-    }
     sessionStepsArr.forEach((st, i) => {
       const cls = "session-step" + (sessionDone[i] ? " done" : "") + (sessionRunning && i === sessionIdx ? " current" : "");
       html += '<div class="' + cls + '"><div class="session-step-num">' + (i + 1) + '</div><div class="session-step-main">'
@@ -7012,6 +7009,9 @@
         + (st.detail ? '<div class="session-step-detail">' + escapeHtml(st.detail) + '</div>' : '') + '</div>'
         + '<button class="session-howto" title="How to do this" onclick="sessionHowToStep(' + i + ')">❓</button></div>';
     });
+    if (sessionStepsArr.some(s => s.starter)){
+      html += '<div class="session-starter-note">✨ MOWES filled in a starter workout for you — just tap Start and follow along. Change the pace/rest below anytime, or build your own on your pages.</div>';
+    }
     if (list) list.innerHTML = html;
     if (now){
       if (sessionRunning && sessionIdx >= 0 && sessionIdx < sessionStepsArr.length){

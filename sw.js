@@ -1,5 +1,5 @@
 // Service worker: lets the app work offline (e.g. on a walk/run with no signal)
-const CACHE = "mowes-v22";
+const CACHE = "mowes-v23";
 const ASSETS = [
   "./",
   "./index.html",
