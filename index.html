@@ -4116,6 +4116,11 @@
     if (achShownAsPage()) return stops.findIndex(s => s.ach);
     if (goalsShownAsPage()) return stops.findIndex(s => s.goals);
     if (sessionShownAsPage()) return stops.findIndex(s => s.session);
+    // A book page (My Shopping, My Notes, …) is showing: find its chip by id.
+    // In the lean bar the chips are a hand-picked subset, so we can't use the
+    // page's position in the full page list — look it up in the actual stops.
+    const bi = stops.findIndex(s => s.id === activePageId);
+    if (bi >= 0) return bi;
     const i = pages.findIndex(p => p.id === activePageId);
     return i < 0 ? 1 : i + 2;
   }
