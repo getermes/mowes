@@ -4012,10 +4012,11 @@
   // Rebuilding the app one page at a time: flip a page to true here to switch it back
   // on in the lean version. (The ?full preview always shows every page, regardless.)
   const PAGES_ON = {
-    setup: true,   // ⚙️ My Set-up — review/change your guided-start answers
-    rules: true,   // 📜 My Rules — rules that shape how picks are chosen
-    goals: true,   // 🎯 My Goals & Achievement (Achievements is now a section here)
-    body:  true    // 📏 My Body & Pics (measurements + progress-photo gallery)
+    setup: true,    // ⚙️ My Set-up — review/change your guided-start answers
+    rules: true,    // 📜 My Rules — rules that shape how picks are chosen
+    goals: true,    // 🎯 My Goals & Achievement (Achievements is now a section here)
+    body:  true,    // 📏 My Body & Pics (measurements + progress-photo gallery)
+    shopping: true  // 🛒 My Shopping (the Shopping List book page, id p_ex_shopping)
   };
   function pageBarStops(){
     const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's Session", icon:"▶️ " }];
@@ -4029,6 +4030,7 @@
     const stops = base.slice();
     if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals & Achievement", icon:"🎯 " });
     if (PAGES_ON.body)  stops.push({ body:true, name:"My Body & Pics", icon:"📏 " });
+    if (PAGES_ON.shopping){ const sp = pages.find(p => p.id === "p_ex_shopping"); if (sp) stops.push({ id: sp.id, name:"My Shopping", icon:"🛒 " }); }
     if (PAGES_ON.rules) stops.push({ rules:true, name:"My Rules", icon:"📜 " });
     if (PAGES_ON.setup) stops.push({ setup:true, name:"My Set-up", icon:"⚙️ " });
     return stops;
@@ -4311,6 +4313,8 @@
   function renderPageTabs(){
     const wrap = document.getElementById("pageTabs");
     if (!wrap) return;
+    // Lean version: the bottom page bar is the only navigation — hide the old top tabs.
+    if (LEAN_MODE){ wrap.innerHTML = ""; wrap.style.display = "none"; return; }
     wrap.innerHTML = "";
     wrap.style.display = "flex";
     let activeTab = null;
