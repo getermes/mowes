@@ -556,6 +556,12 @@
   .msupport-like, .msupport-coffee { background: none; border: none; box-shadow: none; padding: 4px 10px;
     display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
   .msupport-like svg { width: 36px; height: 36px; display: block; transform-origin: center; animation: heartBeat 1.1s ease-in-out infinite; }
+  /* Compact version — a smaller support set for pages like My Goals & Achievement. */
+  .msupport-compact .msupport { margin: 6px auto 0; }
+  .msupport-compact .msupport-cta { font-size: 13px; padding-top: 20px; }
+  .msupport-compact .msupport-row { gap: 12px; }
+  .msupport-compact .msupport-like svg { width: 26px; height: 26px; }
+  .msupport-compact .msupport-coffee .cup-icon { width: 30px; height: 30px; }
   .msupport-like.liked svg path { fill: #ff2d55; }
   .msupport-like:active, .msupport-coffee:active { transform: scale(0.9); }
   /* On the blue "Done!" card the set sits on a dark background — make it readable. */
@@ -577,6 +583,18 @@
     60%  { transform: scale(1); }
     100% { transform: scale(1); }
   }
+  /* "Is MOWES coaching you?" — MOWES keeps its blue but beats like a heart,
+     "coaching" is red to tie into the like heart. */
+  .mowes-beat { display: inline-block; font-weight: 800; animation: usHeartbeat 1.4s ease-in-out infinite; }
+  /* "coaching" does the same curl-then-lift move MOWES does on the cover:
+     it rests curled/arched, then straightens as it floats up. */
+  .curl-word { display: inline-block; transform-origin: center bottom; animation: mowesLift 3.2s ease-in-out infinite; }
+  .curl-word > span { display: inline-block; animation: curlLetter 3.2s ease-in-out infinite; }
+  @keyframes curlLetter {
+    0%, 100% { transform: translateY(var(--dy, 0)) rotate(var(--rot, 0deg)); }
+    50%      { transform: translateY(0) rotate(0deg); }
+  }
+  .coach-red { color: #ff2d55; font-weight: 800; }
   /* MOWES lifts up + straightens, then floats back down to its curved resting pose */
   .mowes-anim { display: inline-block; transform-origin: left bottom; animation: mowesLift 3.2s ease-in-out infinite; }
   .mowes-anim > span { display: inline-block; }
@@ -2423,11 +2441,11 @@
   }
   .session-surprise:active { transform: scale(0.99); }
   .session-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 26px 8px; }
-  .restday-card { text-align: center; margin: 18px auto; max-width: 340px; padding: 34px 22px 28px;
+  .restday-card { text-align: center; margin: 18px auto; max-width: 340px; padding: 64px 22px 52px;
     border-radius: 24px; background: linear-gradient(180deg, #eaf7ee 0%, #e3f1fb 100%);
     box-shadow: 0 6px 20px rgba(60,90,120,0.10); }
   .restday-card.restday-plain { background: linear-gradient(180deg, #eef1fc 0%, #e6e9fb 100%); }
-  .restday-emoji { font-size: 68px; line-height: 1; margin-bottom: 8px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
+  .restday-emoji { font-size: 104px; line-height: 1; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
   .restday-title { font-size: 26px; font-weight: 800; color: #2f7a52; letter-spacing: 0.3px; }
   .restday-card.restday-plain .restday-title { color: #3a4699; }
   /* Row under the green card: settings gear (left) + a small Add button (right). */
@@ -2934,6 +2952,7 @@
         <div id="achBody"></div>
       </div>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
+      <div id="goalsSupport" class="msupport-compact"></div>
     </div>
   </div>
 
@@ -4923,10 +4942,28 @@
   }
   // The whole set, kept together: pulsing "Help us keep MOWES free…" + live heart +
   // steaming coffee cup. Reused wherever we show support (workout done, cover footer).
-  function supportSetHTML(){
+  // The animated MOWES letters, reused inside any support line.
+  function mowesAnimHTML(){
+    return '<span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span>';
+  }
+  // Wrap a word so it rests curled (arched + tilted) then straightens as it floats up —
+  // the same move MOWES makes on the cover. Each letter gets its own curl offset.
+  function curlWordHTML(text, cls){
+    var n = text.length, out = '<span class="curl-word ' + (cls || '') + '">';
+    for (var i = 0; i < n; i++){
+      var x = n > 1 ? i / (n - 1) : 0.5;
+      var dy = (16 * Math.pow(x - 0.5, 2) - 2).toFixed(2);  // ends dip down, middle lifts up
+      var rot = (-6 + 12 * x).toFixed(2);                    // fan from -6° to +6°
+      var ch = text.charAt(i);
+      out += '<span style="--dy:' + dy + 'px;--rot:' + rot + 'deg">' + (ch === ' ' ? '&nbsp;' : ch) + '</span>';
+    }
+    return out + '</span>';
+  }
+  function supportSetHTML(cta){
     var liked = localStorage.getItem("mowes_liked") ? " liked" : "";
+    var line = cta || ('<span class="us-beat">Help us</span> keep ' + mowesAnimHTML() + ' free…');
     return '<div class="msupport">'
-      + '<p class="msupport-cta"><span class="us-beat">Help us</span> keep <span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span> free…</p>'
+      + '<p class="msupport-cta">' + line + '</p>'
       + '<div class="msupport-row">'
       + '<button type="button" class="msupport-like' + liked + '" onclick="likeApp(this)" title="Like the app" aria-label="Like the app"><svg viewBox="0 0 24 24" fill="none" stroke="#ff2d55" stroke-width="2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>'
       + '<a class="msupport-coffee" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"><svg class="cup-icon" viewBox="0 0 48 48" aria-hidden="true"><g class="cup-steam" stroke="#9b7a5a" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M16 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M22 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M28 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/></g><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linejoin="round" d="M8 19 h26 v7 a13 13 0 0 1 -13 13 a13 13 0 0 1 -13 -13 z"/><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linecap="round" d="M34 21 h5 a6 6 0 0 1 0 12 h-4"/></svg></a>'
@@ -9059,6 +9096,7 @@
   // definitions are initialized, so it's safe here at the end of startup).
   try { seedStarterLibraryIfEmpty(); } catch(e){}
   try { var _cs = document.getElementById("coverSupport"); if (_cs) _cs.innerHTML = supportSetHTML(); } catch(e){}
+  try { var _gs = document.getElementById("goalsSupport"); if (_gs) _gs.innerHTML = supportSetHTML('Is <span class="mowes-beat">MOWES</span> ' + curlWordHTML('coaching', 'coach-red') + ' you?'); } catch(e){}
 
   // Register the offline worker (works once the app is on a secure https site)
   if ("serviceWorker" in navigator) {
