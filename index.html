@@ -547,6 +547,23 @@
     font-size: 13px;
     margin-top: 6px;
   }
+  /* Reusable support "set" — pulsing text + live heart + steaming coffee cup, kept
+     together as one unit. Placed only at feel-good spots (workout done, cover footer). */
+  .msupport { text-align: center; margin: 18px auto 4px; max-width: 340px; }
+  /* padding-top leaves room for the MOWES letters that lift ~34px in their animation */
+  .msupport-cta { font-size: 15px; font-weight: 700; color: #5b6cff; margin: 0 0 4px; padding-top: 34px; line-height: 1.5; }
+  .msupport-row { display: flex; justify-content: center; align-items: center; gap: 18px; }
+  .msupport-like, .msupport-coffee { background: none; border: none; box-shadow: none; padding: 4px 10px;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .msupport-like svg { width: 36px; height: 36px; display: block; transform-origin: center; animation: heartBeat 1.1s ease-in-out infinite; }
+  .msupport-like.liked svg path { fill: #ff2d55; }
+  .msupport-like:active, .msupport-coffee:active { transform: scale(0.9); }
+  /* On the blue "Done!" card the set sits on a dark background — make it readable. */
+  .session-now .msupport-cta { color: #fff; }
+  .session-now .msupport .mowes-anim > span { color: #fff; }
+  .session-now .msupport .us-beat { color: #ffd2da; }
+  .session-now .msupport-coffee .cup-icon path[stroke="#6f4e37"] { stroke: #f3e6d8; }
+  .session-now .msupport-coffee .cup-steam path { stroke: #d9c3ad; }
   /* "us" beats like a heartbeat in "Help us keep MOWES free…" */
   .us-beat {
     display: inline-block; color: #ff2d55; font-weight: 800;
@@ -2131,7 +2148,7 @@
   .setup-hint { text-align: center; font-size: 13px; color: #6a7088; font-weight: 600; margin: 16px 0 8px; }
   .setup-redo { display: block; margin: 0 auto; background: none; border: none; color: #8a90a8; font-weight: 700; font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 6px; }
   .setup-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: 16px; }
-  .onb-add-own { width: 100%; margin-top: 4px; background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px; padding: 13px; color: #5b6cff; font-weight: 800; font-size: 15px; cursor: pointer; }
+  .onb-add-own { width: 100%; margin-top: 12px; background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px; padding: 13px; color: #5b6cff; font-weight: 800; font-size: 15px; cursor: pointer; }
   .onb-add-own:active { transform: scale(0.99); }
 
   /* My Body page (a book page, sits under the bottom bar) */
@@ -2737,6 +2754,7 @@
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
       <button class="welcome-btn" onclick="dismissWelcome()">Pick me UP →</button>
       <p class="welcome-note">Made with <span class="wn-heart">💛</span> by <span class="wn-name">EUgenio</span> — the Idea Guy</p>
+      <div class="cover-support" id="coverSupport"></div>
     </div>
   </div>
 
@@ -4889,23 +4907,29 @@
   function openHelp(){ document.getElementById("helpOverlay").classList.add("open"); }
   function closeHelp(){ document.getElementById("helpOverlay").classList.remove("open"); }
 
-  /* ---- Two-stage Like -> Buy me a Coffee button ---- */
+  /* ---- Like + Buy me a Coffee support set ---- */
   function applyLikeState(){
     var likeBtn = document.getElementById("likeBtn");
     var coffeeBtn = document.getElementById("coffeeBtn");
-    if (!likeBtn || !coffeeBtn) return;
-    // Both the heart and the coffee cup are always shown, side by side.
-    likeBtn.style.display = "";
-    coffeeBtn.style.display = "";
+    if (likeBtn) likeBtn.style.display = "";
+    if (coffeeBtn) coffeeBtn.style.display = "";
   }
-  function likeApp(){
+  // The whole set, kept together: pulsing "Help us keep MOWES free…" + live heart +
+  // steaming coffee cup. Reused wherever we show support (workout done, cover footer).
+  function supportSetHTML(){
+    var liked = localStorage.getItem("mowes_liked") ? " liked" : "";
+    return '<div class="msupport">'
+      + '<p class="msupport-cta"><span class="us-beat">Help us</span> keep <span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span> free…</p>'
+      + '<div class="msupport-row">'
+      + '<button type="button" class="msupport-like' + liked + '" onclick="likeApp(this)" title="Like the app" aria-label="Like the app"><svg viewBox="0 0 24 24" fill="none" stroke="#ff2d55" stroke-width="2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>'
+      + '<a class="msupport-coffee" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"><svg class="cup-icon" viewBox="0 0 48 48" aria-hidden="true"><g class="cup-steam" stroke="#9b7a5a" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M16 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M22 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M28 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/></g><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linejoin="round" d="M8 19 h26 v7 a13 13 0 0 1 -13 13 a13 13 0 0 1 -13 -13 z"/><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linecap="round" d="M34 21 h5 a6 6 0 0 1 0 12 h-4"/></svg></a>'
+      + '</div></div>';
+  }
+  function likeApp(el){
     localStorage.setItem("mowes_liked", "1");
-    var likeBtn = document.getElementById("likeBtn");
-    if (likeBtn) {
-      setTimeout(applyLikeState, 500);
-    } else {
-      applyLikeState();
-    }
+    var heart = (el && el.classList) ? el : document.getElementById("likeBtn");
+    if (heart) heart.classList.add("liked");
+    applyLikeState();
   }
   applyLikeState();
 
@@ -6851,11 +6875,7 @@
       { e:"🚶", l:"Walking or running outside", d:"", v:"walk_run", where:["outdoors"] },
       { e:"🚵", l:"Cycling outside", d:"", v:"cycling", where:["outdoors"] },
       { e:"⛸️", l:"Skating", d:"", v:"skating", where:["outdoors"] },
-      { e:"💪", l:"Just my body (no equipment)", d:"", v:"bodyweight", where:["home","gym","outdoors"] } ] },
-    { key:"time", emoji:"⏱️", title:"How much time per session?", sub:"Pick all that apply.", multi:true, opts:[
-      { e:"⚡", l:"15 min", d:"Quick", v:"15" },
-      { e:"⏳", l:"30 min", d:"Standard", v:"30" },
-      { e:"💪", l:"45+ min", d:"Full session", v:"45+" } ] }
+      { e:"💪", l:"Just my body (no equipment)", d:"", v:"bodyweight", where:["home","gym","outdoors"] } ] }
   ];
   let onbStep = 0, onbAnswers = {}, onbSuggesting = false, onbEditMode = false, onbSingleEdit = null;
   let onbPicked = new Set(), onbExerciseList = [];
@@ -8330,7 +8350,7 @@
     sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionLapDone = 0;
     renderSession();
     const now = document.getElementById("sessionNow");
-    if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>'; }
+    if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>' + supportSetHTML(); }
     // Celebrate — and mark milestone workouts.
     const n = bumpWorkoutCount();
     if ([1, 5, 10, 25, 50, 100, 200, 365].indexOf(n) >= 0) celebrate("🏅", n + (n === 1 ? " workout done!" : " workouts done!"), "You're building a real habit — keep it going! 💪");
@@ -8412,10 +8432,6 @@
         if (del) del.onclick = (ev) => { ev.stopPropagation(); onbRemoveCustom(q.key, v); };
         choices.appendChild(b);
       });
-      const add = document.createElement("button");
-      add.className = "onb-add-own"; add.textContent = "＋ Add your own";
-      add.onclick = onbAddCustom;
-      choices.appendChild(add);
       const cont = document.createElement("button");
       cont.className = "onb-go";
       cont.textContent = onbSingleEdit ? "Save ✓" : "Continue →";
@@ -8423,6 +8439,11 @@
       cont.disabled = !(Array.isArray(arr) && arr.length);
       cont.onclick = onbContinue;
       choices.appendChild(cont);
+      // "＋ Add your own" sits BELOW Continue (it's the less-common action).
+      const add = document.createElement("button");
+      add.className = "onb-add-own"; add.textContent = "＋ Add your own";
+      add.onclick = onbAddCustom;
+      choices.appendChild(add);
     }
     const back = document.getElementById("onbBack");
     if (back){
@@ -9023,6 +9044,7 @@
   // Brand-new device → start with the 5 starter routines (runs once; after all
   // definitions are initialized, so it's safe here at the end of startup).
   try { seedStarterLibraryIfEmpty(); } catch(e){}
+  try { var _cs = document.getElementById("coverSupport"); if (_cs) _cs.innerHTML = supportSetHTML(); } catch(e){}
 
   // Register the offline worker (works once the app is on a secure https site)
   if ("serviceWorker" in navigator) {
