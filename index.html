@@ -3383,7 +3383,7 @@
     return {
       name: "",
       details: {
-        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", rest:0, restAfter:0, sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
+        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", rest:0, restAfter:0, showSets:true, sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
         time:     { on:false, rows:[ {label:"", min:"", miles:"", done:false} ] },
         weight:   { on:false, val:"" },
         distance: { on:false, val:"" }
@@ -5042,6 +5042,7 @@
           r.details.reps.distUnit = rd.distUnit;
           r.details.reps.rest = rd.rest;
           r.details.reps.restAfter = rd.restAfter;
+          r.details.reps.showSets = rd.showSets;
           r.details.reps.sets = rd.sets;
         } else if (f === "time"){
           r.details.time.on = on;
@@ -5102,12 +5103,13 @@
   }
 
   // ---- Flexible set table: Sets# + any of Reps / Weight / Time / Distance ----
-  const SET_COLS = ["reps","weight","time","distance"];
+  // Pill order (after the Sets pill): Reps/laps · Weight · Dist · Time.
+  const SET_COLS = ["reps","weight","distance","time"];
   const SET_COL_INFO = {
-    reps:     { toggle:"Reps",     ph:"reps", title:()=>"Reps" },
-    weight:   { toggle:"Weight",   ph:"wt",   title:(c)=> c.weightUnit==="kg" ? "Kls" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
-    time:     { toggle:"Time",     ph:"min",  title:()=>"min" },
-    distance: { toggle:"Distance", ph:"dist", title:(c)=> c.distUnit==="km" ? "km" : "mi", unitKey:"distUnit", units:["mi","km"] }
+    reps:     { toggle:"Reps/laps", ph:"reps", title:()=>"" },
+    weight:   { toggle:"Weight",    ph:"wt",   title:(c)=> c.weightUnit==="kg" ? "Kls" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
+    distance: { toggle:"Dist",      ph:"dist", title:(c)=> c.distUnit==="km" ? "km" : "mi", unitKey:"distUnit", units:["mi","km"] },
+    time:     { toggle:"Time",      ph:"min",  title:()=>"min" }
   };
   function activeCols(cfg){ return SET_COLS.filter(k => cfg.cols[k]); }
 
@@ -5122,7 +5124,8 @@
       distUnit: (d.distUnit === "km") ? "km" : "mi",
       rest: parseInt(d.rest, 10) || 0,
       restAfter: parseInt(d.restAfter, 10) || 0,
-      lapLen: parseFloat(d.lapLen) || 0
+      lapLen: parseFloat(d.lapLen) || 0,
+      showSets: (d.showSets == null) ? true : !!d.showSets
     };
     if (!activeCols(cfg).length) cfg.cols.reps = true; // never zero columns
     const sets = (d.sets && d.sets.length) ? d.sets : [{ reps:"", weight:"", time:"", distance:"", done:false }];
@@ -5154,7 +5157,10 @@
     if (!wrap) return;
     const first = (sets && sets[0]) || {};
     const count = (sets && sets.length) || 1;
-    let html = `<div class="si-row"><span class="si-label">Sets</span><input class="si-input" data-role="count" type="number" min="1" max="20" inputmode="numeric" value="${count}" oninput="onSetsInlineInput(this)" onclick="this.select()"></div>`;
+    let html = "";
+    if (cfg.showSets){
+      html += `<div class="si-row"><span class="si-label">Sets</span><input class="si-input" data-role="count" type="number" min="1" max="20" inputmode="numeric" value="${count}" oninput="onSetsInlineInput(this)" onclick="this.select()"></div>`;
+    }
     activeCols(cfg).forEach(k => {
       const info = SET_COL_INFO[k];
       const v = (first[k] == null) ? "" : first[k];
@@ -5256,10 +5262,21 @@
 
   // The small on/off buttons that choose which columns show
   function renderSetsCols(colsEl, cfg){
-    colsEl.innerHTML = SET_COLS.map(k =>
+    // The Sets pill comes first, then the metric pills (Reps/laps · Weight · Dist · Time).
+    let html = `<button type="button" class="col-toggle${cfg.showSets ? " on" : ""}" data-col="__sets__" onclick="toggleSetsPill(this)">Sets</button>`;
+    html += SET_COLS.map(k =>
       `<button type="button" class="col-toggle${cfg.cols[k] ? " on" : ""}" data-col="${k}" onclick="toggleSetCol(this)">${SET_COL_INFO[k].toggle}</button>`
     ).join("");
+    colsEl.innerHTML = html;
   }
+  function toggleSetsPill(btn){
+    const fieldEl = btn.closest(".detail-field");
+    const cfg = fieldEl._repsCfg;
+    cfg.showSets = !cfg.showSets;
+    renderSets(fieldEl, readRepsFromDom(fieldEl));
+    captureDay(); saveData();
+  }
+  window.toggleSetsPill = toggleSetsPill;
 
   // The column titles; Weight/Distance titles double as the unit switch
   function renderSetsHead(headEl, cfg, count){
@@ -5297,8 +5314,9 @@
   function readRepsFromDom(fieldEl){
     const cfg = fieldEl._repsCfg || normReps({}).cfg;
     const cols = activeCols(cfg);
-    const countEl = fieldEl.querySelector('.si-input[data-role="count"]');
-    let count = countEl ? (parseInt(countEl.value, 10) || 1) : 1;
+    const showSets = !!cfg.showSets;
+    let count = 1;
+    if (showSets){ const countEl = fieldEl.querySelector('.si-input[data-role="count"]'); count = countEl ? (parseInt(countEl.value, 10) || 1) : 1; }
     if (count < 1) count = 1; if (count > 20) count = 20;
     const vals = { reps:"", weight:"", time:"", distance:"" };
     cols.forEach(k => { const el = fieldEl.querySelector(`.set-inline[data-col="${k}"]`); if (el) vals[k] = el.value; });
@@ -5314,6 +5332,7 @@
       rest: restEl ? (parseInt(restEl.value, 10) || 0) : 0,
       restAfter: restAfterEl ? (parseInt(restAfterEl.value, 10) || 0) : 0,
       lapLen: lapEl ? (parseFloat(lapEl.value) || 0) : (cfg.lapLen || 0),
+      showSets: showSets,
       sets: sets.length ? sets : [{ reps:"", weight:"", time:"", distance:"", done:false }]
     };
   }
