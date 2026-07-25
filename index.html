@@ -3015,6 +3015,7 @@
         <div class="build-tile-text"><div class="build-tile-name">My Weekly Plan</div></div>
         <div class="build-tile-arrow">›</div>
       </button>
+      <div id="buildSupport" class="msupport-compact"></div>
     </div>
   </div>
 
@@ -9122,6 +9123,7 @@
   try { var _cs = document.getElementById("coverSupport"); if (_cs) _cs.innerHTML = supportSetHTML(); } catch(e){}
   try { var _gs = document.getElementById("goalsSupport"); if (_gs) _gs.innerHTML = supportSetHTML('Is <span class="mowes-beat">MOWES</span> ' + curlWordHTML('coaching', 'coach-red') + ' you?'); } catch(e){}
   try { var _bs = document.getElementById("bodySupport"); if (_bs) _bs.innerHTML = supportSetHTML('Feeling the <span class="mowes-beat">MOWES</span> ' + curlWordHTML('change', 'coach-red') + '?'); } catch(e){}
+  try { var _buildS = document.getElementById("buildSupport"); if (_buildS) _buildS.innerHTML = supportSetHTML('Help <span class="mowes-beat">MOWES</span> help ' + curlWordHTML('you', 'coach-red') + ' too!'); } catch(e){}
 
   // Register the offline worker (works once the app is on a secure https site)
   if ("serviceWorker" in navigator) {
