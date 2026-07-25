@@ -562,6 +562,8 @@
   .msupport-compact .msupport-row { gap: 12px; }
   .msupport-compact .msupport-like svg { width: 26px; height: 26px; }
   .msupport-compact .msupport-coffee .cup-icon { width: 30px; height: 30px; }
+  /* Shift the heart + cup right so they sit under the last two words of the line. */
+  .msupport-nudge-right .msupport-row { transform: translateX(64px); }
   .msupport-like.liked svg path { fill: #ff2d55; }
   .msupport-like:active, .msupport-coffee:active { transform: scale(0.9); }
   /* On the blue "Done!" card the set sits on a dark background — make it readable. */
@@ -2393,7 +2395,9 @@
   .session-arrow { width: 42px; height: 42px; border: none; border-radius: 12px; background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; }
   .session-arrow:active { transform: scale(0.95); }
   .session-day { font-size: 20px; font-weight: 900; color: #3a4066; min-width: 130px; text-align: center; }
-  .session-settings { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: 16px; margin-bottom: 4px; font-size: 12.5px; color: #6a7088; }
+  /* The 4 pacing settings stay tucked away until the ⚙️ gear opens them. */
+  .session-settings { display: none; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: 16px; margin-bottom: 4px; font-size: 12.5px; color: #6a7088; }
+  .session-inner.settings-open .session-settings { display: flex; margin-top: 14px; }
   .session-settings input { width: 52px; border: 2px solid #e6e8f0; border-radius: 8px; padding: 5px; text-align: center; font-size: 13px; }
   .session-toggles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: -4px 0 14px; }
   .session-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4a5068; font-weight: 600; cursor: pointer; }
@@ -2456,10 +2460,17 @@
     background: linear-gradient(180deg, #5a68d6 0%, #4a58c8 100%); color: #fff; font-size: 14px; font-weight: 700;
     cursor: pointer; box-shadow: 0 4px 11px rgba(74,88,200,0.35); }
   .restday-add:active { transform: translateY(1px); }
-  /* On a rest day the 4 pacing settings hide behind the gear. */
-  .session-inner.rest-mode .session-settings { display: none; }
-  .session-inner.rest-mode.settings-open .session-settings { display: flex; }
-  .session-inner.rest-mode.settings-open .session-settings { margin-top: 14px; }
+  /* Today's-page action row: two square buttons (Settings ⚙️ + Add ＋) joined by a bar. */
+  .session-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 300px; margin: 18px auto 4px; }
+  .session-inner.rest-mode .session-actions { display: none; }  /* rest days use their own row */
+  .sa-btn { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    width: 74px; height: 66px; border: none; border-radius: 16px; background: #eef1fc; cursor: pointer;
+    box-shadow: 0 3px 8px rgba(60,90,120,0.12); }
+  .sa-btn:active { transform: translateY(1px); }
+  .sa-btn .sa-ic { font-size: 22px; line-height: 1; }
+  .sa-btn .sa-lbl { font-size: 11px; font-weight: 800; color: #6a7088; letter-spacing: 0.2px; }
+  .sa-btn.on { background: #d6dcfb; }
+  .sa-bar { flex: 1 1 auto; height: 6px; background: #bcc5f0; border-radius: 3px; margin: 0 14px; }
   .session-starter-note { background: #f6f2ff; color: #6b52d6; border: 1px solid #e3d9ff; border-radius: 12px; padding: 11px 13px; font-size: 13px; line-height: 1.5; margin-bottom: 12px; }
   .session-howto { flex: 0 0 auto; width: 32px; height: 32px; border: none; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-size: 15px; font-weight: 800; cursor: pointer; }
   .session-howto:active { transform: scale(0.92); }
@@ -2823,6 +2834,16 @@
       </div>
       <div class="session-now" id="sessionNow"></div>
       <div id="sessionList"></div>
+      <!-- Two square buttons joined by a bar: Settings (tucks the pacing away) + Add a Routine -->
+      <div class="session-actions" id="sessionActions">
+        <button class="sa-btn" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings">
+          <span class="sa-ic">⚙️</span><span class="sa-lbl">Settings</span>
+        </button>
+        <span class="sa-bar"></span>
+        <button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a routine" aria-label="Add a routine">
+          <span class="sa-ic">＋</span><span class="sa-lbl">Add</span>
+        </button>
+      </div>
       <div class="session-settings">
         <label>Pace <input id="sessionPace" type="number" min="0.2" step="0.1" inputmode="decimal" onchange="sessionSaveSettings()"> sec/rep</label>
         <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
@@ -2918,6 +2939,7 @@
         <div class="body-gallery" id="bodyPicsGrid"></div>
       </div>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
+      <div id="bodySupport" class="msupport-compact msupport-nudge-right"></div>
     </div>
   </div>
 
@@ -7885,6 +7907,8 @@
     const open = inner.classList.toggle("settings-open");
     const gear = inner.querySelector(".restday-gear");
     if (gear) gear.classList.toggle("on", open);
+    const saGear = inner.querySelector(".session-actions .sa-btn:not(.sa-add)");
+    if (saGear) saGear.classList.toggle("on", open);
   }
   window.toggleSessionSettings = toggleSessionSettings;
   function leaveWeekPlanPage(){ const el = document.getElementById("weekPlanOverlay"); if (el) el.classList.remove("show"); }
@@ -9097,6 +9121,7 @@
   try { seedStarterLibraryIfEmpty(); } catch(e){}
   try { var _cs = document.getElementById("coverSupport"); if (_cs) _cs.innerHTML = supportSetHTML(); } catch(e){}
   try { var _gs = document.getElementById("goalsSupport"); if (_gs) _gs.innerHTML = supportSetHTML('Is <span class="mowes-beat">MOWES</span> ' + curlWordHTML('coaching', 'coach-red') + ' you?'); } catch(e){}
+  try { var _bs = document.getElementById("bodySupport"); if (_bs) _bs.innerHTML = supportSetHTML('Feeling the <span class="mowes-beat">MOWES</span> ' + curlWordHTML('change', 'coach-red') + '?'); } catch(e){}
 
   // Register the offline worker (works once the app is on a secure https site)
   if ("serviceWorker" in navigator) {
