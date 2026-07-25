@@ -1347,6 +1347,15 @@
     color: #6a6f85;
     white-space: nowrap;
   }
+  /* "How many sets?" quick-fill control above the set rows */
+  .sets-count-row { display: flex; align-items: center; gap: 8px; margin: 2px 2px 8px; }
+  .sets-count-row .scr-label { font-size: 13px; font-weight: 700; color: #3a4066; }
+  .sets-count-input {
+    width: 56px; text-align: center; font-size: 15px; font-weight: 800; color: #5b6cff;
+    border: 2px solid #d6d9ec; border-radius: 10px; padding: 6px 4px; background: #fff;
+  }
+  .sets-count-input:focus { outline: none; border-color: #5b6cff; }
+  .sets-count-row .scr-hint { font-size: 12px; color: #9096ad; }
   /* Column titles sitting above the set rows: Sets  Rep  Wght */
   .sets-head {
     display: flex;
@@ -1409,14 +1418,16 @@
   .set-col-auto { background: #eef1fd !important; color: #5b6cff !important; }
   .set-col:focus { outline: none; border-color: #5b6cff; }
   .set-row.done .set-col { text-decoration: line-through; color: #aab; }
-  /* Rest-between-sets control */
-  .rest-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-  .rest-label { font-size: 13px; font-weight: 600; color: #6a6f85; }
-  .rest-input {
+  /* Rest Times section: Between Sets + After Routine */
+  .rest-times { margin-top: 14px; padding: 12px 12px 4px; background: #f6f7fc; border-radius: 12px; }
+  .rest-times-title { font-size: 13px; font-weight: 800; color: #3a4066; margin-bottom: 6px; }
+  .rest-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .rest-label { font-size: 13px; font-weight: 600; color: #6a6f85; flex: 0 0 96px; }
+  .rest-input, .rest-after-input {
     width: 60px; padding: 7px 8px; border: 1px solid #e6e8f0;
     border-radius: 10px; font-size: 14px; text-align: center; background: #fff;
   }
-  .rest-input:focus { outline: none; border-color: #5b6cff; }
+  .rest-input:focus, .rest-after-input:focus { outline: none; border-color: #5b6cff; }
   .rest-unit { font-size: 13px; color: #8a8fa3; }
   .rest-timer {
     display: none; align-items: center; justify-content: space-between; gap: 10px;
@@ -3357,7 +3368,7 @@
     return {
       name: "",
       details: {
-        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", rest:0, sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
+        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", rest:0, restAfter:0, sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
         time:     { on:false, rows:[ {label:"", min:"", miles:"", done:false} ] },
         weight:   { on:false, val:"" },
         distance: { on:false, val:"" }
@@ -4914,14 +4925,22 @@
             <div class="sets-block">
               <div class="sets-cols"></div>
               <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><button type="button" class="lap-measure-link" onclick="openLapMeasure(this)">📏 not sure? measure it</button><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
+              <div class="sets-count-row"><span class="scr-label">How many sets?</span><input class="sets-count-input" type="number" min="1" max="20" inputmode="numeric" value="1" onchange="setSetsCount(this)" onclick="this.select()"><span class="scr-hint">fills them all the same</span></div>
               <div class="sets-head"></div>
               <div class="sets-list"></div>
-              <button class="add-set" onclick="addSet(this)">+ Add set</button>
               <div class="sets-speed" style="display:none;"></div>
-              <div class="rest-row">
-                <span class="rest-label">⏱ Rest between sets</span>
-                <input class="rest-input" type="number" min="0" placeholder="0" inputmode="numeric">
-                <span class="rest-unit">sec</span>
+              <div class="rest-times">
+                <div class="rest-times-title">⏱ Rest Times</div>
+                <div class="rest-row">
+                  <span class="rest-label">Between Sets</span>
+                  <input class="rest-input" type="number" min="0" placeholder="0" inputmode="numeric">
+                  <span class="rest-unit">sec</span>
+                </div>
+                <div class="rest-row">
+                  <span class="rest-label">After Routine</span>
+                  <input class="rest-after-input" type="number" min="0" placeholder="0" inputmode="numeric">
+                  <span class="rest-unit">sec</span>
+                </div>
               </div>
               <div class="rest-timer" style="display:none;"></div>
             </div>
@@ -5016,6 +5035,7 @@
           r.details.reps.weightUnit = rd.weightUnit;
           r.details.reps.distUnit = rd.distUnit;
           r.details.reps.rest = rd.rest;
+          r.details.reps.restAfter = rd.restAfter;
           r.details.reps.sets = rd.sets;
         } else if (f === "time"){
           r.details.time.on = on;
@@ -5095,6 +5115,7 @@
       weightUnit: ((d.weightUnit || d.unit) === "kg") ? "kg" : "lbs",
       distUnit: (d.distUnit === "km") ? "km" : "mi",
       rest: parseInt(d.rest, 10) || 0,
+      restAfter: parseInt(d.restAfter, 10) || 0,
       lapLen: parseFloat(d.lapLen) || 0
     };
     if (!activeCols(cfg).length) cfg.cols.reps = true; // never zero columns
@@ -5106,12 +5127,16 @@
     const { cfg, sets } = normReps(d);
     fieldEl._repsCfg = cfg;
     renderSetsCols(fieldEl.querySelector(".sets-cols"), cfg);
-    renderSetsHead(fieldEl.querySelector(".sets-head"), cfg);
+    renderSetsHead(fieldEl.querySelector(".sets-head"), cfg, sets.length);
     const listWrap = fieldEl.querySelector(".sets-list");
     listWrap.innerHTML = "";
     sets.forEach((s, i) => listWrap.appendChild(buildSetRow(i + 1, s, cfg)));
+    const countInput = fieldEl.querySelector(".sets-count-input");
+    if (countInput) countInput.value = sets.length;
     const restEl = fieldEl.querySelector(".rest-input");
     if (restEl) restEl.value = cfg.rest ? cfg.rest : "";
+    const restAfterEl = fieldEl.querySelector(".rest-after-input");
+    if (restAfterEl) restAfterEl.value = cfg.restAfter ? cfg.restAfter : "";
     // Lap-length control: only shown when the Distance column is on
     const lapRow = fieldEl.querySelector(".lap-row");
     const lapInput = fieldEl.querySelector(".lap-input");
@@ -5184,7 +5209,7 @@
   }
 
   // The column titles; Weight/Distance titles double as the unit switch
-  function renderSetsHead(headEl, cfg){
+  function renderSetsHead(headEl, cfg, count){
     let html = `<span class="sh-num">Sets</span>`;
     activeCols(cfg).forEach(k => {
       const info = SET_COL_INFO[k];
@@ -5223,12 +5248,14 @@
       return s;
     });
     const restEl = fieldEl.querySelector(".rest-input");
+    const restAfterEl = fieldEl.querySelector(".rest-after-input");
     const lapEl = fieldEl.querySelector(".lap-input");
     return {
       cols: { ...cfg.cols },
       weightUnit: cfg.weightUnit,
       distUnit: cfg.distUnit,
       rest: restEl ? (parseInt(restEl.value, 10) || 0) : 0,
+      restAfter: restAfterEl ? (parseInt(restAfterEl.value, 10) || 0) : 0,
       lapLen: lapEl ? (parseFloat(lapEl.value) || 0) : (cfg.lapLen || 0),
       sets: sets.length ? sets : [{ reps:"", weight:"", time:"", distance:"", done:false }]
     };
@@ -5269,11 +5296,39 @@
     const num = listWrap.querySelectorAll(".set-row").length + 1;
     const row = buildSetRow(num, { reps:"", weight:"", time:"", distance:"", done:false }, cfg);
     listWrap.appendChild(row);
+    syncSetsCount(fieldEl);
     captureDay(); saveData();
     recalcLaps(fieldEl);
     const firstInput = row.querySelector(".set-col");
     if (firstInput) firstInput.focus();
   }
+  // Keep the "sets" number box in step with how many rows are showing.
+  function syncSetsCount(fieldEl){
+    const inp = fieldEl && fieldEl.querySelector(".sets-count-input");
+    if (inp) inp.value = fieldEl.querySelectorAll(".set-row").length;
+  }
+  // Type a number of sets → the card pops that many rows, all the same reps/weight
+  // (copied from the first row). This is the quick way to build "4 sets of 10 × 100".
+  function setSetsCount(input){
+    const fieldEl = input.closest(".detail-field");
+    if (!fieldEl) return;
+    const cfg = fieldEl._repsCfg || normReps({}).cfg;
+    let n = parseInt(input.value, 10);
+    if (!n || n < 1) n = 1;
+    if (n > 20) n = 20;
+    input.value = n;
+    const listWrap = fieldEl.querySelector(".sets-list");
+    // Use the first row's values as the template for every set.
+    const cols = activeCols(cfg);
+    const first = listWrap.querySelector(".set-row");
+    const tmpl = { reps:"", weight:"", time:"", distance:"", done:false };
+    if (first){ cols.forEach(k => { const el = first.querySelector(`.set-col[data-col="${k}"]`); if (el) tmpl[k] = el.value; }); }
+    listWrap.innerHTML = "";
+    for (let i = 0; i < n; i++) listWrap.appendChild(buildSetRow(i + 1, { ...tmpl, done:false }, cfg));
+    captureDay(); saveData();
+    recalcLaps(fieldEl);
+  }
+  window.setSetsCount = setSetsCount;
   function openQuickSets(){
     const cfg = (quickSetsField && quickSetsField._repsCfg) || normReps({}).cfg;
     const qLabel = {
@@ -5321,10 +5376,13 @@
     const row = btn.closest(".set-row");
     const listWrap = row.parentElement;
     if (listWrap.children.length <= 1) return;
+    const fieldEl = row.closest(".detail-field");
     row.remove();
     [...listWrap.children].forEach((r, i) => {
       r.querySelector(".set-num").textContent = (i + 1);
     });
+    if (fieldEl) syncSetsCount(fieldEl);
+    captureDay(); saveData();
   }
 
   function toggleSetDone(btn){
@@ -7213,13 +7271,15 @@
         const rid = pg.id + ":" + ri; // which routine/exercise this step belongs to
         const cat = exerciseCategory(r.name);
         const det = r.details || {}, reps = det.reps || {};
+        // Per-routine rest the user set: between its sets, and after the whole routine.
+        const restBetween = parseInt(reps.rest, 10) || 0, restAfter = parseInt(reps.restAfter, 10) || 0;
         if (reps.on && reps.sets){
           const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
           reps.sets.forEach((s, i) => {
             if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
             const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0;
             const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min"); if (nDist) parts.push(s.distance + " " + dUnit);
-            const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: cat.icon };
+            const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: cat.icon, restBetween: restBetween, restAfter: restAfter };
             if (cols.distance && lapLen > 0 && nReps > 0){ step.kind = "laps"; step.laps = Math.round(nReps); step.icon = "🌀"; step.detail = Math.round(nReps) + " laps" + (s.weight ? " · " + s.weight + " " + wUnit : ""); }
             else if (nReps > 0 || nTime > 0){ step.kind = "timed"; }
             else if (nDist > 0){ step.kind = "manual"; }
@@ -7235,7 +7295,7 @@
             const lbl = (row.label || "").toLowerCase();
             const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
             const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
-            steps.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual") });
+            steps.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual"), restBetween: restBetween, restAfter: restAfter });
           });
         }
       });
@@ -7368,9 +7428,15 @@
     } else if (cur.type === "cooldown" || nxt.type === "cooldown"){
       rest = sessionRestVal; sessionRestLong = false;
       sessionRestMsg = (nxt.type === "cooldown") ? "Cooling down 🧘" : "Rest";
-    } else if (cur.rid === nxt.rid){ rest = sessionRestVal; sessionRestLong = false; sessionRestMsg = "Rest"; }
-    else if (cur.type === nxt.type){ rest = sessionExRestVal; sessionRestLong = true; sessionRestMsg = "Rest before next exercise"; }
-    else { rest = sessionTypeRestVal; sessionRestLong = true; sessionRestMsg = "Rest — switching to a new muscle group"; }
+    } else if (cur.rid === nxt.rid){
+      // Between sets of the same routine — use the routine's own "Between Sets" if set.
+      rest = (cur.restBetween > 0) ? cur.restBetween : sessionRestVal; sessionRestLong = false; sessionRestMsg = "Rest";
+    } else if (cur.type === nxt.type){
+      // Moving to the next exercise — use the routine's "After Routine" rest if set.
+      rest = (cur.restAfter > 0) ? cur.restAfter : sessionExRestVal; sessionRestLong = true; sessionRestMsg = "Rest before next exercise";
+    } else {
+      rest = (cur.restAfter > 0) ? cur.restAfter : sessionTypeRestVal; sessionRestLong = true; sessionRestMsg = "Rest — switching to a new muscle group";
+    }
     if (rest > 0){ sessionIdx = nextIdx; sessionPhase = "rest"; sessionRemain = rest; sessionEndAt = Date.now() + rest * 1000; sessionTickerIdx = 0; sessionTickerTick = 0; renderSession(); }
     else { sessionEnterWork(nextIdx); }
   }
