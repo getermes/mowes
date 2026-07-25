@@ -2250,6 +2250,53 @@
     background: rgba(255,255,255,0.55); color: #3a4699; font-size: 16px; font-weight: 700; cursor: pointer; }
   .lib-add-btn:active { background: rgba(255,255,255,0.85); }
 
+  /* Build MOWES — landing with two big tiles */
+  .build-back { display: inline-flex; align-items: center; gap: 2px; margin-bottom: 10px; padding: 6px 12px 6px 8px;
+    border: none; border-radius: 999px; background: rgba(255,255,255,0.7); color: #4a52a0; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .build-back:active { background: #fff; }
+  .build-tile { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; margin-top: 12px;
+    padding: 18px 16px; border: none; border-radius: 18px; background: #fff; cursor: pointer; box-shadow: 0 3px 12px rgba(60,64,102,0.1); }
+  .build-tile:active { background: #f5f7ff; }
+  .build-tile-icon { flex: 0 0 auto; font-size: 34px; width: 54px; height: 54px; border-radius: 14px; background: #eef1fc;
+    display: flex; align-items: center; justify-content: center; }
+  .build-tile-text { flex: 1; min-width: 0; }
+  .build-tile-name { font-size: 18px; font-weight: 800; color: #2f3350; }
+  .build-tile-desc { font-size: 13px; color: #7a80a0; margin-top: 2px; }
+  .build-tile-arrow { flex: 0 0 auto; font-size: 26px; color: #b7bedd; font-weight: 700; }
+
+  /* My Weekly Plan — pick Library routines onto each day */
+  .wp-days { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; }
+  .wp-day { flex: 0 0 auto; min-width: 52px; padding: 8px 6px 6px; border: none; border-radius: 12px; background: #fff;
+    color: #3c4066; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(60,64,102,0.08);
+    display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .wp-day.today { outline: 2px solid #b7c2ee; }
+  .wp-day.active { background: #5a68d6; color: #fff; box-shadow: 0 3px 10px rgba(90,104,214,0.4); }
+  .wp-day-cnt { font-size: 12px; font-weight: 800; min-width: 18px; height: 18px; line-height: 18px; border-radius: 9px;
+    background: #eef1fc; color: #5a68d6; }
+  .wp-day.active .wp-day-cnt { background: rgba(255,255,255,0.9); color: #5a68d6; }
+  .wp-day-rest { font-size: 12px; opacity: 0.85; }
+  .wp-dayhead { font-size: 20px; font-weight: 800; color: #3a4699; margin: 6px 2px 2px; }
+  .wp-todaytag { font-size: 12px; font-weight: 700; color: #fff; background: #6bbf7b; border-radius: 8px; padding: 2px 8px; vertical-align: middle; }
+  .wp-note { font-size: 13px; color: #666; margin: 4px 2px 12px; line-height: 1.5; }
+  .wp-note.wp-rest { color: #3a7a4a; font-weight: 600; background: #e7f6ea; border-radius: 12px; padding: 10px 12px; }
+  .wp-picks { display: flex; flex-direction: column; gap: 8px; }
+  .wp-pick { display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border: 2px solid #e5e9f8;
+    border-radius: 14px; background: #fff; cursor: pointer; }
+  .wp-pick.on { border-color: #5a68d6; background: #f2f4fe; }
+  .wp-pick-check { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; background: #eef1fc; color: #8a93c4;
+    font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .wp-pick.on .wp-pick-check { background: #5a68d6; color: #fff; }
+  .wp-pick-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .wp-pick-name { font-size: 16px; font-weight: 700; color: #2f3350; }
+  .wp-pick-sum { font-size: 13px; color: #7a80a0; }
+  .wp-copy { margin-top: 18px; padding-top: 14px; border-top: 1px dashed #c3cbef; }
+  .wp-copy-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 8px; }
+  .wp-copy-days { display: flex; flex-wrap: wrap; gap: 6px; }
+  .wp-copy-day { padding: 7px 12px; border: 1px solid #b9c2ea; border-radius: 10px; background: #fff; color: #4a52a0;
+    font-size: 13px; font-weight: 700; cursor: pointer; }
+  .wp-copy-day:active { background: #e9edfb; }
+  .wp-copy-msg { font-size: 13px; font-weight: 700; color: #3a7a4a; margin-top: 8px; min-height: 16px; }
+
   /* My Rules — settings that shape how MOWES picks your day */
   .rules-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
@@ -2852,13 +2899,43 @@
 
   <!-- (Achievements merged into "My Goals & Achievement" — see the goalsOverlay above.) -->
 
+  <!-- Build MOWES: the home for setting up your workouts (Library + Weekly Plan) -->
+  <div class="library-overlay" id="buildOverlay">
+    <div class="library-inner">
+      <div class="setup-title">🛠️ Build MOWES</div>
+      <div class="setup-sub">Set up your workouts here. Two steps: build your routines, then plan your week.</div>
+      <button class="build-tile" onclick="openLibraryPage()">
+        <div class="build-tile-icon">📚</div>
+        <div class="build-tile-text"><div class="build-tile-name">My Library</div><div class="build-tile-desc">Build &amp; keep your exercise routines.</div></div>
+        <div class="build-tile-arrow">›</div>
+      </button>
+      <button class="build-tile" onclick="openWeekPlanPage()">
+        <div class="build-tile-icon">🗓️</div>
+        <div class="build-tile-text"><div class="build-tile-name">My Weekly Plan</div><div class="build-tile-desc">Pick routines for each day of the week.</div></div>
+        <div class="build-tile-arrow">›</div>
+      </button>
+    </div>
+  </div>
+
   <!-- My Library: build & keep your exercise routines once, then use them in My Weekly Plan -->
   <div class="library-overlay" id="libraryOverlay">
     <div class="library-inner">
+      <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
       <div class="setup-title">📚 My Library</div>
       <div class="setup-sub">Build your exercise routines here once. Then add them to your days in 🗓️ My Weekly Plan.</div>
       <div id="libraryList"></div>
       <button class="lib-add-btn" onclick="libAddRoutine()">＋ New routine</button>
+    </div>
+  </div>
+
+  <!-- My Weekly Plan: pick which Library routines to do each day -->
+  <div class="library-overlay" id="weekPlanOverlay">
+    <div class="library-inner">
+      <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
+      <div class="setup-title">🗓️ My Weekly Plan</div>
+      <div class="setup-sub">Pick which routines to do each day, from your 📚 Library. A day with none = a rest day 🌴.</div>
+      <div class="wp-days" id="wpDays"></div>
+      <div id="wpBody"></div>
     </div>
   </div>
 
@@ -4148,6 +4225,7 @@
   // Rebuilding the app one page at a time: flip a page to true here to switch it back
   // on in the lean version. (The ?full preview always shows every page, regardless.)
   const PAGES_ON = {
+    build: true,    // 🛠️ Build MOWES — one page that holds My Library + My Weekly Plan
     library: true,  // 📚 My Library — build & keep your routines once (feeds My Weekly Plan)
     weekly: true,   // 🗓️ My Weekly Plan — the routine builder + weekly day-schedule (the "default" sheet page)
     setup: true,    // ⚙️ My Set-up — review/change your guided-start answers
@@ -4158,7 +4236,7 @@
     notes: true     // 📝 My Notes (the Note taking book page, id p_ex_notes — text + pics)
   };
   function pageBarStops(){
-    const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's Session", icon:"▶️ " }];
+    const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's MOWES", icon:"▶️ " }];
     if (!LEAN_MODE){
       // Full app (and the ?full preview): Cover, Today's Session, the book pages, then My Goals … My Set-up.
       return base
@@ -4167,10 +4245,8 @@
     }
     // Lean core (Cover + Today's Session) plus any pages we've switched back on so far.
     const stops = base.slice();
-    // Right after Today's Session: build your routines (the library), then schedule them.
-    if (PAGES_ON.library) stops.push({ library:true, name:"My Library", icon:"📚 " });
-    // The routine builder + weekly day-schedule (the "default" sheet page).
-    if (PAGES_ON.weekly){ const wp = pages.find(p => p.id === "default"); if (wp) stops.push({ id: wp.id, name:"My Weekly Plan", icon:"🗓️ " }); }
+    // Right after Today's MOWES: one "Build MOWES" page holding My Library + My Weekly Plan.
+    if (PAGES_ON.build) stops.push({ build:true, name:"Build MOWES", icon:"🛠️ " });
     if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals & Achievement", icon:"🎯 " });
     if (PAGES_ON.body)  stops.push({ body:true, name:"My Body & Pics", icon:"📏 " });
     if (PAGES_ON.shopping){ const sp = pages.find(p => p.id === "p_ex_shopping"); if (sp) stops.push({ id: sp.id, name:"My Shopping", icon:"🛒 " }); }
@@ -4196,7 +4272,11 @@
     if (planShownAsPage()) return 1;
     const stops = pageBarStops();
     if (setupShownAsPage()) return stops.findIndex(s => s.setup);
+    // My Library / My Weekly Plan live inside Build MOWES → keep that chip highlighted.
+    const buildIdx = stops.findIndex(s => s.build);
+    if (buildIdx >= 0 && (buildShownAsPage() || libraryShownAsPage() || weekPlanShownAsPage())) return buildIdx;
     if (libraryShownAsPage()) return stops.findIndex(s => s.library);
+    if (weekPlanShownAsPage()) return stops.findIndex(s => s.weekplan);
     if (rulesShownAsPage()) return stops.findIndex(s => s.rules);
     if (bodyShownAsPage()) return stops.findIndex(s => s.body);
     if (achShownAsPage()) return stops.findIndex(s => s.ach);
@@ -4213,7 +4293,7 @@
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -4225,7 +4305,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -4238,7 +4318,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -4258,10 +4338,12 @@
     if (s.goals){ openGoalsPage(); return; }
     if (s.ach){ openAchPage(); return; }
     if (s.body){ openBodyPage(); return; }
+    if (s.build){ openBuildPage(); return; }
     if (s.library){ openLibraryPage(); return; }
+    if (s.weekplan){ openWeekPlanPage(); return; }
     if (s.rules){ openRulesPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -4480,7 +4562,7 @@
     // sitting last in the row right before the "＋ More" button.
     const planTab = document.createElement("button");
     planTab.className = "page-tab page-tab-plan";
-    planTab.textContent = "▶️ Today's Session";
+    planTab.textContent = "▶️ Today's MOWES";
     planTab.onclick = () => openSessionPage();
     wrap.appendChild(planTab);
     const thoughtTab = document.createElement("button");
@@ -6959,7 +7041,7 @@
   function openBodyPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
     loadBodyPics();
     renderBody();
     renderBodyPics();
@@ -7072,7 +7154,7 @@
   function openGoalsPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
     renderGoals();
     renderAch();
     document.getElementById("goalsOverlay").classList.add("show");
@@ -7252,7 +7334,7 @@
   function openRulesPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage(); leaveLibraryPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
     renderRules();
     document.getElementById("rulesOverlay").classList.add("show");
     renderPageBar();
@@ -7270,14 +7352,16 @@
   // here while the Library overlay is open, so every set/pill/video handler just works.
   const LIBRARY_KEY = "mowes_library_v1";
   let libraryRoutines = [];
-  function loadLibrary(){
-    try { const raw = localStorage.getItem(LIBRARY_KEY); libraryRoutines = raw ? (JSON.parse(raw) || []) : []; }
-    catch(e){ libraryRoutines = []; }
-    if (!Array.isArray(libraryRoutines)) libraryRoutines = [];
-  }
-  function saveLibrary(){
-    try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryRoutines)); } catch(e){}
-  }
+  let libIdSeq = 0;
+  // Each library routine gets a stable id so a weekly day can REFERENCE it (edit the
+  // routine once in the Library → every day that uses it updates too).
+  function genLibId(){ libIdSeq++; return "r_" + Date.now().toString(36) + "_" + libIdSeq.toString(36) + Math.floor(Math.random()*1296).toString(36); }
+  function readLibraryStore(){ try { const raw = localStorage.getItem(LIBRARY_KEY); const a = raw ? JSON.parse(raw) : []; return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+  function writeLibraryStore(arr){ try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(arr)); } catch(e){} }
+  function ensureLibIds(arr){ let changed = false; arr.forEach(r => { if (r && !r.id){ r.id = genLibId(); changed = true; } }); return changed; }
+  function getLibrary(){ const arr = readLibraryStore(); if (ensureLibIds(arr)) writeLibraryStore(arr); return arr; }
+  function loadLibrary(){ libraryRoutines = getLibrary(); }
+  function saveLibrary(){ writeLibraryStore(libraryRoutines); }
   // Draw the library cards (one per saved routine) into #libraryList.
   function renderLibrary(){
     const list = document.getElementById("libraryList");
@@ -7300,6 +7384,7 @@
       const i = idx + 1, isFirst = idx === 0, isLast = idx === total - 1;
       const card = document.createElement("div");
       card.className = "routine-card";
+      card.dataset.libId = r.id || (r.id = genLibId());
       card.innerHTML = `
         <div class="routine-row">
           <div class="routine-num">${i}</div>
@@ -7348,6 +7433,7 @@
     const arr = [];
     cards.forEach(card => {
       const r = blankRoutine();
+      r.id = card.dataset.libId || genLibId();
       r.name = card.querySelector(".routine-input").value;
       const fe = card.querySelector('.detail-field[data-field="reps"]');
       if (fe){
@@ -7375,7 +7461,8 @@
   }
   function libAddRoutine(){
     captureLibrary();
-    libraryRoutines.push(blankRoutine());
+    const nr = blankRoutine(); nr.id = genLibId();
+    libraryRoutines.push(nr);
     saveLibrary();
     renderLibrary();
     // Focus the new routine's name box so Taco can start typing right away.
@@ -7387,8 +7474,11 @@
     const { idx } = libCardIndex(btn);
     if (idx < 0) return;
     captureLibrary();
+    const delId = libraryRoutines[idx] && libraryRoutines[idx].id;
     libraryRoutines.splice(idx, 1);
     saveLibrary();
+    // Drop this routine from any day that had it picked in My Weekly Plan.
+    if (delId){ const sel = loadWeekSel(); let ch = false; days.forEach(d => { const a = sel[d]; const j = a.indexOf(delId); if (j >= 0){ a.splice(j, 1); ch = true; } }); if (ch) saveWeekSel(sel); }
     renderLibrary();
   }
   function libMoveRoutine(btn, dir){
@@ -7404,7 +7494,7 @@
   function openLibraryPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveWeekPlanPage(); leaveBuildPage();
     loadLibrary();
     document.getElementById("libraryOverlay").classList.add("show");
     renderLibrary();
@@ -7424,6 +7514,145 @@
   })();
   window.libAddRoutine = libAddRoutine; window.libDeleteRoutine = libDeleteRoutine; window.libMoveRoutine = libMoveRoutine;
   window.openLibraryPage = openLibraryPage;
+
+  // ---- My Weekly Plan: pick which Library routines to do each day (STEP 2) ----
+  // A simple repeating weekly template: for each weekday you pick 1+ routines FROM the
+  // Library (by id). A day with none picked = a rest day 🌴. Today's Session then runs
+  // whatever today's day has picked.
+  const WEEK_SEL_KEY = "mowes_week_selection_v1";
+  const WEEK_MIGRATED_KEY = "mowes_week_migrated_v1";
+  let weekPlanDay = todayKey;
+  function loadWeekSel(){
+    let o = {};
+    try { o = JSON.parse(localStorage.getItem(WEEK_SEL_KEY) || "{}") || {}; } catch(e){ o = {}; }
+    days.forEach(d => { if (!Array.isArray(o[d])) o[d] = []; });
+    return o;
+  }
+  function saveWeekSel(sel){ try { localStorage.setItem(WEEK_SEL_KEY, JSON.stringify(sel)); } catch(e){} }
+  // A short "3 × 12 reps · 8 lbs" line describing a routine, for the pick list.
+  function wpSummary(r){
+    const reps = (r.details && r.details.reps) || {};
+    const s = (reps.sets && reps.sets[0]) || {};
+    const cols = reps.cols || {};
+    const n = (reps.sets && reps.sets.length) || 1;
+    const parts = [];
+    if (cols.reps && s.reps) parts.push(s.reps + " reps");
+    if (cols.weight && s.weight) parts.push(s.weight + " " + (reps.weightUnit === "kg" ? "kg" : "lbs"));
+    if (cols.distance && s.distance) parts.push(s.distance + " " + (reps.distUnit === "km" ? "km" : "mi"));
+    if (cols.time && s.time) parts.push(s.time + " min");
+    return parts.length ? (n + " × " + parts.join(" · ")) : "";
+  }
+  function renderWeekPlan(){
+    ensureWeekMigrated();
+    const daysEl = document.getElementById("wpDays");
+    const body = document.getElementById("wpBody");
+    if (!daysEl || !body) return;
+    const lib = getLibrary();
+    const sel = loadWeekSel();
+    daysEl.innerHTML = days.map(d => {
+      const cnt = (sel[d] || []).length;
+      const active = d === weekPlanDay, isToday = d === todayKey;
+      const mark = cnt ? ('<span class="wp-day-cnt">' + cnt + '</span>') : '<span class="wp-day-rest">🌴</span>';
+      return '<button class="wp-day' + (active ? ' active' : '') + (isToday ? ' today' : '') + '" onclick="wpSelectDay(\'' + d + '\')">' + d + mark + '</button>';
+    }).join("");
+    const full = fullNames[weekPlanDay] || weekPlanDay;
+    const picked = sel[weekPlanDay] || [];
+    let html = '<div class="wp-dayhead">' + escapeHtml(full) + (weekPlanDay === todayKey ? ' <span class="wp-todaytag">Today</span>' : '') + '</div>';
+    if (!lib.length){
+      html += '<div class="lib-empty">You have no routines yet.<br>Build them first in <b>📚 My Library</b>, then come back to pick them for your days.<br><br><button class="lib-add-btn" onclick="openLibraryPage()">📚 Go to My Library</button></div>';
+      body.innerHTML = html;
+      return;
+    }
+    html += picked.length
+      ? '<div class="wp-note">Tap a routine to add or remove it for ' + escapeHtml(full) + '.</div>'
+      : '<div class="wp-note wp-rest">🌴 Rest day — nothing picked yet. Tap routines below to add a workout.</div>';
+    html += '<div class="wp-picks">';
+    lib.forEach(r => {
+      const on = picked.indexOf(r.id) >= 0;
+      const sum = wpSummary(r);
+      html += '<button class="wp-pick' + (on ? ' on' : '') + '" onclick="wpToggle(\'' + r.id + '\')">'
+        + '<span class="wp-pick-check">' + (on ? '✓' : '＋') + '</span>'
+        + '<span class="wp-pick-main"><span class="wp-pick-name">' + escapeHtml(r.name || "Unnamed routine") + '</span>'
+        + (sum ? '<span class="wp-pick-sum">' + escapeHtml(sum) + '</span>' : '') + '</span></button>';
+    });
+    html += '</div>';
+    if (picked.length){
+      html += '<div class="wp-copy"><div class="wp-copy-title">📋 Copy ' + escapeHtml(full) + '’s plan to:</div><div class="wp-copy-days">';
+      days.forEach(d => { if (d === weekPlanDay) return; html += '<button class="wp-copy-day" onclick="wpCopyTo(\'' + d + '\')">' + d + '</button>'; });
+      html += '</div><div class="wp-copy-msg" id="wpCopyMsg"></div></div>';
+    }
+    body.innerHTML = html;
+  }
+  function wpSelectDay(d){ weekPlanDay = d; renderWeekPlan(); }
+  function wpToggle(id){
+    const sel = loadWeekSel();
+    const a = sel[weekPlanDay];
+    const j = a.indexOf(id);
+    if (j >= 0) a.splice(j, 1); else a.push(id);
+    saveWeekSel(sel);
+    renderWeekPlan();
+  }
+  function wpCopyTo(target){
+    const sel = loadWeekSel();
+    sel[target] = (sel[weekPlanDay] || []).slice();
+    saveWeekSel(sel);
+    renderWeekPlan();
+    const m = document.getElementById("wpCopyMsg");
+    if (m) m.textContent = "✓ Copied to " + (fullNames[target] || target);
+  }
+  function openWeekPlanPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
+    weekPlanDay = todayKey;
+    document.getElementById("weekPlanOverlay").classList.add("show");
+    renderWeekPlan();
+    renderPageBar();
+  }
+  function leaveWeekPlanPage(){ const el = document.getElementById("weekPlanOverlay"); if (el) el.classList.remove("show"); }
+  function weekPlanShownAsPage(){ const el = document.getElementById("weekPlanOverlay"); return !!(el && el.classList.contains("show")); }
+  // Is this a PLANNED rest day? (You have a library, but picked nothing for this day.)
+  function isPlannedRestDay(day){ return getLibrary().length > 0 && (loadWeekSel()[day] || []).length === 0; }
+  // One-time: move any routines the user already built on the old day-by-day plan into
+  // the Library, and reference them in the new weekly picks — so nothing is lost.
+  function ensureWeekMigrated(){
+    if (localStorage.getItem(WEEK_MIGRATED_KEY)) return;
+    try {
+      const lib = getLibrary();
+      const sel = loadWeekSel();
+      let raw = {}; try { raw = JSON.parse(localStorage.getItem("mowes_weeks_v1") || "{}") || {}; } catch(e){ raw = {}; }
+      const hasContent = w => days.some(d => (w[d] || []).some(r => r && (r.name || "").trim()));
+      let week = raw[currentWeekKey];
+      if (!week || !hasContent(week)){ for (const k in raw){ if (hasContent(raw[k])){ week = raw[k]; break; } } }
+      week = week || {};
+      let changed = false;
+      days.forEach(d => {
+        (week[d] || []).forEach(r => {
+          if (!r || !(r.name || "").trim()) return;
+          const nm = r.name.trim().toLowerCase();
+          let match = lib.find(x => (x.name || "").trim().toLowerCase() === nm);
+          if (!match){ match = JSON.parse(JSON.stringify(r)); match.id = genLibId(); lib.push(match); changed = true; }
+          if (sel[d].indexOf(match.id) < 0){ sel[d].push(match.id); changed = true; }
+        });
+      });
+      if (changed){ writeLibraryStore(lib); saveWeekSel(sel); }
+      localStorage.setItem(WEEK_MIGRATED_KEY, "1");
+    } catch(e){}
+  }
+  window.wpSelectDay = wpSelectDay; window.wpToggle = wpToggle; window.wpCopyTo = wpCopyTo;
+  window.openWeekPlanPage = openWeekPlanPage;
+
+  // ---- Build MOWES: the home page that holds My Library + My Weekly Plan ----
+  function openBuildPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage();
+    document.getElementById("buildOverlay").classList.add("show");
+    renderPageBar();
+  }
+  function leaveBuildPage(){ const el = document.getElementById("buildOverlay"); if (el) el.classList.remove("show"); }
+  function buildShownAsPage(){ const el = document.getElementById("buildOverlay"); return !!(el && el.classList.contains("show")); }
+  window.openBuildPage = openBuildPage;
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
@@ -7566,60 +7795,75 @@
     });
     return out;
   }
-  function sessionStepsFor(day){
-    const steps = [];
-    // Build the day from what the user made on their routine pages (My Weekly Plan).
-    // When that page is on (or in the full app), a day with built routines uses them;
-    // days left empty fall back to the guided-start picks below.
-    if (!LEAN_MODE || PAGES_ON.weekly) pages.filter(p => p.type === "sheet").forEach(pg => {
-      let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
-      const week = all[currentWeekKey] || {};
-      (week[day] || []).forEach((r, ri) => {
-        if (!r || !(r.name || "").trim()) return;
-        const rid = pg.id + ":" + ri; // which routine/exercise this step belongs to
-        const cat = exerciseCategory(r.name);
-        const det = r.details || {}, reps = det.reps || {};
-        // Per-routine rest the user set: between its sets, and after the whole routine.
-        const restBetween = parseInt(reps.rest, 10) || 0, restAfter = parseInt(reps.restAfter, 10) || 0;
-        const video = (reps.video || "").trim(); // how-to / follow-along / companion clip
-        if (reps.on && reps.sets){
-          const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
-          reps.sets.forEach((s, i) => {
-            if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
-            const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0;
-            const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min"); if (nDist) parts.push(s.distance + " " + dUnit);
-            const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: cat.icon, restBetween: restBetween, restAfter: restAfter, video: video };
-            if (cols.distance && lapLen > 0 && nReps > 0){ step.kind = "laps"; step.laps = Math.round(nReps); step.icon = "🌀"; step.detail = Math.round(nReps) + " laps" + (s.weight ? " · " + s.weight + " " + wUnit : ""); }
-            else if (nReps > 0 || nTime > 0){ step.kind = "timed"; }
-            else if (nDist > 0){ step.kind = "manual"; }
-            else { step.kind = "timed"; }
-            steps.push(step);
-          });
-        }
-        const tm = det.time || {};
-        if (tm.on && tm.rows){
-          tm.rows.forEach((row, i) => {
-            if (!row || (!row.label && !row.min && !row.miles)) return;
-            const parts = []; if (row.min) parts.push(row.min + " min"); if (row.miles) parts.push(row.miles + " mi");
-            const lbl = (row.label || "").toLowerCase();
-            const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
-            const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
-            steps.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual"), restBetween: restBetween, restAfter: restAfter, video: video });
-          });
-        }
+  // Turn ONE routine (Library or sheet shape — they're identical) into session steps.
+  function routineToSteps(r, rid){
+    const out = [];
+    if (!r || !(r.name || "").trim()) return out;
+    const cat = exerciseCategory(r.name);
+    const det = r.details || {}, reps = det.reps || {};
+    // Per-routine rest the user set: between its sets, and after the whole routine.
+    const restBetween = parseInt(reps.rest, 10) || 0, restAfter = parseInt(reps.restAfter, 10) || 0;
+    const video = (reps.video || "").trim(); // how-to / follow-along / companion clip
+    if (reps.on && reps.sets){
+      const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
+      reps.sets.forEach((s, i) => {
+        if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
+        const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0;
+        const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min"); if (nDist) parts.push(s.distance + " " + dUnit);
+        const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: cat.icon, restBetween: restBetween, restAfter: restAfter, video: video };
+        if (cols.distance && lapLen > 0 && nReps > 0){ step.kind = "laps"; step.laps = Math.round(nReps); step.icon = "🌀"; step.detail = Math.round(nReps) + " laps" + (s.weight ? " · " + s.weight + " " + wUnit : ""); }
+        else if (nReps > 0 || nTime > 0){ step.kind = "timed"; }
+        else if (nDist > 0){ step.kind = "manual"; }
+        else { step.kind = "timed"; }
+        out.push(step);
       });
-    });
-    // Nothing built for this day yet → fall back to the ready-made starter session
-    // (their guided-start picks, already filled in with example sets).
-    if (!steps.length){
-      const starters = starterSessionSteps();
-      for (var k = 0; k < starters.length; k++) steps.push(starters[k]);
     }
-    // Wrap the workout with a warm-up (before) and cool-down (after) — only if there's a workout.
+    const tm = det.time || {};
+    if (tm.on && tm.rows){
+      tm.rows.forEach((row, i) => {
+        if (!row || (!row.label && !row.min && !row.miles)) return;
+        const parts = []; if (row.min) parts.push(row.min + " min"); if (row.miles) parts.push(row.miles + " mi");
+        const lbl = (row.label || "").toLowerCase();
+        const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
+        const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
+        out.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : "manual", restBetween: restBetween, restAfter: restAfter, video: video });
+      });
+    }
+    return out;
+  }
+  // Wrap a workout with a warm-up (before) and cool-down (after) — only if there's a workout.
+  function wrapWarmCool(steps){
     if (!steps.length) return steps;
     const warm = sessionWarmupOn ? WARMUP_MOVES.map(m => ({ rid:"__warmup__", type:"warmup", name:m.name, label:"Warm-up", detail:m.tip, reps:0, time:0, dist:0, icon:m.icon, kind:"timed", fixedSec:m.sec })) : [];
     const cool = sessionCooldownOn ? COOLDOWN_MOVES.map(m => ({ rid:"__cooldown__", type:"cooldown", name:m.name, label:"Cool-down", detail:m.tip, reps:0, time:0, dist:0, icon:m.icon, kind:"timed", fixedSec:m.sec })) : [];
     return warm.concat(steps, cool);
+  }
+  function sessionStepsFor(day){
+    const steps = [];
+    ensureWeekMigrated();
+    const lib = getLibrary();
+    // NEW model: once you have routines in your Library, the day runs whatever you
+    // PICKED for it in My Weekly Plan. A day with nothing picked = a rest day (no steps).
+    if (lib.length){
+      const sel = loadWeekSel();
+      (sel[day] || []).forEach((id, ri) => {
+        const r = lib.find(x => x.id === id);
+        if (r) routineToSteps(r, "lib:" + id + ":" + ri).forEach(s => steps.push(s));
+      });
+      return wrapWarmCool(steps);
+    }
+    // OLD model (no Library yet): build from the routine sheet pages; brand-new users
+    // fall back to the ready-made guided-start starter session.
+    if (!LEAN_MODE || PAGES_ON.weekly) pages.filter(p => p.type === "sheet").forEach(pg => {
+      let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
+      const week = all[currentWeekKey] || {};
+      (week[day] || []).forEach((r, ri) => { routineToSteps(r, pg.id + ":" + ri).forEach(s => steps.push(s)); });
+    });
+    if (!steps.length){
+      const starters = starterSessionSteps();
+      for (var k = 0; k < starters.length; k++) steps.push(starters[k]);
+    }
+    return wrapWarmCool(steps);
   }
   function sessionStepDuration(st){
     if (st.fixedSec > 0) return st.fixedSec;
@@ -7645,7 +7889,10 @@
     sessionStepsArr = sessionStepsFor(sessionSelDay);
     const list = document.getElementById("sessionList"), now = document.getElementById("sessionNow"), btn = document.getElementById("sessionStartBtn");
     if (!sessionStepsArr.length){
-      if (list) list.innerHTML = '<div class="session-empty">Nothing set for this day yet. Add exercises on your routine pages, then come back and tap Start. 💪</div>';
+      const msg = isPlannedRestDay(sessionSelDay)
+        ? '🌴 Rest day — enjoy your recovery!<br><br>Want a workout today? Add routines for this day in 🗓️ My Weekly Plan.'
+        : 'Nothing set for this day yet. Build routines in 📚 My Library, then pick them for your days in 🗓️ My Weekly Plan. 💪';
+      if (list) list.innerHTML = '<div class="session-empty">' + msg + '</div>';
       if (now){ now.className = "session-now"; now.innerHTML = ""; }
       if (btn) btn.style.display = "none";
       return;
@@ -7878,7 +8125,7 @@
   function openSessionPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveLibraryPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
     sessionSelDay = todayKey; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionRunning = false;
     if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionLoadSettings();
