@@ -2163,6 +2163,9 @@
   .goal-badge.behind { background: #fdf1e7; color: #b06a00; }
   .goal-badge.done { background: #f3f0ff; color: #6a4bd6; }
   .goals-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 10px 8px 18px; }
+  .goal-ex-toggle { display: block; margin: 0 auto 14px; padding: 8px 16px; font-size: 13px; font-weight: 800;
+    color: #5b6cff; background: #eef0fb; border: 1.5px solid #d6d9ec; border-radius: 999px; cursor: pointer; }
+  .goal-ex-toggle:active { transform: scale(0.98); }
   .goal-example { opacity: 0.82; border: 2px dashed #d6d9ec; box-shadow: none; }
   .goal-ex-tag { flex: 0 0 auto; font-size: 11px; font-weight: 800; color: #9096ad; background: #eef0fb; border-radius: 20px; padding: 3px 10px; text-transform: uppercase; letter-spacing: 0.4px; }
   /* Goal form */
@@ -2767,7 +2770,6 @@
       <!-- Achievements: a progress report worked out from your Goals + My Body -->
       <div class="body-pics-section">
         <div class="body-pics-title">📈 Achievements</div>
-        <p class="body-pics-note">Your progress so far — and where you're headed next.</p>
         <div id="achBody"></div>
       </div>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
@@ -6792,7 +6794,9 @@
     if (!box) return;
     const goals = loadGoals();
     if (!goals.length){
-      let ex = '<div class="goals-empty">No goals yet — here are some <b>examples</b> to spark ideas. Tap “＋ Add a goal” above to build your own. 🎯</div>';
+      // Examples are tucked behind a small "See Examples…" button (hidden by default).
+      let ex = '<button class="goal-ex-toggle" id="goalExToggle" onclick="toggleGoalExamples()">See Examples…</button>';
+      ex += '<div id="goalExamples" style="display:none">';
       GOAL_EXAMPLES.forEach(g => {
         ex += '<div class="goal-card goal-example">'
           + '<div class="goal-top"><span class="goal-name">' + escapeHtml(g.name) + '</span><span class="goal-ex-tag">example</span></div>'
@@ -6800,6 +6804,7 @@
           + '<div class="goal-by">' + escapeHtml(g.when) + '</div>'
           + '<div class="goal-bar"><div class="goal-bar-fill" style="width:30%"></div></div></div>';
       });
+      ex += '</div>';
       box.innerHTML = ex;
       return;
     }
@@ -6824,6 +6829,15 @@
     });
     box.innerHTML = html;
   }
+  function toggleGoalExamples(){
+    const list = document.getElementById("goalExamples");
+    const btn = document.getElementById("goalExToggle");
+    if (!list) return;
+    const show = (list.style.display === "none");
+    list.style.display = show ? "" : "none";
+    if (btn) btn.textContent = show ? "Hide Examples" : "See Examples…";
+  }
+  window.toggleGoalExamples = toggleGoalExamples;
   function openGoalsPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
