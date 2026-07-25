@@ -1359,6 +1359,18 @@
   .si-input[data-role="count"] { color: #5b6cff; }
   .si-unit { font-size: 13px; font-weight: 700; color: #5b6cff; }
   button.si-unit { background: none; border: none; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0; }
+  /* Video line: a wide paste box + a ▶ open button */
+  .si-video .si-input { width: auto; flex: 1 1 0; min-width: 0; text-align: left; font-size: 14px; font-weight: 600; }
+  .si-play {
+    flex: 0 0 auto; width: 40px; height: 40px; border: none; border-radius: 10px; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; font-size: 15px;
+  }
+  .si-play:active { transform: scale(0.96); }
+  .session-video-btn {
+    display: block; margin: 12px auto 0; padding: 10px 18px; border: none; border-radius: 12px; cursor: pointer;
+    background: rgba(255,255,255,0.22); color: #fff; font-size: 14px; font-weight: 800;
+  }
+  .session-video-btn:active { transform: scale(0.98); }
   .sets-add-btn {
     display: inline-block; margin: 2px 2px 6px; padding: 9px 22px; font-size: 14px; font-weight: 800;
     color: #fff; background: linear-gradient(135deg, #5b6cff, #7a5bff); border: none; border-radius: 12px;
@@ -2227,6 +2239,17 @@
   .ach-verdict.behind { background: #fdf1e7; color: #b06a00; }
   .ach-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
 
+  /* My Library — build & keep your routines once (feeds My Weekly Plan) */
+  .library-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
+    background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
+  .library-overlay.show { display: block; }
+  .library-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .library-inner .routine-card { background: #fff; }
+  .lib-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 24px 8px; }
+  .lib-add-btn { width: 100%; margin-top: 6px; padding: 14px; border: 2px dashed #9aa8e0; border-radius: 14px;
+    background: rgba(255,255,255,0.55); color: #3a4699; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .lib-add-btn:active { background: rgba(255,255,255,0.85); }
+
   /* My Rules — settings that shape how MOWES picks your day */
   .rules-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
@@ -2829,6 +2852,16 @@
 
   <!-- (Achievements merged into "My Goals & Achievement" — see the goalsOverlay above.) -->
 
+  <!-- My Library: build & keep your exercise routines once, then use them in My Weekly Plan -->
+  <div class="library-overlay" id="libraryOverlay">
+    <div class="library-inner">
+      <div class="setup-title">📚 My Library</div>
+      <div class="setup-sub">Build your exercise routines here once. Then add them to your days in 🗓️ My Weekly Plan.</div>
+      <div id="libraryList"></div>
+      <button class="lib-add-btn" onclick="libAddRoutine()">＋ New routine</button>
+    </div>
+  </div>
+
   <!-- My Rules: settings that shape how "Surprise me" picks your day -->
   <div class="rules-overlay" id="rulesOverlay">
     <div class="rules-inner">
@@ -3383,7 +3416,7 @@
     return {
       name: "",
       details: {
-        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", rest:0, restAfter:0, showSets:true, sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
+        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", rest:0, restAfter:0, showSets:true, showVideo:false, video:"", sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
         time:     { on:false, rows:[ {label:"", min:"", miles:"", done:false} ] },
         weight:   { on:false, val:"" },
         distance: { on:false, val:"" }
@@ -3448,6 +3481,7 @@
 
   let allWeeks = {};
   function saveData(){
+    if (libraryShownAsPage()){ saveLibrary(); return; } // Library edits persist to their own store
     if (!currentPageIsSheet()) return; // only exercise-sheet pages have weeks
     try { localStorage.setItem(sheetKeyFor(activePageId), JSON.stringify(allWeeks)); } catch(e){}
   }
@@ -4114,6 +4148,7 @@
   // Rebuilding the app one page at a time: flip a page to true here to switch it back
   // on in the lean version. (The ?full preview always shows every page, regardless.)
   const PAGES_ON = {
+    library: true,  // 📚 My Library — build & keep your routines once (feeds My Weekly Plan)
     weekly: true,   // 🗓️ My Weekly Plan — the routine builder + weekly day-schedule (the "default" sheet page)
     setup: true,    // ⚙️ My Set-up — review/change your guided-start answers
     rules: true,    // 📜 My Rules — rules that shape how picks are chosen
@@ -4132,7 +4167,9 @@
     }
     // Lean core (Cover + Today's Session) plus any pages we've switched back on so far.
     const stops = base.slice();
-    // Right after Today's Session: the routine builder + weekly day-schedule (the "default" sheet page).
+    // Right after Today's Session: build your routines (the library), then schedule them.
+    if (PAGES_ON.library) stops.push({ library:true, name:"My Library", icon:"📚 " });
+    // The routine builder + weekly day-schedule (the "default" sheet page).
     if (PAGES_ON.weekly){ const wp = pages.find(p => p.id === "default"); if (wp) stops.push({ id: wp.id, name:"My Weekly Plan", icon:"🗓️ " }); }
     if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals & Achievement", icon:"🎯 " });
     if (PAGES_ON.body)  stops.push({ body:true, name:"My Body & Pics", icon:"📏 " });
@@ -4159,6 +4196,7 @@
     if (planShownAsPage()) return 1;
     const stops = pageBarStops();
     if (setupShownAsPage()) return stops.findIndex(s => s.setup);
+    if (libraryShownAsPage()) return stops.findIndex(s => s.library);
     if (rulesShownAsPage()) return stops.findIndex(s => s.rules);
     if (bodyShownAsPage()) return stops.findIndex(s => s.body);
     if (achShownAsPage()) return stops.findIndex(s => s.ach);
@@ -4175,7 +4213,7 @@
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -4187,7 +4225,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -4200,7 +4238,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -4220,9 +4258,10 @@
     if (s.goals){ openGoalsPage(); return; }
     if (s.ach){ openAchPage(); return; }
     if (s.body){ openBodyPage(); return; }
+    if (s.library){ openLibraryPage(); return; }
     if (s.rules){ openRulesPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -5024,6 +5063,7 @@
 
   // Read the current day's DOM back into weekData
   function captureDay(){
+    if (libraryShownAsPage()){ captureLibrary(); return; } // the Library reuses the same routine card/handlers
     if (!currentPageIsSheet()) return; // only exercise-sheet pages have routines to capture
     const cards = document.querySelectorAll("#routineList .routine-card");
     const arr = [];
@@ -5043,6 +5083,8 @@
           r.details.reps.rest = rd.rest;
           r.details.reps.restAfter = rd.restAfter;
           r.details.reps.showSets = rd.showSets;
+          r.details.reps.showVideo = rd.showVideo;
+          r.details.reps.video = rd.video;
           r.details.reps.sets = rd.sets;
         } else if (f === "time"){
           r.details.time.on = on;
@@ -5125,18 +5167,20 @@
       rest: parseInt(d.rest, 10) || 0,
       restAfter: parseInt(d.restAfter, 10) || 0,
       lapLen: parseFloat(d.lapLen) || 0,
-      showSets: (d.showSets == null) ? true : !!d.showSets
+      showSets: (d.showSets == null) ? true : !!d.showSets,
+      showVideo: (d.showVideo == null) ? false : !!d.showVideo
     };
     if (!activeCols(cfg).length) cfg.cols.reps = true; // never zero columns
     const sets = (d.sets && d.sets.length) ? d.sets : [{ reps:"", weight:"", time:"", distance:"", done:false }];
-    return { cfg, sets };
+    return { cfg, sets, video: d.video || "" };
   }
 
   function renderSets(fieldEl, d){
-    const { cfg, sets } = normReps(d);
+    const { cfg, sets, video } = normReps(d);
     fieldEl._repsCfg = cfg;
+    fieldEl._videoUrl = video; // remembered even when the Video pill is toggled off
     renderSetsCols(fieldEl.querySelector(".sets-cols"), cfg);
-    renderSetsInline(fieldEl, cfg, sets);
+    renderSetsInline(fieldEl, cfg, sets, video);
     const restEl = fieldEl.querySelector(".rest-input");
     if (restEl) restEl.value = cfg.rest ? cfg.rest : "";
     const restAfterEl = fieldEl.querySelector(".rest-after-input");
@@ -5152,7 +5196,7 @@
   }
   // NEW entry model: one value per metric on its own line (Sets / Reps / Weight / …).
   // Tap the column buttons to choose metrics; type a value each; ADD builds the sets.
-  function renderSetsInline(fieldEl, cfg, sets){
+  function renderSetsInline(fieldEl, cfg, sets, video){
     const wrap = fieldEl.querySelector(".sets-inline");
     if (!wrap) return;
     const first = (sets && sets[0]) || {};
@@ -5172,11 +5216,25 @@
         : ((titleText && titleText !== info.toggle) ? `<span class="si-unit">${titleText}</span>` : "");
       html += `<div class="si-row"><span class="si-label">${info.toggle}</span><input class="si-input set-inline" data-col="${k}" type="number" min="0" step="any" inputmode="decimal" placeholder="${info.ph}" value="${v}" oninput="onSetsInlineInput(this)">${unit}</div>`;
     });
+    if (cfg.showVideo){
+      // A how-to / follow-along / companion clip — paste any link, tap ▶ to open it.
+      html += `<div class="si-row si-video"><span class="si-label">Video</span><input class="si-input si-video-input" data-role="video" type="text" inputmode="url" placeholder="paste a link (YouTube, etc.)" value="${escapeHtml(video || "")}" oninput="onSetsInlineInput(this)"><button type="button" class="si-play" onclick="openVideoLink(this.previousElementSibling.value)" title="Open video">▶</button></div>`;
+    }
     wrap.innerHTML = html;
   }
+  // Open a pasted video/music link (adds https:// if missing). Starts with option 1
+  // (opens the link); an in-app player can come later.
+  function openVideoLink(url){
+    url = (url || "").trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    window.open(url, "_blank", "noopener");
+  }
+  window.openVideoLink = openVideoLink;
   function onSetsInlineInput(el){
     const fieldEl = el.closest(".detail-field");
     if (!fieldEl) return;
+    if (el.dataset.role === "video") fieldEl._videoUrl = el.value.trim();
     captureDay(); saveData();
     updateSetsSummary(fieldEl);
   }
@@ -5267,6 +5325,7 @@
     html += SET_COLS.map(k =>
       `<button type="button" class="col-toggle${cfg.cols[k] ? " on" : ""}" data-col="${k}" onclick="toggleSetCol(this)">${SET_COL_INFO[k].toggle}</button>`
     ).join("");
+    html += `<button type="button" class="col-toggle${cfg.showVideo ? " on" : ""}" data-col="__video__" onclick="toggleVideoPill(this)">🎬 Video</button>`;
     colsEl.innerHTML = html;
   }
   function toggleSetsPill(btn){
@@ -5277,6 +5336,14 @@
     captureDay(); saveData();
   }
   window.toggleSetsPill = toggleSetsPill;
+  function toggleVideoPill(btn){
+    const fieldEl = btn.closest(".detail-field");
+    const cfg = fieldEl._repsCfg;
+    cfg.showVideo = !cfg.showVideo;
+    renderSets(fieldEl, readRepsFromDom(fieldEl));
+    captureDay(); saveData();
+  }
+  window.toggleVideoPill = toggleVideoPill;
 
   // The column titles; Weight/Distance titles double as the unit switch
   function renderSetsHead(headEl, cfg, count){
@@ -5325,6 +5392,7 @@
     const restEl = fieldEl.querySelector(".rest-input");
     const restAfterEl = fieldEl.querySelector(".rest-after-input");
     const lapEl = fieldEl.querySelector(".lap-input");
+    const videoEl = fieldEl.querySelector('.si-video-input');
     return {
       cols: { ...cfg.cols },
       weightUnit: cfg.weightUnit,
@@ -5333,6 +5401,8 @@
       restAfter: restAfterEl ? (parseInt(restAfterEl.value, 10) || 0) : 0,
       lapLen: lapEl ? (parseFloat(lapEl.value) || 0) : (cfg.lapLen || 0),
       showSets: showSets,
+      showVideo: !!cfg.showVideo,
+      video: videoEl ? videoEl.value.trim() : (fieldEl._videoUrl || ""),
       sets: sets.length ? sets : [{ reps:"", weight:"", time:"", distance:"", done:false }]
     };
   }
@@ -6889,7 +6959,7 @@
   function openBodyPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
     loadBodyPics();
     renderBody();
     renderBodyPics();
@@ -7002,7 +7072,7 @@
   function openGoalsPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
     renderGoals();
     renderAch();
     document.getElementById("goalsOverlay").classList.add("show");
@@ -7182,7 +7252,7 @@
   function openRulesPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage(); leaveLibraryPage();
     renderRules();
     document.getElementById("rulesOverlay").classList.add("show");
     renderPageBar();
@@ -7192,6 +7262,168 @@
   window.rulesToggleNoRepeat = rulesToggleNoRepeat; window.rulesToggleRest = rulesToggleRest;
   window.rulesToggleMax = rulesToggleMax; window.rulesSetMaxMin = rulesSetMaxMin;
   window.rulesAddOwn = rulesAddOwn; window.rulesDeleteOwn = rulesDeleteOwn; window.rulesToggleOwn = rulesToggleOwn;
+
+  // ---- My Library: build & keep your routines once (STEP 1 of My Weekly Plan) ----
+  // A library routine is the SAME shape as a day routine (blankRoutine), so it can be
+  // dropped straight into a weekly day later. We reuse the exact routine-card + reps
+  // form (renderSets / readRepsFromDom); the shared captureDay()/saveData() are routed
+  // here while the Library overlay is open, so every set/pill/video handler just works.
+  const LIBRARY_KEY = "mowes_library_v1";
+  let libraryRoutines = [];
+  function loadLibrary(){
+    try { const raw = localStorage.getItem(LIBRARY_KEY); libraryRoutines = raw ? (JSON.parse(raw) || []) : []; }
+    catch(e){ libraryRoutines = []; }
+    if (!Array.isArray(libraryRoutines)) libraryRoutines = [];
+  }
+  function saveLibrary(){
+    try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryRoutines)); } catch(e){}
+  }
+  // Draw the library cards (one per saved routine) into #libraryList.
+  function renderLibrary(){
+    const list = document.getElementById("libraryList");
+    if (!list) return;
+    list.querySelectorAll(".detail-field").forEach(stopRest);
+    list.innerHTML = "";
+    if (!libraryRoutines.length){
+      const hint = document.createElement("div");
+      hint.className = "lib-empty";
+      hint.innerHTML = "No routines yet.<br>Tap <b>＋ New routine</b> below to build your first one.";
+      list.appendChild(hint);
+      return;
+    }
+    const total = libraryRoutines.length;
+    libraryRoutines.forEach((r, idx) => {
+      const _def = blankRoutine();
+      if (!r.details) r.details = _def.details;
+      else { for (const k in _def.details){ if (r.details[k] == null) r.details[k] = _def.details[k]; } }
+      if (!r.timer) r.timer = _def.timer;
+      const i = idx + 1, isFirst = idx === 0, isLast = idx === total - 1;
+      const card = document.createElement("div");
+      card.className = "routine-card";
+      card.innerHTML = `
+        <div class="routine-row">
+          <div class="routine-num">${i}</div>
+          <div class="routine-move">
+            <button class="move-btn"${isFirst ? " disabled" : ""} title="Move up" onclick="libMoveRoutine(this,-1)">▲</button>
+            <button class="move-btn"${isLast ? " disabled" : ""} title="Move down" onclick="libMoveRoutine(this,1)">▼</button>
+          </div>
+          <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
+          <button class="routine-delete" title="Delete this routine" onclick="libDeleteRoutine(this)">✕</button>
+        </div>
+        <div class="detail-fields">
+          <div class="detail-field show" data-field="reps">
+            <div class="sets-block">
+              <div class="sets-cols"></div>
+              <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><button type="button" class="lap-measure-link" onclick="openLapMeasure(this)">📏 not sure? measure it</button><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
+              <div class="sets-inline"></div>
+              <button class="sets-add-btn" onclick="addBuiltSets(this)">＋ ADD</button>
+              <div class="sets-summary" style="display:none;"></div>
+              <div class="sets-speed" style="display:none;"></div>
+              <div class="rest-times">
+                <div class="rest-times-title">⏱ Rest Times</div>
+                <div class="rest-row">
+                  <span class="rest-label">Between Sets</span>
+                  <input class="rest-input" type="number" min="0" placeholder="0" inputmode="numeric">
+                  <span class="rest-unit">sec</span>
+                </div>
+                <div class="rest-row">
+                  <span class="rest-label">After Routine</span>
+                  <input class="rest-after-input" type="number" min="0" placeholder="0" inputmode="numeric">
+                  <span class="rest-unit">sec</span>
+                </div>
+              </div>
+              <div class="rest-timer" style="display:none;"></div>
+            </div>
+          </div>
+        </div>`;
+      list.appendChild(card);
+      card.querySelector(".routine-input").value = r.name || "";
+      const fe = card.querySelector('.detail-field[data-field="reps"]');
+      renderSets(fe, r.details.reps);
+    });
+  }
+  // Read the library cards' DOM back into libraryRoutines (mirrors captureDay's reps path).
+  function captureLibrary(){
+    const cards = document.querySelectorAll("#libraryList .routine-card");
+    const arr = [];
+    cards.forEach(card => {
+      const r = blankRoutine();
+      r.name = card.querySelector(".routine-input").value;
+      const fe = card.querySelector('.detail-field[data-field="reps"]');
+      if (fe){
+        const rd = readRepsFromDom(fe);
+        r.details.reps.on = true;
+        r.details.reps.cols = rd.cols;
+        r.details.reps.weightUnit = rd.weightUnit;
+        r.details.reps.distUnit = rd.distUnit;
+        r.details.reps.rest = rd.rest;
+        r.details.reps.restAfter = rd.restAfter;
+        r.details.reps.lapLen = rd.lapLen;
+        r.details.reps.showSets = rd.showSets;
+        r.details.reps.showVideo = rd.showVideo;
+        r.details.reps.video = rd.video;
+        r.details.reps.sets = rd.sets;
+      }
+      arr.push(r);
+    });
+    libraryRoutines = arr;
+  }
+  function libCardIndex(btn){
+    const card = btn.closest(".routine-card");
+    const cards = [...document.querySelectorAll("#libraryList .routine-card")];
+    return { card, idx: cards.indexOf(card) };
+  }
+  function libAddRoutine(){
+    captureLibrary();
+    libraryRoutines.push(blankRoutine());
+    saveLibrary();
+    renderLibrary();
+    // Focus the new routine's name box so Taco can start typing right away.
+    const cards = document.querySelectorAll("#libraryList .routine-card");
+    const last = cards[cards.length - 1];
+    if (last){ const nm = last.querySelector(".routine-input"); if (nm) nm.focus(); last.scrollIntoView({ block:"center", behavior:"smooth" }); }
+  }
+  function libDeleteRoutine(btn){
+    const { idx } = libCardIndex(btn);
+    if (idx < 0) return;
+    captureLibrary();
+    libraryRoutines.splice(idx, 1);
+    saveLibrary();
+    renderLibrary();
+  }
+  function libMoveRoutine(btn, dir){
+    const { idx } = libCardIndex(btn);
+    if (idx < 0) return;
+    const j = idx + dir;
+    if (j < 0 || j >= libraryRoutines.length) return;
+    captureLibrary();
+    const tmp = libraryRoutines[idx]; libraryRoutines[idx] = libraryRoutines[j]; libraryRoutines[j] = tmp;
+    saveLibrary();
+    renderLibrary();
+  }
+  function openLibraryPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage();
+    loadLibrary();
+    document.getElementById("libraryOverlay").classList.add("show");
+    renderLibrary();
+    renderPageBar();
+  }
+  function leaveLibraryPage(){
+    const el = document.getElementById("libraryOverlay");
+    if (!el) return;
+    if (el.classList.contains("show")){ try { captureLibrary(); saveLibrary(); } catch(e){} }
+    el.classList.remove("show");
+  }
+  function libraryShownAsPage(){ const el = document.getElementById("libraryOverlay"); return !!(el && el.classList.contains("show")); }
+  // Persist name typing (the set/pill/video handlers already route through captureDay).
+  (function(){
+    const list = document.getElementById("libraryList");
+    if (list){ ["input","change"].forEach(evt => list.addEventListener(evt, () => { captureLibrary(); saveLibrary(); })); }
+  })();
+  window.libAddRoutine = libAddRoutine; window.libDeleteRoutine = libDeleteRoutine; window.libMoveRoutine = libMoveRoutine;
+  window.openLibraryPage = openLibraryPage;
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
@@ -7349,13 +7581,14 @@
         const det = r.details || {}, reps = det.reps || {};
         // Per-routine rest the user set: between its sets, and after the whole routine.
         const restBetween = parseInt(reps.rest, 10) || 0, restAfter = parseInt(reps.restAfter, 10) || 0;
+        const video = (reps.video || "").trim(); // how-to / follow-along / companion clip
         if (reps.on && reps.sets){
           const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
           reps.sets.forEach((s, i) => {
             if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
             const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0;
             const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min"); if (nDist) parts.push(s.distance + " " + dUnit);
-            const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: cat.icon, restBetween: restBetween, restAfter: restAfter };
+            const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: cat.icon, restBetween: restBetween, restAfter: restAfter, video: video };
             if (cols.distance && lapLen > 0 && nReps > 0){ step.kind = "laps"; step.laps = Math.round(nReps); step.icon = "🌀"; step.detail = Math.round(nReps) + " laps" + (s.weight ? " · " + s.weight + " " + wUnit : ""); }
             else if (nReps > 0 || nTime > 0){ step.kind = "timed"; }
             else if (nDist > 0){ step.kind = "manual"; }
@@ -7371,7 +7604,7 @@
             const lbl = (row.label || "").toLowerCase();
             const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
             const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
-            steps.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual"), restBetween: restBetween, restAfter: restAfter });
+            steps.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : (nMiles > 0 ? "manual" : "manual"), restBetween: restBetween, restAfter: restAfter, video: video });
           });
         }
       });
@@ -7424,6 +7657,7 @@
       html += '<div class="' + cls + '"><div class="session-step-num">' + (i + 1) + '</div><div class="session-step-main">'
         + '<div class="session-step-name">' + (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>'
         + (st.detail ? '<div class="session-step-detail">' + escapeHtml(st.detail) + '</div>' : '') + '</div>'
+        + (st.video ? '<button class="session-howto" title="Play video" onclick="sessionStepVideo(' + i + ')">🎬</button>' : '')
         + '<button class="session-howto" title="How to do this" onclick="sessionHowToStep(' + i + ')">❓</button></div>';
     });
     if (list) list.innerHTML = html;
@@ -7458,6 +7692,14 @@
         } else {
           now.className = "session-now on";
           now.innerHTML = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+        }
+        // A ▶ button for this exercise's video (how-to / follow-along / music), while working (not resting).
+        if (sessionPhase !== "rest" && st.video){
+          const vb = document.createElement("button");
+          vb.className = "session-video-btn";
+          vb.textContent = "🎬 Watch video";
+          vb.onclick = () => openVideoLink(st.video);
+          now.appendChild(vb);
         }
       } else { now.className = "session-now"; now.innerHTML = ""; }
     }
@@ -7636,7 +7878,7 @@
   function openSessionPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveLibraryPage();
     sessionSelDay = todayKey; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionRunning = false;
     if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionLoadSettings();
@@ -7647,6 +7889,8 @@
   function leaveSessionPage(){ const el = document.getElementById("sessionOverlay"); if (el && el.classList.contains("show")){ el.classList.remove("show"); sessionPause(); } }
   function sessionShownAsPage(){ const el = document.getElementById("sessionOverlay"); return !!(el && el.classList.contains("show")); }
   function sessionHowToStep(i){ const st = sessionStepsArr[i]; if (st) openHowTo(st.name); }
+  function sessionStepVideo(i){ const st = sessionStepsArr[i]; if (st && st.video) openVideoLink(st.video); }
+  window.sessionStepVideo = sessionStepVideo;
   window.sessionHowToStep = sessionHowToStep;
   window.sessionToggle = sessionToggle; window.sessionChangeDay = sessionChangeDay; window.sessionSaveSettings = sessionSaveSettings;
   // When the app comes back to the foreground, catch the timer up to real time.
