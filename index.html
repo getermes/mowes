@@ -2239,6 +2239,7 @@
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .session-overlay.show { display: block; }
   .session-inner { max-width: 420px; margin: 0 auto; padding: 30px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .session-todayline { text-align: center; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #9096ad; margin-bottom: 2px; }
   .session-daynav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
   .session-arrow { width: 42px; height: 42px; border: none; border-radius: 12px; background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; }
   .session-arrow:active { transform: scale(0.95); }
@@ -2629,6 +2630,7 @@
   <!-- Today's Session: guided, auto-advancing run through the day's steps -->
   <div class="session-overlay" id="sessionOverlay">
     <div class="session-inner">
+      <div class="session-todayline" id="sessionTodayLine">Today</div>
       <div class="session-daynav">
         <button class="session-arrow" onclick="sessionChangeDay(-1)">‹</button>
         <div class="session-day" id="sessionDay">Today</div>
@@ -2641,14 +2643,13 @@
       </div>
       <div class="session-now" id="sessionNow"></div>
       <div id="sessionList"></div>
-      <button class="session-surprise" onclick="sessionSurprise()">🎁 Surprise me</button>
-      <p class="setup-note">🔒 Runs on your phone. Tap Start and MOWES moves you through the day.</p>
       <div class="session-settings">
         <label>Pace <input id="sessionPace" type="number" min="0.2" step="0.1" inputmode="decimal" onchange="sessionSaveSettings()"> sec/rep</label>
         <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
         <label>Between ex. <input id="sessionExRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
         <label>New muscle <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
       </div>
+      <p class="setup-note">🔒 Runs on your phone. Tap Start and MOWES moves you through the day.</p>
     </div>
   </div>
 
@@ -7257,9 +7258,20 @@
     return 30; // default when we can't tell yet (laps/distance come later)
   }
   function sessionClock(s){ s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), ss = s % 60; return m + ":" + (ss < 10 ? "0" : "") + ss; }
+  // The calendar date (MM/DD/YYYY) for a weekday in the current week.
+  function sessionDateStr(day){
+    const idx = days.indexOf(day); if (idx < 0) return "";
+    const p = currentWeekKey.split("-"); // YYYY-MM-DD (this week's Monday)
+    const d = new Date(+p[0], +p[1] - 1, +p[2]); d.setDate(d.getDate() + idx);
+    const m = String(d.getMonth() + 1).padStart(2, "0"), da = String(d.getDate()).padStart(2, "0");
+    return m + "/" + da + "/" + d.getFullYear();
+  }
   function renderSession(){
+    // Top line: "Today" on the current day, or that day's date when you page back/forward.
+    const todayLineEl = document.getElementById("sessionTodayLine");
+    if (todayLineEl) todayLineEl.textContent = (sessionSelDay === todayKey) ? "Today" : sessionDateStr(sessionSelDay);
     const dayEl = document.getElementById("sessionDay");
-    if (dayEl) dayEl.textContent = dayTitle(sessionSelDay);
+    if (dayEl) dayEl.textContent = (fullNames[sessionSelDay] || "").toUpperCase();
     sessionStepsArr = sessionStepsFor(sessionSelDay);
     const list = document.getElementById("sessionList"), now = document.getElementById("sessionNow"), btn = document.getElementById("sessionStartBtn");
     if (!sessionStepsArr.length){
@@ -7277,9 +7289,6 @@
         + (st.detail ? '<div class="session-step-detail">' + escapeHtml(st.detail) + '</div>' : '') + '</div>'
         + '<button class="session-howto" title="How to do this" onclick="sessionHowToStep(' + i + ')">❓</button></div>';
     });
-    if (sessionStepsArr.some(s => s.starter)){
-      html += '<div class="session-starter-note">✨ MOWES filled in a starter workout for you — just tap Start and follow along. Change the pace/rest below anytime, or build your own on your pages.</div>';
-    }
     if (list) list.innerHTML = html;
     if (now){
       if (sessionRunning && sessionIdx >= 0 && sessionIdx < sessionStepsArr.length){
