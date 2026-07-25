@@ -2255,6 +2255,10 @@
   .lib-group { font-size: 15px; font-weight: 800; color: #3a4699; margin: 20px 2px 8px; padding-bottom: 6px;
     border-bottom: 2px solid rgba(90,104,214,0.18); }
   .lib-group:first-child { margin-top: 4px; }
+  .lib-groups { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
+  .lib-grp-btn { padding: 6px 10px; border: 1px solid #d3d8f0; border-radius: 999px; background: #fafbff;
+    color: #6b719c; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lib-grp-btn.active { background: #3a4699; border-color: #3a4699; color: #fff; }
   .lib-mode { display: flex; gap: 6px; margin: 4px 0 10px; }
   .lib-mode-btn { flex: 1; padding: 8px 6px; border: 1px solid #c3cbef; border-radius: 10px; background: #f4f6ff;
     color: #5a62a8; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -2402,6 +2406,16 @@
   }
   .session-surprise:active { transform: scale(0.99); }
   .session-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 26px 8px; }
+  .restday-card { text-align: center; margin: 18px auto; max-width: 340px; padding: 34px 22px 28px;
+    border-radius: 24px; background: linear-gradient(180deg, #eaf7ee 0%, #e3f1fb 100%);
+    box-shadow: 0 6px 20px rgba(60,90,120,0.10); }
+  .restday-emoji { font-size: 68px; line-height: 1; margin-bottom: 10px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
+  .restday-title { font-size: 26px; font-weight: 800; color: #2f7a52; letter-spacing: 0.3px; }
+  .restday-sub { font-size: 15px; color: #5b7a6a; margin: 8px 0 22px; line-height: 1.5; }
+  .restday-add { display: inline-block; padding: 15px 30px; border: none; border-radius: 999px;
+    background: linear-gradient(180deg, #5a68d6 0%, #4a58c8 100%); color: #fff; font-size: 17px; font-weight: 800;
+    cursor: pointer; box-shadow: 0 5px 14px rgba(74,88,200,0.4); }
+  .restday-add:active { transform: translateY(1px); box-shadow: 0 3px 9px rgba(74,88,200,0.4); }
   .session-starter-note { background: #f6f2ff; color: #6b52d6; border: 1px solid #e3d9ff; border-radius: 12px; padding: 11px 13px; font-size: 13px; line-height: 1.5; margin-bottom: 12px; }
   .session-howto { flex: 0 0 auto; width: 32px; height: 32px; border: none; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-size: 15px; font-weight: 800; cursor: pointer; }
   .session-howto:active { transform: scale(0.92); }
@@ -7375,7 +7389,8 @@
   function readLibraryStore(){ try { const raw = localStorage.getItem(LIBRARY_KEY); const a = raw ? JSON.parse(raw) : []; return Array.isArray(a) ? a : []; } catch(e){ return []; } }
   function writeLibraryStore(arr){ try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(arr)); } catch(e){} }
   function ensureLibIds(arr){ let changed = false; arr.forEach(r => { if (r && !r.id){ r.id = genLibId(); changed = true; } }); return changed; }
-  function getLibrary(){ const arr = readLibraryStore(); if (ensureLibIds(arr)) writeLibraryStore(arr); return arr; }
+  function normalizeLibGroups(arr){ let changed = false; arr.forEach(r => { if (r && LIB_GROUP_REMAP[r.group]){ r.group = LIB_GROUP_REMAP[r.group]; changed = true; } }); return changed; }
+  function getLibrary(){ const arr = readLibraryStore(); let ch = ensureLibIds(arr); if (normalizeLibGroups(arr)) ch = true; if (ch) writeLibraryStore(arr); return arr; }
   function loadLibrary(){ libraryRoutines = getLibrary(); }
   function saveLibrary(){ writeLibraryStore(libraryRoutines); }
   // Ready-made starter routines, grouped by where you train (editable / deletable).
@@ -7391,36 +7406,32 @@
     return r;
   }
   const STARTER_DEFS = {
-    home: [
-      ["Push-ups",        { reps:true }, { count:3, reps:"12" }, true],
-      ["Chair dips",      { reps:true }, { count:3, reps:"10" }, true],
-      ["Squats",          { reps:true }, { count:3, reps:"15" }, true],
-      ["Walk (in place)", { time:true }, { time:"20" }, false],
-      ["Abdominals",      { reps:true }, { count:3, reps:"20" }, true]
+    weights: [
+      ["Bench press",    { reps:true, weight:true }, { count:3, reps:"10", weight:"45" }, true],
+      ["Dumbbell curls", { reps:true, weight:true }, { count:3, reps:"12", weight:"15" }, true],
+      ["Shoulder press", { reps:true, weight:true }, { count:3, reps:"10", weight:"20" }, true],
+      ["Dumbbell rows",  { reps:true, weight:true }, { count:3, reps:"12", weight:"20" }, true]
     ],
     gym: [
-      ["Bench press",     { reps:true, weight:true }, { count:3, reps:"10", weight:"45" }, true],
-      ["Arm curls",       { reps:true, weight:true }, { count:3, reps:"12", weight:"15" }, true],
-      ["Leg press",       { reps:true, weight:true }, { count:3, reps:"12", weight:"90" }, true],
-      ["Shoulder press",  { reps:true, weight:true }, { count:3, reps:"10", weight:"20" }, true],
-      ["Lat pulldown",    { reps:true, weight:true }, { count:3, reps:"12", weight:"50" }, true]
+      ["Leg press",    { reps:true, weight:true }, { count:3, reps:"12", weight:"90" }, true],
+      ["Lat pulldown", { reps:true, weight:true }, { count:3, reps:"12", weight:"50" }, true],
+      ["Leg curl",     { reps:true, weight:true }, { count:3, reps:"12", weight:"40" }, true],
+      ["Chest press",  { reps:true, weight:true }, { count:3, reps:"10", weight:"40" }, true]
     ],
-    outdoors: [
-      ["Walk",      { time:true }, { time:"30" }, false],
-      ["Run",       { time:true }, { time:"20" }, false],
-      ["Bike",      { time:true }, { time:"30" }, false],
-      ["Hike",      { time:true }, { time:"45" }, false],
-      ["Jump rope", { reps:true }, { count:3, reps:"50" }, true],
-      ["Stairs",    { time:true }, { time:"15" }, false]
+    outdoor: [
+      ["Walk", { time:true }, { time:"30" }, false],
+      ["Run",  { time:true }, { time:"20" }, false],
+      ["Bike", { time:true }, { time:"30" }, false],
+      ["Hike", { time:true }, { time:"45" }, false]
+    ],
+    bodyonly: [
+      ["Push-ups",   { reps:true }, { count:3, reps:"12" }, true],
+      ["Squats",     { reps:true }, { count:3, reps:"15" }, true],
+      ["Abdominals", { reps:true }, { count:3, reps:"20" }, true],
+      ["Chair dips", { reps:true }, { count:3, reps:"10" }, true],
+      ["Lunges",     { reps:true }, { count:3, reps:"12" }, true]
     ]
   };
-  // Which groups to seed: the place(s) the user picked in the guided start (else all 3).
-  function starterGroups(){
-    let where = [];
-    try { const a = JSON.parse(localStorage.getItem(ONB_ANSWERS_KEY) || "{}"); if (Array.isArray(a.where)) where = a.where; } catch(e){}
-    where = where.filter(g => STARTER_DEFS[g]);
-    return where.length ? where : ["home", "gym", "outdoors"];
-  }
   // A ready-made interval routine: an ordered list of timed parts.
   function mkIntervalRoutine(name, group, segments){
     const r = blankRoutine(); r.id = genLibId(); r.name = name; r.group = group;
@@ -7430,11 +7441,10 @@
     return r;
   }
   function starterLibrary(){
-    const groups = starterGroups();
     const out = [];
-    groups.forEach(g => STARTER_DEFS[g].forEach(d => out.push(mkStarterRoutine(d[0], g, d[1], d[2], d[3]))));
+    LIB_GROUP_ORDER.forEach(g => { if (STARTER_DEFS[g]) STARTER_DEFS[g].forEach(d => out.push(mkStarterRoutine(d[0], g, d[1], d[2], d[3]))); });
     // A sample mixed walk/run interval so people see how intervals work.
-    if (groups.indexOf("outdoors") >= 0) out.push(mkIntervalRoutine("Walk + Run", "outdoors", [["Walk", 10], ["Run", 20], ["Walk", 10], ["Run", 20]]));
+    out.push(mkIntervalRoutine("Walk + Run", "outdoor", [["Walk", 10], ["Run", 20], ["Walk", 10], ["Run", 20]]));
     return out;
   }
   // On a brand-new device (empty Library), start people off with the starter routines.
@@ -7445,7 +7455,7 @@
   }
   // "Start over" — replace the Library with fresh starters and clear the weekly picks.
   function libResetToStarter(){
-    if (!window.confirm("Replace your Library with the starter routines (grouped by where you train)?\n\nThis clears your current routines and your weekly picks so you can start fresh.")) return;
+    if (!window.confirm("Replace your Library with the starter routines (grouped by type: Weights, Gym, Outdoor, Body only)?\n\nThis clears your current routines and your weekly picks so you can start fresh.")) return;
     writeLibraryStore(starterLibrary());
     try { localStorage.removeItem(WEEK_SEL_KEY); } catch(e){}
     localStorage.setItem(LIBRARY_SEEDED_KEY, "1");
@@ -7454,9 +7464,11 @@
   }
   window.libResetToStarter = libResetToStarter;
   // Draw the library cards (one per saved routine) into #libraryList.
-  // Routines are grouped by WHERE you train (matches the guided-start "where" question).
-  const LIB_GROUP_META = { home:{ icon:"🏠", name:"At Home" }, gym:{ icon:"🏋️", name:"At Gym" }, outdoors:{ icon:"🌳", name:"Outdoors" } };
-  const LIB_GROUP_ORDER = ["home", "gym", "outdoors", "__mine__"];
+  // Routines are grouped by TYPE; you choose each routine's group on its card.
+  const LIB_GROUP_META = { weights:{ icon:"🏋️", name:"Weights" }, gym:{ icon:"🏢", name:"Gym" }, outdoor:{ icon:"🌳", name:"Outdoor" }, bodyonly:{ icon:"💪", name:"Body only" } };
+  const LIB_GROUP_ORDER = ["weights", "gym", "outdoor", "bodyonly", "__mine__"];
+  // Old location-based groups → new type-based groups (one-time, for existing routines).
+  const LIB_GROUP_REMAP = { home:"bodyonly", outdoors:"outdoor" };
   function buildLibCard(r, num, isFirst, isLast){
     const _def = blankRoutine();
     if (!r.details) r.details = _def.details;
@@ -7475,6 +7487,12 @@
           </div>
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
           <button class="routine-delete" title="Delete this routine" onclick="libDeleteRoutine(this)">✕</button>
+        </div>
+        <div class="lib-groups">
+          <button type="button" class="lib-grp-btn" data-g="weights" onclick="libSetGroup(this,'weights')">🏋️ Weights</button>
+          <button type="button" class="lib-grp-btn" data-g="gym" onclick="libSetGroup(this,'gym')">🏢 Gym</button>
+          <button type="button" class="lib-grp-btn" data-g="outdoor" onclick="libSetGroup(this,'outdoor')">🌳 Outdoor</button>
+          <button type="button" class="lib-grp-btn" data-g="bodyonly" onclick="libSetGroup(this,'bodyonly')">💪 Body only</button>
         </div>
         <div class="lib-mode">
           <button type="button" class="lib-mode-btn" data-mode="sets" onclick="libSetMode(this,'sets')">Repeat sets</button>
@@ -7514,6 +7532,8 @@
           </div>
         </div>`;
     card.querySelector(".routine-input").value = r.name || "";
+    const g = r.group || "";
+    card.querySelectorAll(".lib-grp-btn").forEach(b => b.classList.toggle("active", b.dataset.g === g));
     return card;
   }
   function renderLibrary(){
@@ -7530,7 +7550,8 @@
       return;
     }
     // Bucket by group; ungrouped routines (the user's own) go under "My own routines".
-    const buckets = { home:[], gym:[], outdoors:[], __mine__:[] };
+    const buckets = {};
+    LIB_GROUP_ORDER.forEach(g => { buckets[g] = []; });
     libraryRoutines.forEach(r => { const g = LIB_GROUP_META[r.group] ? r.group : "__mine__"; buckets[g].push(r); });
     LIB_GROUP_ORDER.forEach(g => {
       const items = buckets[g];
@@ -7598,6 +7619,18 @@
     });
     libraryRoutines = arr;
   }
+  // Choose which group a routine belongs to (Weights / Gym / Outdoor / Body only).
+  function libSetGroup(btn, g){
+    const card = btn.closest(".routine-card");
+    if (!card) return;
+    const id = card.dataset.libId;
+    card.dataset.libGroup = g;
+    captureLibrary(); saveLibrary(); renderLibrary(); // re-render so it moves into that section
+    // Keep the routine the user just tagged in view.
+    const moved = [...document.querySelectorAll("#libraryList .routine-card")].find(c => c.dataset.libId === id);
+    if (moved) moved.scrollIntoView({ block:"center", behavior:"smooth" });
+  }
+  window.libSetGroup = libSetGroup;
   // Switch a routine card between "Repeat sets" and "Intervals (mix)" mode.
   function libSetMode(btn, mode){
     const card = btn.closest(".routine-card");
@@ -7769,15 +7802,18 @@
     const m = document.getElementById("wpCopyMsg");
     if (m) m.textContent = "✓ Copied to " + (fullNames[target] || target);
   }
-  function openWeekPlanPage(){
+  function openWeekPlanPage(day){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
     leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
-    weekPlanDay = todayKey;
+    weekPlanDay = (day && days.indexOf(day) >= 0) ? day : todayKey;
     document.getElementById("weekPlanOverlay").classList.add("show");
     renderWeekPlan();
     renderPageBar();
   }
+  // From Today's MOWES rest-day → jump to the picker on the day you're viewing.
+  function sessionAddRoutine(){ openWeekPlanPage(sessionSelDay); }
+  window.sessionAddRoutine = sessionAddRoutine;
   function leaveWeekPlanPage(){ const el = document.getElementById("weekPlanOverlay"); if (el) el.classList.remove("show"); }
   function weekPlanShownAsPage(){ const el = document.getElementById("weekPlanOverlay"); return !!(el && el.classList.contains("show")); }
   // Is this a PLANNED rest day? (You have a library, but picked nothing for this day.)
@@ -8058,10 +8094,25 @@
     sessionStepsArr = sessionStepsFor(sessionSelDay);
     const list = document.getElementById("sessionList"), now = document.getElementById("sessionNow"), btn = document.getElementById("sessionStartBtn");
     if (!sessionStepsArr.length){
-      const msg = isPlannedRestDay(sessionSelDay)
-        ? '🌴 Rest day — enjoy your recovery!<br><br>Want a workout today? Add routines for this day in 🗓️ My Weekly Plan.'
-        : 'Nothing set for this day yet. Build routines in 📚 My Library, then pick them for your days in 🗓️ My Weekly Plan. 💪';
-      if (list) list.innerHTML = '<div class="session-empty">' + msg + '</div>';
+      if (list){
+        if (isPlannedRestDay(sessionSelDay)){
+          list.innerHTML =
+            '<div class="restday-card">' +
+              '<div class="restday-emoji">🌴</div>' +
+              '<div class="restday-title">Rest Day</div>' +
+              '<div class="restday-sub">Enjoy your recovery — you’ve earned it. 💛</div>' +
+              '<button class="restday-add" onclick="sessionAddRoutine()">＋ Add a Routine</button>' +
+            '</div>';
+        } else {
+          list.innerHTML =
+            '<div class="restday-card">' +
+              '<div class="restday-emoji">🗓️</div>' +
+              '<div class="restday-title">Nothing set yet</div>' +
+              '<div class="restday-sub">Pick a routine from your Library for this day.</div>' +
+              '<button class="restday-add" onclick="sessionAddRoutine()">＋ Add a Routine</button>' +
+            '</div>';
+        }
+      }
       if (now){ now.className = "session-now"; now.innerHTML = ""; }
       if (btn) btn.style.display = "none";
       return;
