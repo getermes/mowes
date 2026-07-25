@@ -2046,6 +2046,9 @@
   .onb-c-text { display: flex; flex-direction: column; }
   .onb-c-label { font-weight: 800; color: #3a4066; font-size: 16px; }
   .onb-c-desc { font-size: 13px; color: #888; margin-top: 2px; }
+  .onb-c-del { margin-left: auto; flex: 0 0 auto; color: #c2c6da; font-size: 15px; font-weight: 800; padding: 4px 9px; border-radius: 8px; }
+  .onb-c-del:hover { color: #e2536e; background: #fdeef1; }
+  .onb-choice.picked .onb-c-del { color: #a9adc6; }
   .onb-note { font-size: 12.5px; color: #7a7f95; margin-top: 20px; line-height: 1.5; }
   .onb-progress { display: flex; justify-content: center; gap: 7px; margin-bottom: 14px; }
   .onb-dot { width: 8px; height: 8px; border-radius: 50%; background: #c7cdf0; transition: background 0.2s, transform 0.2s; }
@@ -6524,12 +6527,14 @@
       { e:"🏋️", l:"At a gym", d:"", v:"gym" },
       { e:"🌳", l:"Outdoors", d:"", v:"outdoors" } ] },
     { key:"equipment", emoji:"🏋️", title:"What do you have to work out with?", sub:"Pick all that apply.", multi:true, opts:[
-      { e:"🤲", l:"Dumbbells / hand weights", d:"", v:"dumbbells" },
-      { e:"🏋️", l:"Barbell (long bar)", d:"", v:"barbell" },
-      { e:"🏃", l:"Treadmill", d:"", v:"treadmill" },
-      { e:"🚴", l:"Stationary bike", d:"", v:"bike" },
-      { e:"🚶", l:"Walking or running outside", d:"", v:"walk_run" },
-      { e:"💪", l:"Just my body (no equipment)", d:"", v:"bodyweight" } ] },
+      { e:"🤲", l:"Dumbbells / hand weights", d:"", v:"dumbbells", where:["home","gym"] },
+      { e:"🏋️", l:"Barbell (long bar)", d:"", v:"barbell", where:["home","gym"] },
+      { e:"🏃", l:"Treadmill", d:"", v:"treadmill", where:["home","gym"] },
+      { e:"🚴", l:"Stationary bike", d:"", v:"bike", where:["home","gym"] },
+      { e:"🚶", l:"Walking or running outside", d:"", v:"walk_run", where:["outdoors"] },
+      { e:"🚵", l:"Cycling outside", d:"", v:"cycling", where:["outdoors"] },
+      { e:"⛸️", l:"Skating", d:"", v:"skating", where:["outdoors"] },
+      { e:"💪", l:"Just my body (no equipment)", d:"", v:"bodyweight", where:["home","gym","outdoors"] } ] },
     { key:"time", emoji:"⏱️", title:"How much time per session?", sub:"Pick all that apply.", multi:true, opts:[
       { e:"⚡", l:"15 min", d:"Quick", v:"15" },
       { e:"⏳", l:"30 min", d:"Standard", v:"30" },
@@ -6574,11 +6579,31 @@
     hideOnboarding();
     openSetupPage();
   }
+  // Your own added choices (e.g. "60 min", "Kettlebell") are kept on the phone so
+  // they become permanent, tap-on/tap-off options — not lost when you un-tap them.
+  const ONB_CUSTOM_KEY = "mowes_onb_custom_v1";
+  function loadOnbCustom(){ try { return JSON.parse(localStorage.getItem(ONB_CUSTOM_KEY) || "{}") || {}; } catch(e){ return {}; } }
+  function saveOnbCustom(obj){ try { localStorage.setItem(ONB_CUSTOM_KEY, JSON.stringify(obj)); } catch(e){} }
+  function onbCustomFor(key){ const c = loadOnbCustom(); return Array.isArray(c[key]) ? c[key] : []; }
+  function onbRemoveCustom(key, value){
+    const c = loadOnbCustom();
+    c[key] = (Array.isArray(c[key]) ? c[key] : []).filter(v => v !== value);
+    saveOnbCustom(c);
+    if (Array.isArray(onbAnswers[key])) onbAnswers[key] = onbAnswers[key].filter(v => v !== value);
+    renderOnbStep();
+  }
+  window.onbRemoveCustom = onbRemoveCustom;
   function onbAddCustom(){
     const q = ONB_QUESTIONS[onbStep];
     if (!q || !q.multi) return;
     const name = (window.prompt("Add your own — type it and tap OK:") || "").trim();
     if (!name) return;
+    // Keep it as a permanent, reusable choice for this question.
+    const c = loadOnbCustom();
+    const store = Array.isArray(c[q.key]) ? c[q.key] : [];
+    if (store.indexOf(name) < 0) store.push(name);
+    c[q.key] = store; saveOnbCustom(c);
+    // And select it right now.
     let arr = Array.isArray(onbAnswers[q.key]) ? onbAnswers[q.key] : [];
     if (arr.indexOf(name) < 0) arr.push(name);
     onbAnswers[q.key] = arr;
@@ -7487,7 +7512,22 @@
     const choices = document.getElementById("onbChoices");
     choices.innerHTML = "";
     const isMulti = !!q.multi;
-    q.opts.forEach(o => {
+    // Only show options that fit the WHERE they picked. If they train outdoors
+    // only, don't ask about dumbbells/barbell — show walk, run, cycling, skating.
+    let opts = q.opts;
+    if (q.key === "equipment"){
+      const where = Array.isArray(onbAnswers.where) ? onbAnswers.where : [];
+      if (where.length){
+        opts = q.opts.filter(o => !o.where || o.where.some(w => where.indexOf(w) >= 0));
+        // Drop any earlier picks that no longer fit (e.g. barbell when now outdoors-only),
+        // but keep the user's own typed-in "add your own" entries.
+        if (Array.isArray(onbAnswers.equipment)){
+          const visibleV = opts.map(o => o.v), allKnownV = q.opts.map(o => o.v);
+          onbAnswers.equipment = onbAnswers.equipment.filter(v => visibleV.indexOf(v) >= 0 || allKnownV.indexOf(v) < 0);
+        }
+      }
+    }
+    opts.forEach(o => {
       const b = document.createElement("button");
       b.className = "onb-choice";
       b.innerHTML = '<span class="onb-c-emoji">' + o.e + '</span><span class="onb-c-text"><span class="onb-c-label">' + escapeHtml(o.l) + '</span>' + (o.d ? '<span class="onb-c-desc">' + escapeHtml(o.d) + '</span>' : '') + '</span>';
@@ -7497,14 +7537,16 @@
       choices.appendChild(b);
     });
     if (isMulti){
-      // Show any "add your own" values the user typed, so they can remove them too.
-      const arr0 = Array.isArray(onbAnswers[q.key]) ? onbAnswers[q.key] : [];
+      // Your own saved choices — permanent, tap on/off, with a ✕ to remove for good.
       const known = q.opts.map(o => o.v);
-      arr0.filter(v => known.indexOf(v) < 0).forEach(v => {
+      onbCustomFor(q.key).filter(v => known.indexOf(v) < 0).forEach(v => {
+        const on = Array.isArray(onbAnswers[q.key]) && onbAnswers[q.key].indexOf(v) >= 0;
         const b = document.createElement("button");
-        b.className = "onb-choice picked";
-        b.innerHTML = '<span class="onb-c-emoji">✏️</span><span class="onb-c-text"><span class="onb-c-label">' + escapeHtml(v) + '</span></span>';
+        b.className = "onb-choice" + (on ? " picked" : "");
+        b.innerHTML = '<span class="onb-c-emoji">✏️</span><span class="onb-c-text"><span class="onb-c-label">' + escapeHtml(v) + '</span><span class="onb-c-desc">Your own</span></span><span class="onb-c-del" title="Remove">✕</span>';
         b.onclick = () => onbToggle(v);
+        const del = b.querySelector(".onb-c-del");
+        if (del) del.onclick = (ev) => { ev.stopPropagation(); onbRemoveCustom(q.key, v); };
         choices.appendChild(b);
       });
       const add = document.createElement("button");
@@ -7579,18 +7621,20 @@
     treadmill:  ["Treadmill walk", "Treadmill jog", "Incline walk"],
     bike:       ["Stationary bike ride", "Bike intervals"],
     walk_run:   ["Brisk walk", "Jog / run", "Walk-run intervals"],
+    cycling:    ["Outdoor bike ride", "Cycling intervals", "Hill climb ride"],
+    skating:    ["Skating session", "Skate intervals"],
     bodyweight: ["Push-ups", "Squats", "Plank", "Lunges", "Glute bridges"]
   };
-  const EQUIP_GROUP_NAME = { dumbbells:"🤲 With your dumbbells", barbell:"🏋️ With your barbell", treadmill:"🏃 On the treadmill", bike:"🚴 On the bike", walk_run:"🚶 Walking / running", bodyweight:"💪 Bodyweight" };
+  const EQUIP_GROUP_NAME = { dumbbells:"🤲 With your dumbbells", barbell:"🏋️ With your barbell", treadmill:"🏃 On the treadmill", bike:"🚴 On the bike", walk_run:"🚶 Walking / running", cycling:"🚵 Cycling outdoors", skating:"⛸️ Skating", bodyweight:"💪 Bodyweight" };
   // All the exercises they can PICK from, grouped by the equipment they have.
   function equipMovesFor(a){
     let equip = Array.isArray(a.equipment) ? a.equipment.slice() : (a.equipment ? [a.equipment] : []);
     if (!equip.length) equip = ["bodyweight"];
     return equip.map(k => ({ key:k, name: EQUIP_GROUP_NAME[k] || k, moves: (EQUIP_MOVES[k] || []).slice() }));
   }
-  const CARDIO_EQUIP = ["treadmill", "bike", "walk_run"];
+  const CARDIO_EQUIP = ["treadmill", "bike", "walk_run", "cycling", "skating"];
   const STRENGTH_EQUIP = ["dumbbells", "barbell", "bodyweight"];
-  const EQUIP_NAME = { dumbbells:"dumbbells", barbell:"a barbell", treadmill:"a treadmill", bike:"a bike", walk_run:"outdoor walks/runs", bodyweight:"just your body" };
+  const EQUIP_NAME = { dumbbells:"dumbbells", barbell:"a barbell", treadmill:"a treadmill", bike:"a bike", walk_run:"outdoor walks/runs", cycling:"outdoor cycling", skating:"skating", bodyweight:"just your body" };
   function buildSuggestion(a){
     const times = Array.isArray(a.time) ? a.time : (a.time ? [a.time] : ["30"]);
     const shortest = times.indexOf("15") >= 0 ? "15" : (times.indexOf("30") >= 0 ? "30" : (times[0] || "30"));
