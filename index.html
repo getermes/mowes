@@ -2507,18 +2507,22 @@
   .welcome-overlay {
     position: fixed; inset: 0; z-index: 9999;
     display: none;
-    align-items: flex-start; justify-content: center;
-    padding: 40px 18px 28px;
+    align-items: stretch; justify-content: center;
+    padding: 34px 18px 64px;
     overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
   }
-  .welcome-overlay.show { display: flex; align-items: center; }
+  .welcome-overlay.show { display: flex; }
   /* When the Cover is shown as page 1 (via the bottom bar), sit it below the bar. */
   .welcome-overlay.cover-as-page { z-index: 1000; padding-bottom: 90px; }
   .welcome-box {
     max-width: 360px; width: 100%;
     text-align: center;
+    display: flex; flex-direction: column;
   }
+  /* Spread the cover: ERMES stays up top, the cluster floats to the middle, and the
+     like/coffee set drops to the bottom — the two auto margins share the free space. */
+  .cover-support { margin-top: auto; padding-top: 8px; }
   .welcome-mark {
     font-size: 18px; font-weight: 800; letter-spacing: 1.5px;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
@@ -2528,7 +2532,7 @@
   .welcome-tag {
     margin-top: 5px; color: #B5760F; font-size: 13px; font-weight: 700;
   }
-  .welcome-dumbbell { display: block; width: 104px; height: auto; margin: 24px auto 0; transform: translateY(-12px); }
+  .welcome-dumbbell { display: block; width: 104px; height: auto; margin: auto auto 0; transform: translateY(-12px); }
   .welcome-emoji { font-size: 46px; margin: -42px 0 0; position: relative; z-index: 2; }
   .welcome-title { font-weight: 800; }
   .welcome-greet {
