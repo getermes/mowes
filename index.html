@@ -1347,15 +1347,30 @@
     color: #6a6f85;
     white-space: nowrap;
   }
-  /* "How many sets?" quick-fill control above the set rows */
-  .sets-count-row { display: flex; align-items: center; gap: 8px; margin: 2px 2px 8px; }
-  .sets-count-row .scr-label { font-size: 13px; font-weight: 700; color: #3a4066; }
-  .sets-count-input {
-    width: 56px; text-align: center; font-size: 15px; font-weight: 800; color: #5b6cff;
-    border: 2px solid #d6d9ec; border-radius: 10px; padding: 6px 4px; background: #fff;
+  /* Inline routine entry: one value per line (Sets / Reps / Weight / …) */
+  .sets-inline { display: flex; flex-direction: column; gap: 8px; margin: 4px 2px 10px; }
+  .si-row { display: flex; align-items: center; gap: 10px; }
+  .si-label { flex: 0 0 78px; font-size: 14px; font-weight: 700; color: #3a4066; }
+  .si-input {
+    width: 72px; text-align: center; font-size: 16px; font-weight: 800; color: #3a4066;
+    border: 2px solid #d6d9ec; border-radius: 10px; padding: 8px 6px; background: #fff;
   }
-  .sets-count-input:focus { outline: none; border-color: #5b6cff; }
-  .sets-count-row .scr-hint { font-size: 12px; color: #9096ad; }
+  .si-input:focus { outline: none; border-color: #5b6cff; }
+  .si-input[data-role="count"] { color: #5b6cff; }
+  .si-unit { font-size: 13px; font-weight: 700; color: #5b6cff; }
+  button.si-unit { background: none; border: none; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0; }
+  .sets-add-btn {
+    display: inline-block; margin: 2px 2px 6px; padding: 9px 22px; font-size: 14px; font-weight: 800;
+    color: #fff; background: linear-gradient(135deg, #5b6cff, #7a5bff); border: none; border-radius: 12px;
+    cursor: pointer; box-shadow: 0 6px 16px rgba(91,108,255,0.25);
+  }
+  .sets-add-btn:active { transform: scale(0.98); }
+  .sets-summary {
+    margin: 2px 2px 6px; padding: 8px 12px; font-size: 13.5px; font-weight: 800; color: #1f8f5f;
+    background: #eafaf2; border: 1px solid #bfe9d4; border-radius: 10px; display: inline-block;
+  }
+  .sets-summary.flash { animation: setsSummaryPop 0.5s ease; }
+  @keyframes setsSummaryPop { from { transform: scale(0.9); opacity: 0.4; } to { transform: scale(1); opacity: 1; } }
   /* Column titles sitting above the set rows: Sets  Rep  Wght */
   .sets-head {
     display: flex;
@@ -4922,9 +4937,9 @@
             <div class="sets-block">
               <div class="sets-cols"></div>
               <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><button type="button" class="lap-measure-link" onclick="openLapMeasure(this)">📏 not sure? measure it</button><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
-              <div class="sets-count-row"><span class="scr-label">How many sets?</span><input class="sets-count-input" type="number" min="1" max="20" inputmode="numeric" value="1" onchange="setSetsCount(this)" onclick="this.select()"><span class="scr-hint">fills them all the same</span></div>
-              <div class="sets-head"></div>
-              <div class="sets-list"></div>
+              <div class="sets-inline"></div>
+              <button class="sets-add-btn" onclick="addBuiltSets(this)">＋ ADD</button>
+              <div class="sets-summary" style="display:none;"></div>
               <div class="sets-speed" style="display:none;"></div>
               <div class="rest-times">
                 <div class="rest-times-title">⏱ Rest Times</div>
@@ -5118,12 +5133,7 @@
     const { cfg, sets } = normReps(d);
     fieldEl._repsCfg = cfg;
     renderSetsCols(fieldEl.querySelector(".sets-cols"), cfg);
-    renderSetsHead(fieldEl.querySelector(".sets-head"), cfg, sets.length);
-    const listWrap = fieldEl.querySelector(".sets-list");
-    listWrap.innerHTML = "";
-    sets.forEach((s, i) => listWrap.appendChild(buildSetRow(i + 1, s, cfg)));
-    const countInput = fieldEl.querySelector(".sets-count-input");
-    if (countInput) countInput.value = sets.length;
+    renderSetsInline(fieldEl, cfg, sets);
     const restEl = fieldEl.querySelector(".rest-input");
     if (restEl) restEl.value = cfg.rest ? cfg.rest : "";
     const restAfterEl = fieldEl.querySelector(".rest-after-input");
@@ -5135,11 +5145,63 @@
     if (lapRow) lapRow.style.display = cfg.cols.distance ? "flex" : "none";
     if (lapInput) lapInput.value = cfg.lapLen ? cfg.lapLen : "";
     if (lapUnit) lapUnit.textContent = (cfg.distUnit === "km") ? "km" : "mi";
-    if (listWrap && !listWrap.dataset.speedBound){
-      listWrap.addEventListener("input", () => recalcLaps(fieldEl));
-      listWrap.dataset.speedBound = "1";
-    }
-    recalcLaps(fieldEl);
+    updateSetsSummary(fieldEl);
+  }
+  // NEW entry model: one value per metric on its own line (Sets / Reps / Weight / …).
+  // Tap the column buttons to choose metrics; type a value each; ADD builds the sets.
+  function renderSetsInline(fieldEl, cfg, sets){
+    const wrap = fieldEl.querySelector(".sets-inline");
+    if (!wrap) return;
+    const first = (sets && sets[0]) || {};
+    const count = (sets && sets.length) || 1;
+    let html = `<div class="si-row"><span class="si-label">Sets</span><input class="si-input" data-role="count" type="number" min="1" max="20" inputmode="numeric" value="${count}" oninput="onSetsInlineInput(this)" onclick="this.select()"></div>`;
+    activeCols(cfg).forEach(k => {
+      const info = SET_COL_INFO[k];
+      const v = (first[k] == null) ? "" : first[k];
+      const titleText = info.title(cfg);
+      // Only show a unit when it adds info: a switchable unit (weight/distance) or a
+      // different word than the label (time → "min"). Skip it for Reps (label says it).
+      const unit = info.unitKey
+        ? `<button type="button" class="si-unit sh-unit-btn" data-col="${k}" onclick="toggleColUnit(this)" title="Switch unit">${titleText}</button>`
+        : ((titleText && titleText !== info.toggle) ? `<span class="si-unit">${titleText}</span>` : "");
+      html += `<div class="si-row"><span class="si-label">${info.toggle}</span><input class="si-input set-inline" data-col="${k}" type="number" min="0" step="any" inputmode="decimal" placeholder="${info.ph}" value="${v}" oninput="onSetsInlineInput(this)">${unit}</div>`;
+    });
+    wrap.innerHTML = html;
+  }
+  function onSetsInlineInput(el){
+    const fieldEl = el.closest(".detail-field");
+    if (!fieldEl) return;
+    captureDay(); saveData();
+    updateSetsSummary(fieldEl);
+  }
+  window.onSetsInlineInput = onSetsInlineInput;
+  // ADD button → build the full routine from the values, and show a confirmation.
+  function addBuiltSets(btn){
+    const fieldEl = btn.closest(".detail-field");
+    if (!fieldEl) return;
+    captureDay(); saveData();
+    updateSetsSummary(fieldEl, true);
+  }
+  window.addBuiltSets = addBuiltSets;
+  // The green "✓ 4 × 10 reps · 8 lbs" summary line under ADD.
+  function updateSetsSummary(fieldEl, flash){
+    const el = fieldEl.querySelector(".sets-summary");
+    const cfg = fieldEl._repsCfg;
+    if (!el || !cfg) return;
+    const rd = readRepsFromDom(fieldEl);
+    const count = rd.sets.length, v = rd.sets[0] || {};
+    const parts = [];
+    activeCols(cfg).forEach(k => {
+      if (k === "reps" && v.reps) parts.push(v.reps + " reps");
+      else if (k === "weight" && v.weight) parts.push(v.weight + " " + (cfg.weightUnit === "kg" ? "kg" : "lbs"));
+      else if (k === "time" && v.time) parts.push(v.time + " min");
+      else if (k === "distance" && v.distance) parts.push(v.distance + " " + (cfg.distUnit === "km" ? "km" : "mi"));
+    });
+    if (parts.length){
+      el.textContent = "✓ " + count + " × " + parts.join(" · ");
+      el.style.display = "block";
+      if (flash){ el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+    } else { el.style.display = "none"; el.textContent = ""; }
   }
   // Lap length changed → auto-fill each set's distance from its reps (laps)
   function lapChanged(input){
@@ -5229,15 +5291,19 @@
     return row;
   }
 
-  // Read the current table's DOM (values + column config) back into a data object
+  // Read the inline entry (one value per metric + a Sets count) and build the sets
+  // array — N identical sets — so everything downstream (Today's Session, history,
+  // rest wiring) keeps working exactly as before.
   function readRepsFromDom(fieldEl){
     const cfg = fieldEl._repsCfg || normReps({}).cfg;
     const cols = activeCols(cfg);
-    const sets = [...fieldEl.querySelectorAll(".set-row")].map(row => {
-      const s = { reps:"", weight:"", time:"", distance:"", done: row.dataset.done === "true" };
-      cols.forEach(k => { const el = row.querySelector(`.set-col[data-col="${k}"]`); s[k] = el ? el.value : ""; });
-      return s;
-    });
+    const countEl = fieldEl.querySelector('.si-input[data-role="count"]');
+    let count = countEl ? (parseInt(countEl.value, 10) || 1) : 1;
+    if (count < 1) count = 1; if (count > 20) count = 20;
+    const vals = { reps:"", weight:"", time:"", distance:"" };
+    cols.forEach(k => { const el = fieldEl.querySelector(`.set-inline[data-col="${k}"]`); if (el) vals[k] = el.value; });
+    const sets = [];
+    for (let i = 0; i < count; i++) sets.push({ reps: vals.reps, weight: vals.weight, time: vals.time, distance: vals.distance, done: false });
     const restEl = fieldEl.querySelector(".rest-input");
     const restAfterEl = fieldEl.querySelector(".rest-after-input");
     const lapEl = fieldEl.querySelector(".lap-input");
