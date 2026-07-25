@@ -4088,6 +4088,7 @@
   // Rebuilding the app one page at a time: flip a page to true here to switch it back
   // on in the lean version. (The ?full preview always shows every page, regardless.)
   const PAGES_ON = {
+    weekly: true,   // 🗓️ My Weekly Plan — the routine builder + weekly day-schedule (the "default" sheet page)
     setup: true,    // ⚙️ My Set-up — review/change your guided-start answers
     rules: true,    // 📜 My Rules — rules that shape how picks are chosen
     goals: true,    // 🎯 My Goals & Achievement (Achievements is now a section here)
@@ -4105,6 +4106,8 @@
     }
     // Lean core (Cover + Today's Session) plus any pages we've switched back on so far.
     const stops = base.slice();
+    // Right after Today's Session: the routine builder + weekly day-schedule (the "default" sheet page).
+    if (PAGES_ON.weekly){ const wp = pages.find(p => p.id === "default"); if (wp) stops.push({ id: wp.id, name:"My Weekly Plan", icon:"🗓️ " }); }
     if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals & Achievement", icon:"🎯 " });
     if (PAGES_ON.body)  stops.push({ body:true, name:"My Body & Pics", icon:"📏 " });
     if (PAGES_ON.shopping){ const sp = pages.find(p => p.id === "p_ex_shopping"); if (sp) stops.push({ id: sp.id, name:"My Shopping", icon:"🛒 " }); }
@@ -4280,10 +4283,8 @@
         steps.push({ kind:"pick", name:name, groupKey:"__surprise__", groupTitle:"🎁 Today's surprise", rowLabel:name, detail:"", done: doneSet.has(name) });
       });
     }
-    // 2) The sets from the routines they've built for today.
-    // In the lean version the routine pages are on hold, so Today's Session shows
-    // only the user's own guided-start picks (above) — not the sample routines.
-    if (!LEAN_MODE) pages.filter(p => p.type === "sheet").forEach(pg => {
+    // 2) The sets from the routines they've built for today (My Weekly Plan is on).
+    if (!LEAN_MODE || PAGES_ON.weekly) pages.filter(p => p.type === "sheet").forEach(pg => {
       const week = ensureTodayWeek(pg.id);
       const routines = (week && week[todayKey]) || [];
       routines.forEach((r, ri) => {
@@ -7201,10 +7202,10 @@
   }
   function sessionStepsFor(day){
     const steps = [];
-    // In the lean version the routine pages are on hold, so Today's Session is built
-    // ONLY from the user's guided-start picks (the starter fallback below) — not the
-    // sample routine pages. Flip LEAN_MODE off to include built routines again.
-    if (!LEAN_MODE) pages.filter(p => p.type === "sheet").forEach(pg => {
+    // Build the day from what the user made on their routine pages (My Weekly Plan).
+    // When that page is on (or in the full app), a day with built routines uses them;
+    // days left empty fall back to the guided-start picks below.
+    if (!LEAN_MODE || PAGES_ON.weekly) pages.filter(p => p.type === "sheet").forEach(pg => {
       let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
       const week = all[currentWeekKey] || {};
       (week[day] || []).forEach((r, ri) => {
