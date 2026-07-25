@@ -2512,7 +2512,7 @@
     overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%);
   }
-  .welcome-overlay.show { display: flex; }
+  .welcome-overlay.show { display: flex; align-items: center; }
   /* When the Cover is shown as page 1 (via the bottom bar), sit it below the bar. */
   .welcome-overlay.cover-as-page { z-index: 1000; padding-bottom: 90px; }
   .welcome-box {
@@ -2528,7 +2528,7 @@
   .welcome-tag {
     margin-top: 5px; color: #B5760F; font-size: 13px; font-weight: 700;
   }
-  .welcome-dumbbell { display: block; width: 104px; height: auto; margin: 190px auto 0; transform: translateY(-12px); }
+  .welcome-dumbbell { display: block; width: 104px; height: auto; margin: 24px auto 0; transform: translateY(-12px); }
   .welcome-emoji { font-size: 46px; margin: -42px 0 0; position: relative; z-index: 2; }
   .welcome-title { font-weight: 800; }
   .welcome-greet {
@@ -2557,17 +2557,20 @@
     background: rgba(255,255,255,0.7); border: 1px solid #d6dbf5;
     border-radius: 999px; padding: 6px 11px;
   }
+  /* The "go" control is shaped like an arrow pointing right (not a pill). */
   .welcome-btn {
-    display: block; width: 100%; margin-top: 40px;
+    display: block; width: 100%; margin-top: 30px;
     border: none; cursor: pointer;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
-    color: #fff; font-weight: 700; font-size: 16px;
-    padding: 14px; border-radius: 14px;
+    color: #fff; font-weight: 800; font-size: 17px; letter-spacing: 0.3px;
+    text-align: right; padding: 17px 58px 17px 26px; border-radius: 0;
     box-shadow: 0 6px 16px rgba(91,108,255,0.28);
+    clip-path: polygon(0 0, 84% 0, 100% 50%, 84% 100%, 0 100%, 7% 50%);
+    animation: welcomeArrowNudge 1.3s ease-in-out infinite;
   }
-  .welcome-btn:active { transform: scale(0.99); }
-  .welcome-arrow { display: inline-block; margin-left: 4px; animation: welcomeArrowNudge 1.3s ease-in-out infinite; }
-  @keyframes welcomeArrowNudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+  .welcome-btn:active { animation: none; transform: translateX(4px); }
+  .welcome-arrow { display: none; }
+  @keyframes welcomeArrowNudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
   .welcome-note { position: fixed; left: 0; right: 0; bottom: 16px; margin: 0; text-align: center; font-size: 13px; color: #5b6cff; font-weight: 600; line-height: 1.4; }
   .welcome-note .wn-name { color: #E0941A; font-weight: 700; }
   .welcome-note .wn-heart { font-style: normal; }
@@ -2763,7 +2766,7 @@
         <rect x="441" y="52" width="8" height="16" rx="3" fill="#F0A32E"/>
       </svg>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
-      <button class="welcome-btn" onclick="dismissWelcome()">Today's MOWES <span class="welcome-arrow">→</span></button>
+      <button class="welcome-btn" onclick="dismissWelcome()">Today's</button>
       <p class="welcome-note">Made with <span class="wn-heart">💛</span> by <span class="wn-name">EUgenio</span> — the Idea Guy</p>
       <div class="cover-support" id="coverSupport"></div>
     </div>
@@ -2802,7 +2805,7 @@
         <label>Between ex. <input id="sessionExRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
         <label>New muscle <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
       </div>
-      <p class="setup-note">🔒 Runs on your phone. Tap Start and MOWES moves you through the day.</p>
+      <p class="setup-note">🔒 Runs on your phone.</p>
     </div>
   </div>
 
@@ -2866,9 +2869,7 @@
   <div class="setup-overlay" id="setupOverlay">
     <div class="setup-inner">
       <div class="setup-title">⚙️ My Set-up</div>
-      <div class="setup-sub">Your answers — add or change them anytime.</div>
       <div id="setupBody"></div>
-      <p class="setup-hint">👆 Tap any answer above to change it.</p>
       <button class="setup-redo" onclick="editSetup()">↺ Redo all the questions</button>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
     </div>
@@ -2878,20 +2879,18 @@
   <div class="body-overlay" id="bodyOverlay">
     <div class="body-inner">
       <div class="setup-title">📏 My Body &amp; Pics</div>
-      <div class="setup-sub">Track your measurements &amp; progress photos over time.</div>
       <button class="body-log-btn" onclick="openBodyLog()">＋ Log today</button>
       <div id="bodyHistory"></div>
       <!-- Progress photos gallery (folded in from the old Pictures page) -->
       <div class="body-pics-section">
         <div class="body-pics-title">📸 Progress photos</div>
-        <p class="body-pics-note">📍 Each photo remembers the date &amp; place it was taken — saved only on your phone.</p>
         <div class="pics-actions">
           <button type="button" class="pics-add" onclick="document.getElementById('bodyPicsCam').click()">📷 Take a photo</button>
           <button type="button" class="pics-add pics-add-alt" onclick="document.getElementById('bodyPicsInput').click()">🖼️ From phone</button>
         </div>
         <input type="file" id="bodyPicsCam" accept="image/*" capture="environment" style="display:none" onchange="addBodyPics(this)">
         <input type="file" id="bodyPicsInput" accept="image/*" multiple style="display:none" onchange="addBodyPics(this)">
-        <p class="pics-empty" id="bodyPicsEmpty">No photos yet. Take a photo or add one from your phone — they stay on your device. 🔒</p>
+        <p class="pics-empty" id="bodyPicsEmpty">No photos yet.</p>
         <div class="body-gallery" id="bodyPicsGrid"></div>
       </div>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
@@ -2921,7 +2920,6 @@
   <div class="goals-overlay" id="goalsOverlay">
     <div class="goals-inner">
       <div class="setup-title">🎯 My Goals &amp; Achievement</div>
-      <div class="setup-sub">Set where you want to get to — MOWES tracks your climb.</div>
       <button class="goal-add-btn" onclick="openGoalForm()">＋ Add a goal</button>
       <div id="goalsList"></div>
       <!-- Achievements: a progress report worked out from your Goals + My Body -->
@@ -2960,15 +2958,14 @@
   <div class="library-overlay" id="buildOverlay">
     <div class="library-inner">
       <div class="setup-title">🛠️ Build MOWES</div>
-      <div class="setup-sub">Set up your workouts here. Two steps: build your routines, then plan your week.</div>
       <button class="build-tile" onclick="openLibraryPage()">
         <div class="build-tile-icon">📚</div>
-        <div class="build-tile-text"><div class="build-tile-name">My Library</div><div class="build-tile-desc">Build &amp; keep your exercise routines.</div></div>
+        <div class="build-tile-text"><div class="build-tile-name">My Library</div></div>
         <div class="build-tile-arrow">›</div>
       </button>
       <button class="build-tile" onclick="openWeekPlanPage()">
         <div class="build-tile-icon">🗓️</div>
-        <div class="build-tile-text"><div class="build-tile-name">My Weekly Plan</div><div class="build-tile-desc">Pick routines for each day of the week.</div></div>
+        <div class="build-tile-text"><div class="build-tile-name">My Weekly Plan</div></div>
         <div class="build-tile-arrow">›</div>
       </button>
     </div>
@@ -2979,7 +2976,6 @@
     <div class="library-inner">
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
       <div class="setup-title">📚 My Library</div>
-      <div class="setup-sub">Build your exercise routines here once. Then add them to your days in 🗓️ My Weekly Plan.</div>
       <div id="libraryList"></div>
       <button class="lib-add-btn" onclick="libAddRoutine()">＋ New routine</button>
       <button class="lib-reset-btn" onclick="libResetToStarter()">↺ Start over with the starter routines</button>
@@ -2991,7 +2987,6 @@
     <div class="library-inner">
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
       <div class="setup-title">🗓️ My Weekly Plan</div>
-      <div class="setup-sub">Pick which routines to do each day, from your 📚 Library. A day with none = a rest day 🌴.</div>
       <div class="wp-days" id="wpDays"></div>
       <div id="wpBody"></div>
     </div>
@@ -3001,13 +2996,11 @@
   <div class="rules-overlay" id="rulesOverlay">
     <div class="rules-inner">
       <div class="setup-title">📜 My Rules</div>
-      <div class="setup-sub">Your rules for when MOWES picks your day (🎁 Surprise me).</div>
 
       <div class="rule-card">
         <div class="rule-top">
           <div class="rule-text">
             <div class="rule-title">💪 No same muscle two days in a row</div>
-            <div class="rule-desc">MOWES avoids working the same muscle group you worked yesterday, so it gets time to recover.</div>
           </div>
           <button class="rule-switch" id="ruleNoRepeat" onclick="rulesToggleNoRepeat()"></button>
         </div>
@@ -3017,7 +3010,6 @@
         <div class="rule-top">
           <div class="rule-text">
             <div class="rule-title">🌙 Rest days</div>
-            <div class="rule-desc">Pick the days that are always rest days. On those days, Surprise me gives you a break.</div>
           </div>
           <button class="rule-switch" id="ruleRest" onclick="rulesToggleRest()"></button>
         </div>
@@ -3030,7 +3022,6 @@
         <div class="rule-top">
           <div class="rule-text">
             <div class="rule-title">⏱️ Keep each day short</div>
-            <div class="rule-desc">Cap how long a surprise plan should take, so it fits your day.</div>
           </div>
           <button class="rule-switch" id="ruleMax" onclick="rulesToggleMax()"></button>
         </div>
@@ -3043,7 +3034,6 @@
         <div class="rule-top">
           <div class="rule-text">
             <div class="rule-title">✍️ Your own rules</div>
-            <div class="rule-desc">Write any rule you want to remember. MOWES keeps them here for you (these are your notes — the switches above are the ones MOWES follows automatically).</div>
           </div>
         </div>
         <div class="rule-extra show" style="border-top:none;padding-top:12px;">
@@ -3055,7 +3045,7 @@
         </div>
       </div>
 
-      <p class="setup-note">🔒 Saved only on your phone. The switches shape the 🎁 Surprise me picks.</p>
+      <p class="setup-note">🔒 Saved only on your phone.</p>
     </div>
   </div>
 
@@ -3193,7 +3183,7 @@
 
       <!-- Notes page (shown only when the current page is a notes page) -->
       <div class="notes-view" id="notesView">
-        <textarea class="notes-area" id="notesArea" placeholder="Write anything here — notes, goals, ideas… Saved on your phone."></textarea>
+        <textarea class="notes-area" id="notesArea" placeholder="Write anything here…"></textarea>
         <!-- Picture notes: attach photos to this notes page -->
         <div class="body-pics-section">
           <div class="body-pics-title">📷 Photos</div>
@@ -3203,7 +3193,7 @@
           </div>
           <input type="file" id="notesPicsCam" accept="image/*" capture="environment" style="display:none" onchange="addNotesPics(this)">
           <input type="file" id="notesPicsInput" accept="image/*" multiple style="display:none" onchange="addNotesPics(this)">
-          <p class="pics-empty" id="notesPicsEmpty">No photos yet. Add a picture note — it stays on your device. 🔒</p>
+          <p class="pics-empty" id="notesPicsEmpty">No photos yet.</p>
           <div class="pics-grid" id="notesPicsGrid"></div>
         </div>
       </div>
@@ -3907,7 +3897,7 @@
     if (!listData.length){
       const empty = document.createElement("li");
       empty.className = "list-empty";
-      empty.textContent = "Your list is empty. Type an item above and press Enter.";
+      empty.textContent = "Your list is empty.";
       ul.appendChild(empty);
       return;
     }
@@ -4554,7 +4544,7 @@
     if (!total){
       if (wrap) wrap.style.display = "none";
       if (pt) pt.style.display = "none";
-      list.innerHTML = '<div class="workout-empty">Nothing planned for today yet. Add exercises (with sets) on your Weight Routine or Walk &amp; Running pages, then come back and tap “Let’s go!” 💪</div>';
+      list.innerHTML = '<div class="workout-empty">Nothing planned for today yet.</div>';
       return;
     }
     if (wrap){ wrap.style.display = ""; document.getElementById("workoutBar").style.width = Math.round(done / total * 100) + "%"; }
@@ -6865,20 +6855,20 @@
       { e:"🌱", l:"Beginner", d:"New to this — I'll start easy", v:"beginner" },
       { e:"💪", l:"Some experience", d:"I've worked out before", v:"some" },
       { e:"🔥", l:"Experienced", d:"I know my way around", v:"experienced" } ] },
-    { key:"goal", emoji:"🎯", title:"What's your goal?", sub:"What do you most want out of this?", opts:[
+    { key:"goal", emoji:"🎯", title:"What's your goal?", sub:"", opts:[
       { e:"🏃", l:"Lose weight", d:"", v:"lose_weight" },
       { e:"💪", l:"Build strength", d:"", v:"strength" },
       { e:"🙂", l:"Stay active", d:"", v:"active" },
       { e:"❤️", l:"Feel healthier", d:"", v:"healthier" } ] },
-    { key:"days", emoji:"📅", title:"How many days a week?", sub:"How often do you want to work out?", opts:[
+    { key:"days", emoji:"📅", title:"How many days a week?", sub:"", opts:[
       { e:"🟢", l:"2–3 days", d:"A gentle start", v:"2-3" },
       { e:"🔵", l:"4–5 days", d:"Building a habit", v:"4-5" },
       { e:"🔥", l:"Every day", d:"All in", v:"daily" } ] },
-    { key:"where", emoji:"📍", title:"Where will you train?", sub:"Pick all that apply.", multi:true, opts:[
+    { key:"where", emoji:"📍", title:"Where will you train?", sub:"", multi:true, opts:[
       { e:"🏠", l:"At home", d:"", v:"home" },
       { e:"🏋️", l:"At a gym", d:"", v:"gym" },
       { e:"🌳", l:"Outdoors", d:"", v:"outdoors" } ] },
-    { key:"equipment", emoji:"🏋️", title:"What do you have to work out with?", sub:"Pick all that apply.", multi:true, opts:[
+    { key:"equipment", emoji:"🏋️", title:"What do you have to work out with?", sub:"", multi:true, opts:[
       { e:"🤲", l:"Dumbbells / hand weights", d:"", v:"dumbbells", where:["home","gym"] },
       { e:"🏋️", l:"Barbell (long bar)", d:"", v:"barbell", where:["home","gym"] },
       { e:"🏃", l:"Treadmill", d:"", v:"treadmill", where:["home","gym"] },
@@ -7074,7 +7064,7 @@
     if (!box) return;
     const entries = loadBodyEntries().slice(); // oldest→newest in storage
     if (!entries.length){
-      box.innerHTML = '<div class="body-empty">No measurements yet. Tap “＋ Log today” to record where you are now — then watch your progress build up over time. 📈</div>';
+      box.innerHTML = '<div class="body-empty">No measurements yet.</div>';
       return;
     }
     let html = "";
@@ -7259,7 +7249,7 @@
             projHtml = '<div class="ach-proj">Next month at this pace: ~<b>' + nextMonth + ' ' + escapeHtml(g.unit || "") + '</b>.</div>';
           }
         } else {
-          projHtml = '<div class="ach-proj">Tap <b>Update</b> on this goal to log progress — then MOWES will project when you\'ll hit it. 📈</div>';
+          projHtml = '';
         }
         html += '<div class="ach-card"><div class="ach-name">' + escapeHtml(g.name) + '</div>'
           + '<div class="ach-line"><span class="lbl">Day 1</span><span class="val">' + start + ' ' + escapeHtml(g.unit || "") + '</span></div>'
@@ -7287,7 +7277,7 @@
       });
     }
     if (!html){
-      box.innerHTML = '<div class="ach-empty">Your progress report builds here. Set a <b>🎯 Goal</b> and log a few <b>📏 My Body</b> measurements — then MOWES shows your climb and projects what\'s next. 📈</div>';
+      box.innerHTML = '<div class="ach-empty">No progress report yet.</div>';
       return;
     }
     box.innerHTML = html;
@@ -7576,7 +7566,7 @@
     if (!libraryRoutines.length){
       const hint = document.createElement("div");
       hint.className = "lib-empty";
-      hint.innerHTML = "No routines yet.<br>Tap <b>＋ New routine</b> below to build your first one.";
+      hint.innerHTML = "No routines yet.";
       list.appendChild(hint);
       return;
     }
@@ -7792,13 +7782,13 @@
     const picked = sel[weekPlanDay] || [];
     let html = '<div class="wp-dayhead">' + escapeHtml(full) + (weekPlanDay === todayKey ? ' <span class="wp-todaytag">Today</span>' : '') + '</div>';
     if (!lib.length){
-      html += '<div class="lib-empty">You have no routines yet.<br>Build them first in <b>📚 My Library</b>, then come back to pick them for your days.<br><br><button class="lib-add-btn" onclick="openLibraryPage()">📚 Go to My Library</button></div>';
+      html += '<div class="lib-empty">No routines yet.<br><br><button class="lib-add-btn" onclick="openLibraryPage()">📚 Go to My Library</button></div>';
       body.innerHTML = html;
       return;
     }
     html += picked.length
-      ? '<div class="wp-note">Tap a routine to add or remove it for ' + escapeHtml(full) + '.</div>'
-      : '<div class="wp-note wp-rest">🌴 Rest day — nothing picked yet. Tap routines below to add a workout.</div>';
+      ? ''
+      : '<div class="wp-note wp-rest">🌴 Rest day</div>';
     html += '<div class="wp-picks">';
     lib.forEach(r => {
       const on = picked.indexOf(r.id) >= 0;
@@ -8572,7 +8562,7 @@
     document.getElementById("onbEmoji").textContent = "👆";
     document.getElementById("onbTitle").textContent = "What do you want to do in your week?";
     const sub = document.getElementById("onbSub");
-    sub.textContent = "Pick all that apply.";
+    sub.textContent = "";
     sub.style.display = "";
     // A checklist of exercises that fit THEIR equipment — they pick their own.
     const groups = equipMovesFor(onbAnswers);
@@ -8831,7 +8821,7 @@
     });
     if (!anything){
       const empty = document.createElement("div"); empty.className = "plan-empty";
-      empty.textContent = "Nothing planned for today yet. Add exercises on your Weight Routine or Walk & Running pages and they'll show up here. 💪";
+      empty.textContent = "Nothing planned for today yet.";
       list.appendChild(empty);
     }
   }
