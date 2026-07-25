@@ -2249,6 +2249,12 @@
   .lib-add-btn { width: 100%; margin-top: 6px; padding: 14px; border: 2px dashed #9aa8e0; border-radius: 14px;
     background: rgba(255,255,255,0.55); color: #3a4699; font-size: 16px; font-weight: 700; cursor: pointer; }
   .lib-add-btn:active { background: rgba(255,255,255,0.85); }
+  .lib-reset-btn { display: block; width: 100%; margin-top: 14px; padding: 10px; border: none; border-radius: 12px;
+    background: transparent; color: #7a80a0; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline; }
+  .lib-reset-btn:active { color: #4a52a0; }
+  .lib-group { font-size: 15px; font-weight: 800; color: #3a4699; margin: 20px 2px 8px; padding-bottom: 6px;
+    border-bottom: 2px solid rgba(90,104,214,0.18); }
+  .lib-group:first-child { margin-top: 4px; }
 
   /* Build MOWES — landing with two big tiles */
   .build-back { display: inline-flex; align-items: center; gap: 2px; margin-bottom: 10px; padding: 6px 12px 6px 8px;
@@ -2925,6 +2931,7 @@
       <div class="setup-sub">Build your exercise routines here once. Then add them to your days in 🗓️ My Weekly Plan.</div>
       <div id="libraryList"></div>
       <button class="lib-add-btn" onclick="libAddRoutine()">＋ New routine</button>
+      <button class="lib-reset-btn" onclick="libResetToStarter()">↺ Start over with the starter routines</button>
     </div>
   </div>
 
@@ -7351,6 +7358,7 @@
   // form (renderSets / readRepsFromDom); the shared captureDay()/saveData() are routed
   // here while the Library overlay is open, so every set/pill/video handler just works.
   const LIBRARY_KEY = "mowes_library_v1";
+  const LIBRARY_SEEDED_KEY = "mowes_library_seeded_v1";
   let libraryRoutines = [];
   let libIdSeq = 0;
   // Each library routine gets a stable id so a weekly day can REFERENCE it (edit the
@@ -7362,32 +7370,86 @@
   function getLibrary(){ const arr = readLibraryStore(); if (ensureLibIds(arr)) writeLibraryStore(arr); return arr; }
   function loadLibrary(){ libraryRoutines = getLibrary(); }
   function saveLibrary(){ writeLibraryStore(libraryRoutines); }
+  // Ready-made starter routines, grouped by where you train (editable / deletable).
+  function mkStarterRoutine(name, group, cols, first, showSets){
+    const r = blankRoutine(); r.id = genLibId(); r.name = name; r.group = group;
+    const reps = r.details.reps;
+    reps.on = true;
+    reps.cols = Object.assign({ reps:false, weight:false, time:false, distance:false }, cols);
+    reps.showSets = showSets;
+    const count = showSets ? (first.count || 3) : 1;
+    reps.sets = [];
+    for (let i = 0; i < count; i++) reps.sets.push({ reps:first.reps || "", weight:first.weight || "", time:first.time || "", distance:first.distance || "", done:false });
+    return r;
+  }
+  const STARTER_DEFS = {
+    home: [
+      ["Push-ups",        { reps:true }, { count:3, reps:"12" }, true],
+      ["Chair dips",      { reps:true }, { count:3, reps:"10" }, true],
+      ["Squats",          { reps:true }, { count:3, reps:"15" }, true],
+      ["Walk (in place)", { time:true }, { time:"20" }, false],
+      ["Abdominals",      { reps:true }, { count:3, reps:"20" }, true]
+    ],
+    gym: [
+      ["Bench press",     { reps:true, weight:true }, { count:3, reps:"10", weight:"45" }, true],
+      ["Arm curls",       { reps:true, weight:true }, { count:3, reps:"12", weight:"15" }, true],
+      ["Leg press",       { reps:true, weight:true }, { count:3, reps:"12", weight:"90" }, true],
+      ["Shoulder press",  { reps:true, weight:true }, { count:3, reps:"10", weight:"20" }, true],
+      ["Lat pulldown",    { reps:true, weight:true }, { count:3, reps:"12", weight:"50" }, true]
+    ],
+    outdoors: [
+      ["Walk",      { time:true }, { time:"30" }, false],
+      ["Run",       { time:true }, { time:"20" }, false],
+      ["Bike",      { time:true }, { time:"30" }, false],
+      ["Hike",      { time:true }, { time:"45" }, false],
+      ["Jump rope", { reps:true }, { count:3, reps:"50" }, true],
+      ["Stairs",    { time:true }, { time:"15" }, false]
+    ]
+  };
+  // Which groups to seed: the place(s) the user picked in the guided start (else all 3).
+  function starterGroups(){
+    let where = [];
+    try { const a = JSON.parse(localStorage.getItem(ONB_ANSWERS_KEY) || "{}"); if (Array.isArray(a.where)) where = a.where; } catch(e){}
+    where = where.filter(g => STARTER_DEFS[g]);
+    return where.length ? where : ["home", "gym", "outdoors"];
+  }
+  function starterLibrary(){
+    const out = [];
+    starterGroups().forEach(g => STARTER_DEFS[g].forEach(d => out.push(mkStarterRoutine(d[0], g, d[1], d[2], d[3]))));
+    return out;
+  }
+  // On a brand-new device (empty Library), start people off with the starter routines.
+  function seedStarterLibraryIfEmpty(){
+    if (localStorage.getItem(LIBRARY_SEEDED_KEY)) return;
+    if (!readLibraryStore().length) writeLibraryStore(starterLibrary());
+    localStorage.setItem(LIBRARY_SEEDED_KEY, "1");
+  }
+  // "Start over" — replace the Library with fresh starters and clear the weekly picks.
+  function libResetToStarter(){
+    if (!window.confirm("Replace your Library with the starter routines (grouped by where you train)?\n\nThis clears your current routines and your weekly picks so you can start fresh.")) return;
+    writeLibraryStore(starterLibrary());
+    try { localStorage.removeItem(WEEK_SEL_KEY); } catch(e){}
+    localStorage.setItem(LIBRARY_SEEDED_KEY, "1");
+    loadLibrary();
+    renderLibrary();
+  }
+  window.libResetToStarter = libResetToStarter;
   // Draw the library cards (one per saved routine) into #libraryList.
-  function renderLibrary(){
-    const list = document.getElementById("libraryList");
-    if (!list) return;
-    list.querySelectorAll(".detail-field").forEach(stopRest);
-    list.innerHTML = "";
-    if (!libraryRoutines.length){
-      const hint = document.createElement("div");
-      hint.className = "lib-empty";
-      hint.innerHTML = "No routines yet.<br>Tap <b>＋ New routine</b> below to build your first one.";
-      list.appendChild(hint);
-      return;
-    }
-    const total = libraryRoutines.length;
-    libraryRoutines.forEach((r, idx) => {
-      const _def = blankRoutine();
-      if (!r.details) r.details = _def.details;
-      else { for (const k in _def.details){ if (r.details[k] == null) r.details[k] = _def.details[k]; } }
-      if (!r.timer) r.timer = _def.timer;
-      const i = idx + 1, isFirst = idx === 0, isLast = idx === total - 1;
-      const card = document.createElement("div");
-      card.className = "routine-card";
-      card.dataset.libId = r.id || (r.id = genLibId());
-      card.innerHTML = `
+  // Routines are grouped by WHERE you train (matches the guided-start "where" question).
+  const LIB_GROUP_META = { home:{ icon:"🏠", name:"At Home" }, gym:{ icon:"🏋️", name:"At Gym" }, outdoors:{ icon:"🌳", name:"Outdoors" } };
+  const LIB_GROUP_ORDER = ["home", "gym", "outdoors", "__mine__"];
+  function buildLibCard(r, num, isFirst, isLast){
+    const _def = blankRoutine();
+    if (!r.details) r.details = _def.details;
+    else { for (const k in _def.details){ if (r.details[k] == null) r.details[k] = _def.details[k]; } }
+    if (!r.timer) r.timer = _def.timer;
+    const card = document.createElement("div");
+    card.className = "routine-card";
+    card.dataset.libId = r.id || (r.id = genLibId());
+    card.dataset.libGroup = r.group || "";
+    card.innerHTML = `
         <div class="routine-row">
-          <div class="routine-num">${i}</div>
+          <div class="routine-num">${num}</div>
           <div class="routine-move">
             <button class="move-btn"${isFirst ? " disabled" : ""} title="Move up" onclick="libMoveRoutine(this,-1)">▲</button>
             <button class="move-btn"${isLast ? " disabled" : ""} title="Move down" onclick="libMoveRoutine(this,1)">▼</button>
@@ -7421,10 +7483,37 @@
             </div>
           </div>
         </div>`;
-      list.appendChild(card);
-      card.querySelector(".routine-input").value = r.name || "";
-      const fe = card.querySelector('.detail-field[data-field="reps"]');
-      renderSets(fe, r.details.reps);
+    card.querySelector(".routine-input").value = r.name || "";
+    return card;
+  }
+  function renderLibrary(){
+    const list = document.getElementById("libraryList");
+    if (!list) return;
+    list.querySelectorAll(".detail-field").forEach(stopRest);
+    list.innerHTML = "";
+    if (!libraryRoutines.length){
+      const hint = document.createElement("div");
+      hint.className = "lib-empty";
+      hint.innerHTML = "No routines yet.<br>Tap <b>＋ New routine</b> below to build your first one.";
+      list.appendChild(hint);
+      return;
+    }
+    // Bucket by group; ungrouped routines (the user's own) go under "My own routines".
+    const buckets = { home:[], gym:[], outdoors:[], __mine__:[] };
+    libraryRoutines.forEach(r => { const g = LIB_GROUP_META[r.group] ? r.group : "__mine__"; buckets[g].push(r); });
+    LIB_GROUP_ORDER.forEach(g => {
+      const items = buckets[g];
+      if (!items.length) return;
+      const header = document.createElement("div");
+      header.className = "lib-group";
+      header.textContent = (g === "__mine__") ? "✍️ My own routines" : (LIB_GROUP_META[g].icon + " " + LIB_GROUP_META[g].name);
+      list.appendChild(header);
+      items.forEach((r, i) => {
+        const card = buildLibCard(r, i + 1, i === 0, i === items.length - 1);
+        list.appendChild(card);
+        const fe = card.querySelector('.detail-field[data-field="reps"]');
+        renderSets(fe, r.details.reps);
+      });
     });
   }
   // Read the library cards' DOM back into libraryRoutines (mirrors captureDay's reps path).
@@ -7434,6 +7523,7 @@
     cards.forEach(card => {
       const r = blankRoutine();
       r.id = card.dataset.libId || genLibId();
+      if (card.dataset.libGroup) r.group = card.dataset.libGroup; // keep its group (else it's the user's own)
       r.name = card.querySelector(".routine-input").value;
       const fe = card.querySelector('.detail-field[data-field="reps"]');
       if (fe){
@@ -7487,6 +7577,8 @@
     const j = idx + dir;
     if (j < 0 || j >= libraryRoutines.length) return;
     captureLibrary();
+    // Only reorder within the same group (don't shuffle across At Home / At Gym / …).
+    if ((libraryRoutines[idx].group || "") !== (libraryRoutines[j].group || "")) return;
     const tmp = libraryRoutines[idx]; libraryRoutines[idx] = libraryRoutines[j]; libraryRoutines[j] = tmp;
     saveLibrary();
     renderLibrary();
@@ -7540,7 +7632,7 @@
     if (cols.weight && s.weight) parts.push(s.weight + " " + (reps.weightUnit === "kg" ? "kg" : "lbs"));
     if (cols.distance && s.distance) parts.push(s.distance + " " + (reps.distUnit === "km" ? "km" : "mi"));
     if (cols.time && s.time) parts.push(s.time + " min");
-    return parts.length ? (n + " × " + parts.join(" · ")) : "";
+    return parts.length ? ((n > 1 ? (n + " × ") : "") + parts.join(" · ")) : "";
   }
   function renderWeekPlan(){
     ensureWeekMigrated();
@@ -8799,6 +8891,10 @@
     list.addEventListener("touchend", onEnd, { passive: true });
     list.addEventListener("touchcancel", onEnd, { passive: true });
   })();
+
+  // Brand-new device → start with the 5 starter routines (runs once; after all
+  // definitions are initialized, so it's safe here at the end of startup).
+  try { seedStarterLibraryIfEmpty(); } catch(e){}
 
   // Register the offline worker (works once the app is on a secure https site)
   if ("serviceWorker" in navigator) {
