@@ -3118,7 +3118,7 @@
             <div class="help-title">🔢 Track it your way</div>
             <p>On each exercise, tap a chip to add what you want:</p>
             <ul class="help-list">
-              <li><strong>+ Reps</strong> — add sets and type your reps. Tap <strong>Done</strong> when a set is finished.</li>
+              <li><strong>Sets</strong> — type how many sets, then your reps/weight. Tap <strong>Done</strong> when a set is finished.</li>
               <li><strong>+ Time</strong> — gives you a built-in timer (see step 4).</li>
               <li><strong>+ Weight</strong> — note the weight you used.</li>
               <li><strong>+ Distance</strong> — add miles (great for runs or walks).</li>
@@ -4748,7 +4748,7 @@
   const tourSteps = [
     { sel: "#dayRow",        title: "Your week",            text: "Here's every day. Swipe sideways, or tap a day to plan it. Today sits in the middle." },
     { sel: ".routine-input", title: "Name your exercise",   text: "Type what you're doing here — like Push-ups or Morning walk." },
-    { sel: ".detail-chips",  title: "Track it your way",    text: "Tap a chip to add Reps, a Time/timer, Weight, or Distance. Use one, or all of them." },
+    { sel: ".sets-cols",     title: "Track it your way",    text: "Tap Reps, Weight, Time, or Distance to choose what to track. Use one, or all of them." },
     { sel: ".add-routine",   title: "Add more exercises",   text: "Tap here to add another exercise to this day." },
     { sel: ".copy-btn",      title: "Copy a day",           text: "Built a good day? Copy it to your other days in one tap." },
     { sel: ".history-btn",   title: "Look back",            text: "History shows your past weeks and everything you did." },
@@ -4914,14 +4914,11 @@
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
           <button class="routine-delete" title="Delete this routine" onclick="deleteRoutine(this)">✕</button>
         </div>
-        <div class="detail-chips">
-          ${detailFields.map(f => `<div class="chip" data-field="${f}" onclick="toggleDetail(this,'${f}')">+ ${detailLabels[f]}</div>`).join("")}
-        </div>
         <div class="detail-fields">
           ${fieldOrder.map(f => {
             if (f === "reps"){
               return `
-          <div class="detail-field" data-field="reps">
+          <div class="detail-field show" data-field="reps">
             <div class="sets-block">
               <div class="sets-cols"></div>
               <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><button type="button" class="lap-measure-link" onclick="openLapMeasure(this)">📏 not sure? measure it</button><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
@@ -4994,13 +4991,7 @@
       detailFields.forEach(f => {
         const d = r.details[f];
         const fe = card.querySelector(`.detail-field[data-field="${f}"]`);
-        if (f === "reps") renderSets(fe, d);
-        if (f === "time") renderIntervals(fe, d.rows);
-        if (d.on){
-          card.querySelector(`.chip[data-field="${f}"]`).classList.add("on");
-          fe.classList.add("show");
-          if (f !== "reps" && f !== "time") fe.querySelector(".detail-input").value = d.val;
-        }
+        if (f === "reps"){ renderSets(fe, d); fe.classList.add("show"); }
       });
       updateCardModes(card);
 
@@ -5027,9 +5018,9 @@
       detailFields.forEach(f => {
         const chip = card.querySelector(`.chip[data-field="${f}"]`);
         const fe = card.querySelector(`.detail-field[data-field="${f}"]`);
-        const on = chip.classList.contains("on");
+        const on = chip ? chip.classList.contains("on") : true;
         if (f === "reps"){
-          r.details.reps.on = on;
+          r.details.reps.on = true; // the sets table is always shown now (no + Reps chip)
           const rd = readRepsFromDom(fe);
           r.details.reps.cols = rd.cols;
           r.details.reps.weightUnit = rd.weightUnit;
