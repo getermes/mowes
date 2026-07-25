@@ -2815,6 +2815,7 @@
       <div class="plan-list" id="planList"></div>
       <button class="plan-surprise" onclick="surpriseMe()">🎁 Surprise me</button>
       <button class="plan-next" onclick="startWorkout()">Let's go! 💪</button>
+      <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
 
@@ -2851,6 +2852,7 @@
         <label>New muscle <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
       </div>
       <p class="setup-note">🔒 Runs on your phone.</p>
+      <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
 
@@ -2894,6 +2896,7 @@
       <div class="workout-progress" id="workoutProgressWrap"><div class="workout-progress-bar" id="workoutBar"></div></div>
       <div class="workout-progress-text" id="workoutProgressText">0 of 0 sets done</div>
       <div id="workoutList"></div>
+      <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
 
@@ -2917,6 +2920,7 @@
       <div id="setupBody"></div>
       <button class="setup-redo" onclick="editSetup()">↺ Redo all the questions</button>
       <p class="setup-note">🔒 Saved only on your phone. Nothing is sent anywhere.</p>
+      <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
 
@@ -3027,6 +3031,7 @@
       <div id="libraryList"></div>
       <button class="lib-add-btn" onclick="libAddRoutine()">＋ New routine</button>
       <button class="lib-reset-btn" onclick="libResetToStarter()">↺ Start over with the starter routines</button>
+      <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
 
@@ -3037,6 +3042,7 @@
       <div class="setup-title">🗓️ My Weekly Plan</div>
       <div class="wp-days" id="wpDays"></div>
       <div id="wpBody"></div>
+      <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
 
@@ -3094,6 +3100,7 @@
       </div>
 
       <p class="setup-note">🔒 Saved only on your phone.</p>
+      <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
 
@@ -3244,6 +3251,7 @@
           <p class="pics-empty" id="notesPicsEmpty">No photos yet.</p>
           <div class="pics-grid" id="notesPicsGrid"></div>
         </div>
+        <div class="msupport-compact msupport-auto"></div>
       </div>
 
       <!-- Shopping-list page (shown only when the current page is a list page) -->
@@ -3253,6 +3261,7 @@
           <button type="button" onclick="addListItem()" title="Add to list">＋</button>
         </div>
         <ul class="list-items" id="listItems"></ul>
+        <div class="msupport-compact msupport-auto"></div>
       </div>
 
       <!-- Pictures page (shown only when the current page is a pictures page) -->
@@ -3265,6 +3274,7 @@
         <input type="file" id="picsInput" accept="image/*" multiple style="display:none" onchange="addPics(this)">
         <p class="pics-empty" id="picsEmpty">No photos yet. Take a photo or add one from your phone — they stay on your device. 🔒</p>
         <div class="pics-grid" id="picsGrid"></div>
+        <div class="msupport-compact msupport-auto"></div>
       </div>
 
       <!-- Exercise Videos page: save your favorite YouTube exercise links -->
@@ -3276,6 +3286,7 @@
         </div>
         <p class="video-empty" id="videoEmpty">No videos yet. Paste any exercise video link — YouTube, Facebook, Vimeo, TikTok — to save it here. Your links stay on your phone. 🔒</p>
         <div class="video-grid" id="videoGrid"></div>
+        <div class="msupport-compact msupport-auto"></div>
       </div>
 
       <!-- Full-size photo viewer: tap a photo to see it big; tap outside or ✕ to close -->
@@ -9124,6 +9135,8 @@
   try { var _gs = document.getElementById("goalsSupport"); if (_gs) _gs.innerHTML = supportSetHTML('Is <span class="mowes-beat">MOWES</span> ' + curlWordHTML('coaching', 'coach-red') + ' you?'); } catch(e){}
   try { var _bs = document.getElementById("bodySupport"); if (_bs) _bs.innerHTML = supportSetHTML('Feeling the <span class="mowes-beat">MOWES</span> ' + curlWordHTML('change', 'coach-red') + '?'); } catch(e){}
   try { var _buildS = document.getElementById("buildSupport"); if (_buildS) _buildS.innerHTML = supportSetHTML('Help <span class="mowes-beat">MOWES</span> help ' + curlWordHTML('you', 'coach-red') + ' too!'); } catch(e){}
+  // Every other page gets the like/coffee set at its bottom too — no matter the gap.
+  try { var _autoS = document.querySelectorAll(".msupport-auto"); for (var _i = 0; _i < _autoS.length; _i++){ _autoS[_i].innerHTML = supportSetHTML('Help <span class="mowes-beat">MOWES</span> help ' + curlWordHTML('you', 'coach-red') + ' too!'); } } catch(e){}
 
   // Register the offline worker (works once the app is on a secure https site)
   if ("serviceWorker" in navigator) {
