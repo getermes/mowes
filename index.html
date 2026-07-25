@@ -2255,6 +2255,14 @@
   .lib-group { font-size: 15px; font-weight: 800; color: #3a4699; margin: 20px 2px 8px; padding-bottom: 6px;
     border-bottom: 2px solid rgba(90,104,214,0.18); }
   .lib-group:first-child { margin-top: 4px; }
+  .lib-mode { display: flex; gap: 6px; margin: 4px 0 10px; }
+  .lib-mode-btn { flex: 1; padding: 8px 6px; border: 1px solid #c3cbef; border-radius: 10px; background: #f4f6ff;
+    color: #5a62a8; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .lib-mode-btn.active { background: #5a68d6; border-color: #5a68d6; color: #fff; }
+  .lib-intervals-hint { font-size: 12px; color: #7a80a0; margin-bottom: 8px; line-height: 1.5; }
+  /* In the Library (setup), interval parts are just name + minutes — hide the inline
+     play button / distance (those belong to the live workout, not to setting it up). */
+  #libraryOverlay .iv-start, #libraryOverlay .iv-clock, #libraryOverlay .iv-miles { display: none !important; }
 
   /* Build MOWES — landing with two big tiles */
   .build-back { display: inline-flex; align-items: center; gap: 2px; margin-bottom: 10px; padding: 6px 12px 6px 8px;
@@ -7413,9 +7421,20 @@
     where = where.filter(g => STARTER_DEFS[g]);
     return where.length ? where : ["home", "gym", "outdoors"];
   }
+  // A ready-made interval routine: an ordered list of timed parts.
+  function mkIntervalRoutine(name, group, segments){
+    const r = blankRoutine(); r.id = genLibId(); r.name = name; r.group = group;
+    r.details.reps.on = false;
+    r.details.time.on = true;
+    r.details.time.rows = segments.map(s => ({ label:s[0], min:String(s[1]), miles:"", elapsed:0, done:false }));
+    return r;
+  }
   function starterLibrary(){
+    const groups = starterGroups();
     const out = [];
-    starterGroups().forEach(g => STARTER_DEFS[g].forEach(d => out.push(mkStarterRoutine(d[0], g, d[1], d[2], d[3]))));
+    groups.forEach(g => STARTER_DEFS[g].forEach(d => out.push(mkStarterRoutine(d[0], g, d[1], d[2], d[3]))));
+    // A sample mixed walk/run interval so people see how intervals work.
+    if (groups.indexOf("outdoors") >= 0) out.push(mkIntervalRoutine("Walk + Run", "outdoors", [["Walk", 10], ["Run", 20], ["Walk", 10], ["Run", 20]]));
     return out;
   }
   // On a brand-new device (empty Library), start people off with the starter routines.
@@ -7457,8 +7476,12 @@
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
           <button class="routine-delete" title="Delete this routine" onclick="libDeleteRoutine(this)">✕</button>
         </div>
+        <div class="lib-mode">
+          <button type="button" class="lib-mode-btn" data-mode="sets" onclick="libSetMode(this,'sets')">Repeat sets</button>
+          <button type="button" class="lib-mode-btn" data-mode="intervals" onclick="libSetMode(this,'intervals')">🔁 Intervals (mix)</button>
+        </div>
         <div class="detail-fields">
-          <div class="detail-field show" data-field="reps">
+          <div class="detail-field" data-field="reps">
             <div class="sets-block">
               <div class="sets-cols"></div>
               <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><button type="button" class="lap-measure-link" onclick="openLapMeasure(this)">📏 not sure? measure it</button><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
@@ -7482,6 +7505,13 @@
               <div class="rest-timer" style="display:none;"></div>
             </div>
           </div>
+          <div class="detail-field" data-field="time">
+            <div class="sets-block">
+              <div class="lib-intervals-hint">Add each part in order — e.g. Walk · 10 min, then Run · 20 min, then Walk · 10 min…</div>
+              <div class="intervals-list"></div>
+              <button class="add-interval" onclick="addInterval(this)">＋ Add part</button>
+            </div>
+          </div>
         </div>`;
     card.querySelector(".routine-input").value = r.name || "";
     return card;
@@ -7490,6 +7520,7 @@
     const list = document.getElementById("libraryList");
     if (!list) return;
     list.querySelectorAll(".detail-field").forEach(stopRest);
+    list.querySelectorAll(".interval-row").forEach(stopTimeRow);
     list.innerHTML = "";
     if (!libraryRoutines.length){
       const hint = document.createElement("div");
@@ -7511,12 +7542,19 @@
       items.forEach((r, i) => {
         const card = buildLibCard(r, i + 1, i === 0, i === items.length - 1);
         list.appendChild(card);
-        const fe = card.querySelector('.detail-field[data-field="reps"]');
-        renderSets(fe, r.details.reps);
+        const repsFe = card.querySelector('.detail-field[data-field="reps"]');
+        const timeFe = card.querySelector('.detail-field[data-field="time"]');
+        renderSets(repsFe, r.details.reps);
+        renderIntervals(timeFe, r.details.time && r.details.time.rows);
+        const intervals = !!(r.details.time && r.details.time.on);
+        card.dataset.libMode = intervals ? "intervals" : "sets";
+        repsFe.classList.toggle("show", !intervals);
+        timeFe.classList.toggle("show", intervals);
+        card.querySelectorAll(".lib-mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === card.dataset.libMode));
       });
     });
   }
-  // Read the library cards' DOM back into libraryRoutines (mirrors captureDay's reps path).
+  // Read the library cards' DOM back into libraryRoutines (mirrors captureDay).
   function captureLibrary(){
     const cards = document.querySelectorAll("#libraryList .routine-card");
     const arr = [];
@@ -7525,10 +7563,15 @@
       r.id = card.dataset.libId || genLibId();
       if (card.dataset.libGroup) r.group = card.dataset.libGroup; // keep its group (else it's the user's own)
       r.name = card.querySelector(".routine-input").value;
-      const fe = card.querySelector('.detail-field[data-field="reps"]');
-      if (fe){
-        const rd = readRepsFromDom(fe);
-        r.details.reps.on = true;
+      const mode = card.dataset.libMode || "sets";
+      const repsFe = card.querySelector('.detail-field[data-field="reps"]');
+      const timeFe = card.querySelector('.detail-field[data-field="time"]');
+      // Always capture BOTH the sets and the interval parts (they live in the card even
+      // when hidden), so switching modes never loses the other one. Only the on-flags
+      // pick which one is the routine's active shape.
+      if (repsFe){
+        const rd = readRepsFromDom(repsFe);
+        r.details.reps.on = (mode !== "intervals");
         r.details.reps.cols = rd.cols;
         r.details.reps.weightUnit = rd.weightUnit;
         r.details.reps.distUnit = rd.distUnit;
@@ -7540,10 +7583,35 @@
         r.details.reps.video = rd.video;
         r.details.reps.sets = rd.sets;
       }
+      if (timeFe){
+        const rows = [...timeFe.querySelectorAll(".interval-row")].map(row => ({
+          label: row.querySelector(".iv-label").value,
+          min: row.querySelector(".iv-min").value,
+          miles: row.querySelector(".iv-miles") ? row.querySelector(".iv-miles").value : "",
+          elapsed: parseInt(row.dataset.elapsed) || 0,
+          done: row.dataset.done === "true"
+        }));
+        r.details.time.on = (mode === "intervals");
+        if (rows.length) r.details.time.rows = rows;
+      }
       arr.push(r);
     });
     libraryRoutines = arr;
   }
+  // Switch a routine card between "Repeat sets" and "Intervals (mix)" mode.
+  function libSetMode(btn, mode){
+    const card = btn.closest(".routine-card");
+    if (!card) return;
+    card.dataset.libMode = mode;
+    card.querySelectorAll(".lib-mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+    const repsFe = card.querySelector('.detail-field[data-field="reps"]');
+    const timeFe = card.querySelector('.detail-field[data-field="time"]');
+    repsFe.classList.toggle("show", mode !== "intervals");
+    timeFe.classList.toggle("show", mode === "intervals");
+    if (mode === "intervals" && !timeFe.querySelector(".interval-row")) renderIntervals(timeFe, null);
+    captureLibrary(); saveLibrary();
+  }
+  window.libSetMode = libSetMode;
   function libCardIndex(btn){
     const card = btn.closest(".routine-card");
     const cards = [...document.querySelectorAll("#libraryList .routine-card")];
@@ -7623,6 +7691,15 @@
   function saveWeekSel(sel){ try { localStorage.setItem(WEEK_SEL_KEY, JSON.stringify(sel)); } catch(e){} }
   // A short "3 × 12 reps · 8 lbs" line describing a routine, for the pick list.
   function wpSummary(r){
+    const tm = (r.details && r.details.time) || {};
+    if (tm.on && tm.rows){
+      const rows = tm.rows.filter(x => x && (x.label || x.min));
+      if (rows.length){
+        const parts = rows.slice(0, 4).map(x => (x.label || "Part") + (x.min ? " " + x.min + "m" : ""));
+        return "🔁 " + parts.join(" · ") + (rows.length > 4 ? " · …" : "");
+      }
+      return "🔁 intervals";
+    }
     const reps = (r.details && r.details.reps) || {};
     const s = (reps.sets && reps.sets[0]) || {};
     const cols = reps.cols || {};
