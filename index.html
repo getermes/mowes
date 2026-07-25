@@ -2135,7 +2135,7 @@
   .setup-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .setup-overlay.show { display: block; }
-  .setup-inner { max-width: 400px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .setup-inner { max-width: 400px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; }
   .setup-title { text-align: center; font-size: 26px; font-weight: 900; color: #5b6cff; }
   .setup-sub { text-align: center; color: #6a7088; font-size: 14px; margin: 4px 0 20px; }
   .setup-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left;
@@ -2147,7 +2147,7 @@
   .setup-edit-hint { flex: 0 0 auto; color: #9096ad; font-size: 15px; }
   .setup-hint { text-align: center; font-size: 13px; color: #6a7088; font-weight: 600; margin: 16px 0 8px; }
   .setup-redo { display: block; margin: 0 auto; background: none; border: none; color: #8a90a8; font-weight: 700; font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 6px; }
-  .setup-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: 16px; }
+  .setup-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: auto; padding-top: 20px; }
   .onb-add-own { width: 100%; margin-top: 12px; background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px; padding: 13px; color: #5b6cff; font-weight: 800; font-size: 15px; cursor: pointer; }
   .onb-add-own:active { transform: scale(0.99); }
 
@@ -2155,7 +2155,7 @@
   .body-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .body-overlay.show { display: block; }
-  .body-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .body-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; }
   .body-log-btn { display: block; width: 100%; margin: 4px 0 16px; border: none; border-radius: 14px; padding: 15px;
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
     background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
@@ -2200,7 +2200,7 @@
   .goals-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .goals-overlay.show { display: block; }
-  .goals-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .goals-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; }
   .goal-add-btn { display: block; width: 100%; margin: 4px 0 16px; border: none; border-radius: 14px; padding: 15px;
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
   .goal-add-btn:active { transform: scale(0.99); }
@@ -2336,7 +2336,7 @@
   .rules-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .rules-overlay.show { display: block; }
-  .rules-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .rules-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; }
   .rule-card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
   .rule-top { display: flex; align-items: flex-start; gap: 12px; }
   .rule-text { flex: 1; }
@@ -2369,7 +2369,7 @@
   .session-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .session-overlay.show { display: block; }
-  .session-inner { max-width: 420px; margin: 0 auto; padding: 30px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
+  .session-inner { max-width: 420px; margin: 0 auto; padding: 30px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; }
   .session-todayline { text-align: center; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #9096ad; margin-bottom: 2px; }
   .session-daynav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
   .session-arrow { width: 42px; height: 42px; border: none; border-radius: 12px; background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; }
@@ -2522,7 +2522,9 @@
   }
   /* Spread the cover: ERMES stays up top, the cluster floats to the middle, and the
      like/coffee set drops to the bottom — the two auto margins share the free space. */
-  .cover-support { margin-top: auto; padding-top: 8px; }
+  /* One auto gap above the cluster pushes the whole group (logo + arrow + like/coffee)
+     down together, leaving the open space up top under ERMES. */
+  .cover-support { margin-top: 22px; padding-top: 8px; }
   .welcome-mark {
     font-size: 18px; font-weight: 800; letter-spacing: 1.5px;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
