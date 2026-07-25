@@ -2426,13 +2426,22 @@
   .restday-card { text-align: center; margin: 18px auto; max-width: 340px; padding: 34px 22px 28px;
     border-radius: 24px; background: linear-gradient(180deg, #eaf7ee 0%, #e3f1fb 100%);
     box-shadow: 0 6px 20px rgba(60,90,120,0.10); }
-  .restday-emoji { font-size: 68px; line-height: 1; margin-bottom: 10px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
+  .restday-card.restday-plain { background: linear-gradient(180deg, #eef1fc 0%, #e6e9fb 100%); }
+  .restday-emoji { font-size: 68px; line-height: 1; margin-bottom: 8px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
   .restday-title { font-size: 26px; font-weight: 800; color: #2f7a52; letter-spacing: 0.3px; }
-  .restday-sub { font-size: 15px; color: #5b7a6a; margin: 8px 0 22px; line-height: 1.5; }
-  .restday-add { display: inline-block; padding: 15px 30px; border: none; border-radius: 999px;
-    background: linear-gradient(180deg, #5a68d6 0%, #4a58c8 100%); color: #fff; font-size: 17px; font-weight: 800;
-    cursor: pointer; box-shadow: 0 5px 14px rgba(74,88,200,0.4); }
-  .restday-add:active { transform: translateY(1px); box-shadow: 0 3px 9px rgba(74,88,200,0.4); }
+  .restday-card.restday-plain .restday-title { color: #3a4699; }
+  /* Row under the green card: settings gear (left) + a small Add button (right). */
+  .restday-actions { display: flex; justify-content: space-between; align-items: center; max-width: 340px; margin: 12px auto 0; }
+  .restday-gear { background: #eef1fc; border: none; border-radius: 12px; padding: 8px 13px; font-size: 18px; line-height: 1; cursor: pointer; }
+  .restday-gear.on { background: #d6dcfb; }
+  .restday-add { display: inline-block; padding: 10px 16px; border: none; border-radius: 999px;
+    background: linear-gradient(180deg, #5a68d6 0%, #4a58c8 100%); color: #fff; font-size: 14px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 11px rgba(74,88,200,0.35); }
+  .restday-add:active { transform: translateY(1px); }
+  /* On a rest day the 4 pacing settings hide behind the gear. */
+  .session-inner.rest-mode .session-settings { display: none; }
+  .session-inner.rest-mode.settings-open .session-settings { display: flex; }
+  .session-inner.rest-mode.settings-open .session-settings { margin-top: 14px; }
   .session-starter-note { background: #f6f2ff; color: #6b52d6; border: 1px solid #e3d9ff; border-radius: 12px; padding: 11px 13px; font-size: 13px; line-height: 1.5; margin-bottom: 12px; }
   .session-howto { flex: 0 0 auto; width: 32px; height: 32px; border: none; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-size: 15px; font-weight: 800; cursor: pointer; }
   .session-howto:active { transform: scale(0.92); }
@@ -2557,6 +2566,8 @@
     box-shadow: 0 6px 16px rgba(91,108,255,0.28);
   }
   .welcome-btn:active { transform: scale(0.99); }
+  .welcome-arrow { display: inline-block; margin-left: 4px; animation: welcomeArrowNudge 1.3s ease-in-out infinite; }
+  @keyframes welcomeArrowNudge { 0%,100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
   .welcome-note { position: fixed; left: 0; right: 0; bottom: 16px; margin: 0; text-align: center; font-size: 13px; color: #5b6cff; font-weight: 600; line-height: 1.4; }
   .welcome-note .wn-name { color: #E0941A; font-weight: 700; }
   .welcome-note .wn-heart { font-style: normal; }
@@ -2752,7 +2763,7 @@
         <rect x="441" y="52" width="8" height="16" rx="3" fill="#F0A32E"/>
       </svg>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
-      <button class="welcome-btn" onclick="dismissWelcome()">Pick me UP →</button>
+      <button class="welcome-btn" onclick="dismissWelcome()">Today's MOWES <span class="welcome-arrow">→</span></button>
       <p class="welcome-note">Made with <span class="wn-heart">💛</span> by <span class="wn-name">EUgenio</span> — the Idea Guy</p>
       <div class="cover-support" id="coverSupport"></div>
     </div>
@@ -7834,6 +7845,15 @@
   // From Today's MOWES rest-day → jump to the picker on the day you're viewing.
   function sessionAddRoutine(){ openWeekPlanPage(sessionSelDay); }
   window.sessionAddRoutine = sessionAddRoutine;
+  // The ⚙️ gear tucks the 4 pacing settings away; tap to show/hide them.
+  function toggleSessionSettings(){
+    const inner = document.querySelector(".session-inner");
+    if (!inner) return;
+    const open = inner.classList.toggle("settings-open");
+    const gear = inner.querySelector(".restday-gear");
+    if (gear) gear.classList.toggle("on", open);
+  }
+  window.toggleSessionSettings = toggleSessionSettings;
   function leaveWeekPlanPage(){ const el = document.getElementById("weekPlanOverlay"); if (el) el.classList.remove("show"); }
   function weekPlanShownAsPage(){ const el = document.getElementById("weekPlanOverlay"); return !!(el && el.classList.contains("show")); }
   // Is this a PLANNED rest day? (You have a library, but picked nothing for this day.)
@@ -8113,30 +8133,28 @@
     if (dayEl) dayEl.textContent = (fullNames[sessionSelDay] || "").toUpperCase();
     sessionStepsArr = sessionStepsFor(sessionSelDay);
     const list = document.getElementById("sessionList"), now = document.getElementById("sessionNow"), btn = document.getElementById("sessionStartBtn");
+    const innerEl = document.querySelector(".session-inner");
     if (!sessionStepsArr.length){
+      if (innerEl) innerEl.classList.add("rest-mode");
       if (list){
-        if (isPlannedRestDay(sessionSelDay)){
-          list.innerHTML =
-            '<div class="restday-card">' +
-              '<div class="restday-emoji">🌴</div>' +
-              '<div class="restday-title">Rest Day</div>' +
-              '<div class="restday-sub">Enjoy your recovery — you’ve earned it. 💛</div>' +
-              '<button class="restday-add" onclick="sessionAddRoutine()">＋ Add a Routine</button>' +
-            '</div>';
-        } else {
-          list.innerHTML =
-            '<div class="restday-card">' +
-              '<div class="restday-emoji">🗓️</div>' +
-              '<div class="restday-title">Nothing set yet</div>' +
-              '<div class="restday-sub">Pick a routine from your Library for this day.</div>' +
-              '<button class="restday-add" onclick="sessionAddRoutine()">＋ Add a Routine</button>' +
-            '</div>';
-        }
+        const rest = isPlannedRestDay(sessionSelDay);
+        // Just the emoji + title in the green card — no extra text.
+        list.innerHTML =
+          '<div class="restday-card' + (rest ? '' : ' restday-plain') + '">' +
+            '<div class="restday-emoji">' + (rest ? '🌴' : '🗓️') + '</div>' +
+            '<div class="restday-title">' + (rest ? 'Rest Day' : 'Nothing set yet') + '</div>' +
+          '</div>' +
+          // Below the card: settings gear (left) + a small Add button (right).
+          '<div class="restday-actions">' +
+            '<button class="restday-gear" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings">⚙️</button>' +
+            '<button class="restday-add" onclick="sessionAddRoutine()">＋ Add a Routine</button>' +
+          '</div>';
       }
       if (now){ now.className = "session-now"; now.innerHTML = ""; }
       if (btn) btn.style.display = "none";
       return;
     }
+    if (innerEl) innerEl.classList.remove("rest-mode");
     if (btn) btn.style.display = "block";
     let html = "";
     sessionStepsArr.forEach((st, i) => {
