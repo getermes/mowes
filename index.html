@@ -2453,13 +2453,8 @@
   .restday-title { font-size: 26px; font-weight: 800; color: #2f7a52; letter-spacing: 0.3px; }
   .restday-card.restday-plain .restday-title { color: #3a4699; }
   /* Row under the green card: settings gear (left) + a small Add button (right). */
-  .restday-actions { display: flex; justify-content: space-between; align-items: center; max-width: 340px; margin: 12px auto 0; }
-  .restday-gear { background: #eef1fc; border: none; border-radius: 12px; padding: 8px 13px; font-size: 18px; line-height: 1; cursor: pointer; }
-  .restday-gear.on { background: #d6dcfb; }
-  .restday-add { display: inline-block; padding: 10px 16px; border: none; border-radius: 999px;
-    background: linear-gradient(180deg, #5a68d6 0%, #4a58c8 100%); color: #fff; font-size: 14px; font-weight: 700;
-    cursor: pointer; box-shadow: 0 4px 11px rgba(74,88,200,0.35); }
-  .restday-add:active { transform: translateY(1px); }
+  /* Rest day uses the SAME two-square barbell as the Today's-page action row below. */
+  .restday-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 300px; margin: 18px auto 0; }
   /* Today's-page action row: two square buttons (Settings ⚙️ + Add ＋) joined by a bar. */
   .session-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 300px; margin: 18px auto 4px; }
   .session-inner.rest-mode .session-actions { display: none; }  /* rest days use their own row */
@@ -8213,10 +8208,11 @@
             '<div class="restday-emoji">' + (rest ? '🌴' : '🗓️') + '</div>' +
             '<div class="restday-title">' + (rest ? 'Rest Day' : 'Nothing set yet') + '</div>' +
           '</div>' +
-          // Below the card: settings gear (left) + a small Add button (right).
+          // Below the card: the same two-square barbell — Settings ⚙️ + Add ＋ joined by a bar.
           '<div class="restday-actions">' +
-            '<button class="restday-gear" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings">⚙️</button>' +
-            '<button class="restday-add" onclick="sessionAddRoutine()">＋ Add a Routine</button>' +
+            '<button class="sa-btn restday-gear" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings"><span class="sa-ic">⚙️</span><span class="sa-lbl">Settings</span></button>' +
+            '<span class="sa-bar"></span>' +
+            '<button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a routine" aria-label="Add a routine"><span class="sa-ic">＋</span><span class="sa-lbl">Add</span></button>' +
           '</div>';
       }
       if (now){ now.className = "session-now"; now.innerHTML = ""; }
