@@ -8057,7 +8057,7 @@
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
   let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
-  let sessionPaceVal = 3, sessionRestVal = 5, sessionExRestVal = 60, sessionTypeRestVal = 180, sessionRestMsg = "Rest";
+  let sessionPaceVal = 3, sessionRestVal = 5, sessionExRestVal = 15, sessionTypeRestVal = 20, sessionRestMsg = "Rest";
   let sessionWarmupOn = true, sessionCooldownOn = true;
   // Down-time ticker: while you rest between steps, this rotates short "what's
   // next" lines so the wait feels alive and you know what's coming.
@@ -8167,7 +8167,7 @@
   }
   function sessionSaveSettings(){
     const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10), e = parseInt(document.getElementById("sessionExRest").value, 10), tp = parseInt(document.getElementById("sessionTypeRest").value, 10);
-    sessionPaceVal = (isNaN(p) || p <= 0) ? 3 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r; sessionExRestVal = (isNaN(e) || e < 0) ? 60 : e; sessionTypeRestVal = (isNaN(tp) || tp < 0) ? 180 : tp;
+    sessionPaceVal = (isNaN(p) || p <= 0) ? 3 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r; sessionExRestVal = (isNaN(e) || e < 0) ? 15 : e; sessionTypeRestVal = (isNaN(tp) || tp < 0) ? 20 : tp;
     const wu = document.getElementById("sessionWarmup"), cd = document.getElementById("sessionCooldown");
     if (wu) sessionWarmupOn = !!wu.checked; if (cd) sessionCooldownOn = !!cd.checked;
     try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal, exrest: sessionExRestVal, typerest: sessionTypeRestVal, warmup: sessionWarmupOn, cooldown: sessionCooldownOn })); } catch(e){}
