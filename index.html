@@ -2439,6 +2439,13 @@
   .session-now-detail { font-size: 14px; opacity: 0.92; margin-top: 3px; }
   .session-now-timer { font-size: 44px; font-weight: 900; line-height: 1.1; margin-top: 6px; }
   .session-now-timer.session-rep .rep-of { font-size: 0.42em; font-weight: 700; color: #8a90b5; }
+  /* The action button (Pause / Done / Lap) lives INSIDE the blue area, bottom-right,
+     so it's always right under your thumb — no scrolling up to the top button. */
+  .session-now-foot { display: flex; justify-content: flex-end; margin-top: 16px; }
+  .session-now-act { border: none; border-radius: 14px; padding: 12px 24px; font-size: 16px; font-weight: 900;
+    color: #5b6cff; background: #fff; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
+  .session-now-act:active { transform: scale(0.97); }
+  .session-now-act.pause { color: #e5484d; }
   .session-now.rest { background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 8px 22px rgba(39,185,138,0.28); }
   /* Down-time ticker — a little rotating "what's next" line during rest */
   .session-ticker {
@@ -2860,7 +2867,6 @@
         <label class="session-toggle"><input type="checkbox" id="sessionWarmup" onchange="sessionSaveSettings()"> 🤸 Warm-up first</label>
         <label class="session-toggle"><input type="checkbox" id="sessionCooldown" onchange="sessionSaveSettings()"> 🧘 Cool-down after</label>
       </div>
-      <div class="session-now" id="sessionNow"></div>
       <div id="sessionList"></div>
       <!-- Two square buttons joined by a bar: Settings (tucks the pacing away) + Add a Routine -->
       <div class="session-actions" id="sessionActions">
@@ -8291,6 +8297,58 @@
     const m = String(d.getMonth() + 1).padStart(2, "0"), da = String(d.getDate()).padStart(2, "0");
     return m + "/" + da + "/" + d.getFullYear();
   }
+  // Build the blue "now" area for the current step as an HTML string. It's dropped
+  // INTO the routine list at the current step's spot (done routines end up above it,
+  // not-yet-done routines below it), so the blue marker slides down as you finish.
+  function sessionNowInline(st){
+    let cls = "session-now on", html;
+    const meta = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
+    if (sessionPhase === "rest"){
+      cls = "session-now on rest";
+      html = '<div class="session-now-name">' + escapeHtml(sessionRestMsg) + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>' + sessionTickerHtml();
+    } else if (st.kind === "laps"){
+      html = '<div class="session-now-name">' + meta + '</div><div class="session-now-detail">Lap ' + Math.min(sessionLapDone + 1, st.laps) + ' of ' + st.laps + ' — tap ✓ Lap each time</div><div class="session-now-timer">🌀 ' + sessionLapDone + '/' + st.laps + '</div>';
+    } else if (st.kind === "manual"){
+      const hasDist = (parseFloat(st.dist) || 0) > 0;
+      let inner = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '');
+      if (hasDist && sessionGpsActive){
+        const done = sessionGpsDistInUnit(st), target = parseFloat(st.dist) || 0;
+        const pct = target > 0 ? Math.min(100, Math.round(done / target * 100)) : 0;
+        inner += '<div class="session-now-timer">📍 ' + done.toFixed(2) + ' / ' + target + ' ' + escapeHtml(st.distUnit || 'mi') + '</div>'
+          + '<div class="session-gps-bar"><div class="session-gps-fill" style="width:' + pct + '%"></div></div>'
+          + '<div class="session-gps-msg" id="sessionGpsMsg">' + escapeHtml(sessionGpsMsgText || 'Getting your location… start moving. 🏃') + '</div>'
+          + '<button class="session-gps-btn stop" onclick="sessionGpsStop(true)">✕ Stop GPS</button>';
+      } else if (hasDist){
+        inner += '<div class="session-now-detail">Track it with GPS, or tap ✓ Done when you finish.</div>'
+          + '<button class="session-gps-btn" onclick="sessionGpsStart()">📍 Track with GPS</button>';
+      } else {
+        inner += '<div class="session-now-detail">Tap ✓ Done when you finish</div>';
+      }
+      html = inner;
+    } else if (st.reps > 0){
+      // Rep-counting set: show "Set 2 of 3" + a big rep number that ticks 1,2,3…
+      const nmOnly = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
+      const setLine = (st.setCount > 1) ? ('Set ' + st.setIndex + ' of ' + st.setCount) : 'Set ' + (st.setIndex || 1);
+      const wLine = (st.weight > 0) ? (' · ' + st.weight + ' ' + (st.weightUnit || 'lbs')) : '';
+      const rn = sessionRepNow(st);
+      html = '<div class="session-now-name">' + nmOnly + '</div>'
+        + '<div class="session-now-detail">' + setLine + wLine + '</div>'
+        + '<div class="session-now-timer session-rep"><span id="sessionRepNum">' + rn.rep + '</span><span class="rep-of"> / ' + rn.total + ' reps</span></div>';
+    } else {
+      html = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
+    }
+    // A ▶ button for this exercise's video (how-to / follow-along / music), while working (not resting).
+    if (sessionPhase !== "rest" && st.video){
+      html += '<button class="session-video-btn" onclick="sessionStepVideo(' + sessionIdx + ')">🎬 Watch video</button>';
+    }
+    // The action button (Pause / Done / Lap), bottom-right inside the blue area.
+    let act, pauseLook = false;
+    if (sessionPhase === "rest" || st.kind === "timed"){ act = "⏸ Pause"; pauseLook = true; }
+    else if (st.kind === "laps"){ act = "✓ Lap (" + sessionLapDone + "/" + st.laps + ")"; }
+    else { act = "✓ Done"; }
+    html += '<div class="session-now-foot"><button class="session-now-act' + (pauseLook ? ' pause' : '') + '" onclick="sessionToggle()">' + act + '</button></div>';
+    return '<div class="' + cls + '" id="sessionNow">' + html + '</div>';
+  }
   function renderSession(){
     // Top line: "Today" on the current day, or that day's date when you page back/forward.
     const todayLineEl = document.getElementById("sessionTodayLine");
@@ -8298,7 +8356,7 @@
     const dayEl = document.getElementById("sessionDay");
     if (dayEl) dayEl.textContent = (fullNames[sessionSelDay] || "").toUpperCase();
     sessionStepsArr = sessionStepsFor(sessionSelDay);
-    const list = document.getElementById("sessionList"), now = document.getElementById("sessionNow"), btn = document.getElementById("sessionStartBtn");
+    const list = document.getElementById("sessionList"), btn = document.getElementById("sessionStartBtn");
     const innerEl = document.querySelector(".session-inner");
     if (!sessionStepsArr.length){
       if (innerEl) innerEl.classList.add("rest-mode");
@@ -8317,7 +8375,6 @@
             '<button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a routine" aria-label="Add a routine"><span class="sa-ic">＋</span><span class="sa-lbl">Add</span></button>' +
           '</div>';
       }
-      if (now){ now.className = "session-now"; now.innerHTML = ""; }
       if (btn) btn.style.display = "none";
       return;
     }
@@ -8339,6 +8396,14 @@
       let allDone = true, doneSets = 0;
       for (let k = i; k <= j; k++){ if (sessionDone[k]) doneSets++; else allDone = false; }
       const isCurrent = sessionRunning && sessionIdx >= i && sessionIdx <= j;
+      // The exercise you're on right now becomes the blue "now" area, right here in
+      // the list. Done routines sit above it, not-yet-done ones below.
+      if (isCurrent){
+        html += sessionNowInline(sessionStepsArr[sessionIdx]);
+        exNum++;
+        i = j + 1;
+        continue;
+      }
       const cls = "session-step" + (allDone ? " done" : "") + (isCurrent ? " current" : "");
       let nameLine, detailLine;
       if (groupable){
@@ -8360,68 +8425,22 @@
       exNum++;
       i = j + 1;
     }
-    if (list) list.innerHTML = html;
-    if (now){
-      if (sessionRunning && sessionIdx >= 0 && sessionIdx < sessionStepsArr.length){
-        const st = sessionStepsArr[sessionIdx];
-        const meta = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
-        if (sessionPhase === "rest"){
-          now.className = "session-now on rest";
-          now.innerHTML = '<div class="session-now-name">' + escapeHtml(sessionRestMsg) + '</div><div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>' + sessionTickerHtml();
-        } else if (st.kind === "laps"){
-          now.className = "session-now on";
-          now.innerHTML = '<div class="session-now-name">' + meta + '</div><div class="session-now-detail">Lap ' + Math.min(sessionLapDone + 1, st.laps) + ' of ' + st.laps + ' — tap ✓ Lap each time</div><div class="session-now-timer">🌀 ' + sessionLapDone + '/' + st.laps + '</div>';
-        } else if (st.kind === "manual"){
-          now.className = "session-now on";
-          const hasDist = (parseFloat(st.dist) || 0) > 0;
-          let inner = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '');
-          if (hasDist && sessionGpsActive){
-            const done = sessionGpsDistInUnit(st), target = parseFloat(st.dist) || 0;
-            const pct = target > 0 ? Math.min(100, Math.round(done / target * 100)) : 0;
-            inner += '<div class="session-now-timer">📍 ' + done.toFixed(2) + ' / ' + target + ' ' + escapeHtml(st.distUnit || 'mi') + '</div>'
-              + '<div class="session-gps-bar"><div class="session-gps-fill" style="width:' + pct + '%"></div></div>'
-              + '<div class="session-gps-msg" id="sessionGpsMsg">' + escapeHtml(sessionGpsMsgText || 'Getting your location… start moving. 🏃') + '</div>'
-              + '<button class="session-gps-btn stop" onclick="sessionGpsStop(true)">✕ Stop GPS</button>';
-          } else if (hasDist){
-            inner += '<div class="session-now-detail">Track it with GPS, or tap ✓ Done when you finish.</div>'
-              + '<button class="session-gps-btn" onclick="sessionGpsStart()">📍 Track with GPS</button>';
-          } else {
-            inner += '<div class="session-now-detail">Tap ✓ Done when you finish</div>';
-          }
-          now.innerHTML = inner;
-        } else if (st.reps > 0){
-          // Rep-counting set: show "Set 2 of 3" + a big rep number that ticks 1,2,3…
-          now.className = "session-now on";
-          const nmOnly = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
-          const setLine = (st.setCount > 1) ? ('Set ' + st.setIndex + ' of ' + st.setCount) : 'Set ' + (st.setIndex || 1);
-          const wLine = (st.weight > 0) ? (' · ' + st.weight + ' ' + (st.weightUnit || 'lbs')) : '';
-          const rn = sessionRepNow(st);
-          now.innerHTML = '<div class="session-now-name">' + nmOnly + '</div>'
-            + '<div class="session-now-detail">' + setLine + wLine + '</div>'
-            + '<div class="session-now-timer session-rep"><span id="sessionRepNum">' + rn.rep + '</span><span class="rep-of"> / ' + rn.total + ' reps</span></div>';
-        } else {
-          now.className = "session-now on";
-          now.innerHTML = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
-        }
-        // A ▶ button for this exercise's video (how-to / follow-along / music), while working (not resting).
-        if (sessionPhase !== "rest" && st.video){
-          const vb = document.createElement("button");
-          vb.className = "session-video-btn";
-          vb.textContent = "🎬 Watch video";
-          vb.onclick = () => openVideoLink(st.video);
-          now.appendChild(vb);
-        }
-      } else { now.className = "session-now"; now.innerHTML = ""; }
+    // When you're not mid-workout there's no inline blue area, so keep one empty
+    // #sessionNow at the top — the finish "🎉 Done!" banner fills it in.
+    if (!(sessionRunning && sessionIdx >= 0 && sessionIdx < sessionStepsArr.length)){
+      html = '<div class="session-now" id="sessionNow"></div>' + html;
     }
+    if (list) list.innerHTML = html;
     if (btn){
-      let t = "▶ Start", pauseLook = false;
+      // While running, the action lives in the blue area — hide the big top button
+      // so you're not scrolling up to reach it. It's back for Start / Resume.
       if (sessionRunning){
-        const st = sessionStepsArr[sessionIdx];
-        if (sessionPhase === "rest" || !st || st.kind === "timed"){ t = "⏸ Pause"; pauseLook = true; }
-        else if (st.kind === "laps") t = "✓ Lap (" + sessionLapDone + "/" + st.laps + ")";
-        else t = "✓ Done — next";
-      } else if (Object.keys(sessionDone).length) t = "▶ Resume";
-      btn.textContent = t; btn.classList.toggle("running", pauseLook);
+        btn.style.display = "none";
+      } else {
+        btn.style.display = "block";
+        btn.textContent = Object.keys(sessionDone).length ? "▶ Resume" : "▶ Start";
+        btn.classList.remove("running");
+      }
     }
   }
   function sessionToggle(){
