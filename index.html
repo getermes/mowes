@@ -2435,10 +2435,14 @@
   .session-toggle input { width: 18px; height: 18px; accent-color: #5b6cff; cursor: pointer; }
   .session-now { text-align: center; min-height: 10px; margin-bottom: 10px; }
   .session-now.on { min-height: auto; background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-radius: 18px; padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 22px rgba(91,108,255,0.28); }
-  .session-now-name { font-size: 18px; font-weight: 900; }
+  .session-now-name { font-size: 18px; font-weight: 900; text-align: left; }
   .session-now-detail { font-size: 14px; opacity: 0.92; margin-top: 3px; }
   .session-now-timer { font-size: 44px; font-weight: 900; line-height: 1.1; margin-top: 6px; }
-  .session-now-timer.session-rep .rep-of { font-size: 0.42em; font-weight: 700; color: #8a90b5; }
+  /* The "Set 2 of 3" line as a bold pill so it stands out inside the blue area. */
+  .session-now-set { display: inline-block; margin-top: 10px; padding: 5px 15px; border-radius: 999px;
+    background: rgba(255,255,255,0.20); font-size: 15px; font-weight: 800; letter-spacing: 0.2px; }
+  .session-now-timer.session-rep { font-size: 54px; margin-top: 8px; }
+  .session-now-timer.session-rep .rep-of { font-size: 0.34em; font-weight: 800; color: rgba(255,255,255,0.9); }
   /* The action button (Pause / Done / Lap) lives INSIDE the blue area, bottom-right,
      so it's always right under your thumb — no scrolling up to the top button. */
   .session-now-foot { display: flex; justify-content: flex-end; margin-top: 16px; }
@@ -8332,7 +8336,7 @@
       const wLine = (st.weight > 0) ? (' · ' + st.weight + ' ' + (st.weightUnit || 'lbs')) : '';
       const rn = sessionRepNow(st);
       html = '<div class="session-now-name">' + nmOnly + '</div>'
-        + '<div class="session-now-detail">' + setLine + wLine + '</div>'
+        + '<div class="session-now-set">' + setLine + wLine + '</div>'
         + '<div class="session-now-timer session-rep"><span id="sessionRepNum">' + rn.rep + '</span><span class="rep-of"> / ' + rn.total + ' reps</span></div>';
     } else {
       html = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
@@ -8341,9 +8345,12 @@
     if (sessionPhase !== "rest" && st.video){
       html += '<button class="session-video-btn" onclick="sessionStepVideo(' + sessionIdx + ')">🎬 Watch video</button>';
     }
-    // The action button (Pause / Done / Lap), bottom-right inside the blue area.
+    // The action button (Pause / Resume / Done / Lap), bottom-right inside the blue area.
+    // When paused, the blue area STAYS PUT and the button just flips to Resume — same
+    // spot, so it's Pause → tap → Resume → tap → Pause, never jumping around.
     let act, pauseLook = false;
-    if (sessionPhase === "rest" || st.kind === "timed"){ act = "⏸ Pause"; pauseLook = true; }
+    if (!sessionRunning){ act = "▶ Resume"; }
+    else if (sessionPhase === "rest" || st.kind === "timed"){ act = "⏸ Pause"; pauseLook = true; }
     else if (st.kind === "laps"){ act = "✓ Lap (" + sessionLapDone + "/" + st.laps + ")"; }
     else { act = "✓ Done"; }
     html += '<div class="session-now-foot"><button class="session-now-act' + (pauseLook ? ' pause' : '') + '" onclick="sessionToggle()">' + act + '</button></div>';
@@ -8380,6 +8387,9 @@
     }
     if (innerEl) innerEl.classList.remove("rest-mode");
     if (btn) btn.style.display = "block";
+    // A session is "active" once you've started and before you finish — this stays true
+    // even while PAUSED, so the blue area stays put in the list instead of collapsing.
+    const sessionActive = sessionIdx >= 0 && sessionIdx < sessionStepsArr.length;
     // One line PER EXERCISE: collapse an exercise's sets (same rid + name) into a single
     // row that reads "3 Set, 10 Rep, 7 lbs". Warm-up/cool-down/cardio stay one row each.
     let html = "";
@@ -8395,7 +8405,7 @@
       const total = j - i + 1;
       let allDone = true, doneSets = 0;
       for (let k = i; k <= j; k++){ if (sessionDone[k]) doneSets++; else allDone = false; }
-      const isCurrent = sessionRunning && sessionIdx >= i && sessionIdx <= j;
+      const isCurrent = sessionActive && sessionIdx >= i && sessionIdx <= j;
       // The exercise you're on right now becomes the blue "now" area, right here in
       // the list. Done routines sit above it, not-yet-done ones below.
       if (isCurrent){
@@ -8427,14 +8437,14 @@
     }
     // When you're not mid-workout there's no inline blue area, so keep one empty
     // #sessionNow at the top — the finish "🎉 Done!" banner fills it in.
-    if (!(sessionRunning && sessionIdx >= 0 && sessionIdx < sessionStepsArr.length)){
+    if (!sessionActive){
       html = '<div class="session-now" id="sessionNow"></div>' + html;
     }
     if (list) list.innerHTML = html;
     if (btn){
-      // While running, the action lives in the blue area — hide the big top button
-      // so you're not scrolling up to reach it. It's back for Start / Resume.
-      if (sessionRunning){
+      // Mid-workout (running OR paused), the action lives in the blue area — hide the big
+      // top button so you're not scrolling up to reach it. It's back only for Start.
+      if (sessionActive){
         btn.style.display = "none";
       } else {
         btn.style.display = "block";
