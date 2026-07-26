@@ -2282,6 +2282,9 @@
   .library-overlay.show { display: block; }
   .library-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
   .library-inner .routine-card { background: #fff; }
+  /* Build MOWES is a short page — pin its like/coffee set to the very bottom. */
+  #buildOverlay .library-inner { display: flex; flex-direction: column; min-height: 100%; box-sizing: border-box; }
+  #buildOverlay #buildSupport { margin-top: auto; padding-top: 28px; }
   .lib-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 24px 8px; }
   .lib-hint { text-align: center; color: #7a80a0; font-size: 13px; line-height: 1.5; margin: 2px 6px 10px; }
   .lib-add-btn { width: 100%; margin-top: 6px; padding: 14px; border: 2px dashed #9aa8e0; border-radius: 14px;
