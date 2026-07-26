@@ -2314,6 +2314,13 @@
     background: #fff; color: #7a80a0; font-size: 12px; font-weight: 700; cursor: pointer; }
   .lib-groups { display: none; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
   .lib-groups.show { display: flex; }
+  /* Day-marks on a routine: tap the days it should pop (shared with My Weekly Plan). */
+  .lib-days-label { font-size: 12px; font-weight: 700; color: #7a80a0; margin: 8px 0 5px; }
+  .lib-days { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 4px; }
+  .lib-day { flex: 1 1 0; min-width: 38px; padding: 7px 4px; border: 1px solid #d3d8f0; border-radius: 10px;
+    background: #fafbff; color: #6b719c; font-size: 12px; font-weight: 800; cursor: pointer; }
+  .lib-day.on { background: #3a4699; border-color: #3a4699; color: #fff; }
+  .lib-day:active { transform: translateY(1px); }
   .lib-grp-btn { padding: 6px 10px; border: 1px solid #d3d8f0; border-radius: 999px; background: #fafbff;
     color: #6b719c; font-size: 12px; font-weight: 700; cursor: pointer; }
   .lib-grp-btn.active { background: #3a4699; border-color: #3a4699; color: #fff; }
@@ -7593,6 +7600,10 @@
     card.className = "routine-card";
     card.dataset.libId = r.id || (r.id = genLibId());
     card.dataset.libGroup = r.group || "";
+    // Which days is this routine marked to pop? (Shared with My Weekly Plan.)
+    const _sel = loadWeekSel();
+    const dayOn = {};
+    days.forEach(d => { dayOn[d] = (_sel[d] || []).indexOf(r.id) >= 0; });
     card.innerHTML = `
         <div class="routine-row">
           <div class="routine-num">${num}</div>
@@ -7603,16 +7614,9 @@
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
           <button class="routine-delete" title="Delete this routine" onclick="libDeleteRoutine(this)">✕</button>
         </div>
-        <button type="button" class="lib-move-toggle" onclick="libToggleMove(this)">📦 Move to another drawer</button>
-        <div class="lib-groups">
-          <button type="button" class="lib-grp-btn" data-g="weights" onclick="libSetGroup(this,'weights')">🏋️ Weights</button>
-          <button type="button" class="lib-grp-btn" data-g="gym" onclick="libSetGroup(this,'gym')">🏢 Gym</button>
-          <button type="button" class="lib-grp-btn" data-g="outdoor" onclick="libSetGroup(this,'outdoor')">🌳 Outdoor</button>
-          <button type="button" class="lib-grp-btn" data-g="bodyonly" onclick="libSetGroup(this,'bodyonly')">💪 Body only</button>
-          <button type="button" class="lib-grp-btn" data-g="sports" onclick="libSetGroup(this,'sports')">⚽ Sports</button>
-          <button type="button" class="lib-grp-btn" data-g="cardio" onclick="libSetGroup(this,'cardio')">🏃 Cardio</button>
-          <button type="button" class="lib-grp-btn" data-g="stretching" onclick="libSetGroup(this,'stretching')">🧘 Stretching</button>
-          <button type="button" class="lib-grp-btn" data-g="swimming" onclick="libSetGroup(this,'swimming')">🏊 Swimming</button>
+        <div class="lib-days-label">📅 Pops on these days:</div>
+        <div class="lib-days">
+          ${days.map(function(d){ return '<button type="button" class="lib-day' + (dayOn[d] ? ' on' : '') + '" data-day="' + d + '" onclick="libToggleDay(this,\'' + d + '\')">' + d + '</button>'; }).join('')}
         </div>
         <div class="lib-mode">
           <button type="button" class="lib-mode-btn" data-mode="sets" onclick="libSetMode(this,'sets')">Repeat sets</button>
@@ -7780,13 +7784,20 @@
     renderLibrary();
   }
   window.libToggleDrawer = libToggleDrawer;
-  // Show/hide the "which drawer" pills on a single routine card.
-  function libToggleMove(btn){
+  // Mark/unmark which days a routine pops on. Shared with My Weekly Plan (same memory),
+  // so marking a day here makes the routine show that day in Today's Session too.
+  function libToggleDay(btn, day){
     const card = btn.closest(".routine-card");
-    const pills = card && card.querySelector(".lib-groups");
-    if (pills) pills.classList.toggle("show");
+    if (!card) return;
+    const id = card.dataset.libId;
+    const sel = loadWeekSel();
+    const a = sel[day] || (sel[day] = []);
+    const j = a.indexOf(id);
+    if (j >= 0){ a.splice(j, 1); btn.classList.remove("on"); }
+    else { a.push(id); btn.classList.add("on"); }
+    saveWeekSel(sel);
   }
-  window.libToggleMove = libToggleMove;
+  window.libToggleDay = libToggleDay;
   // Add a new routine straight into a given drawer (category). "" = My own routines.
   function libAddRoutineTo(group){
     captureLibrary();
