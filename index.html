@@ -2445,11 +2445,20 @@
   .session-now-timer.session-rep .rep-of { font-size: 0.34em; font-weight: 800; color: rgba(255,255,255,0.9); }
   /* The action button (Pause / Done / Lap) lives INSIDE the blue area, bottom-right,
      so it's always right under your thumb — no scrolling up to the top button. */
-  .session-now-foot { display: flex; justify-content: flex-end; margin-top: 16px; }
+  .session-now-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
   .session-now-act { border: none; border-radius: 14px; padding: 12px 24px; font-size: 16px; font-weight: 900;
     color: #5b6cff; background: #fff; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
   .session-now-act:active { transform: scale(0.97); }
   .session-now-act.pause { color: #e5484d; }
+  /* Subtle "Skip" on the left of the blue area — pass this exercise without doing it. */
+  .session-now-skip { border: none; border-radius: 12px; padding: 9px 15px; font-size: 14px; font-weight: 800;
+    color: #fff; background: rgba(255,255,255,0.20); cursor: pointer; }
+  .session-now-skip:active { transform: scale(0.97); }
+  /* A skipped exercise in the list: greyed, marked "Skipped today", with an ↩ Undo. */
+  .session-step.skipped { opacity: 0.75; background: #f2f3f8; }
+  .session-step.skipped .session-step-num { background: #e4e5ee; color: #9aa0b5; }
+  .session-step.skipped .session-step-name { color: #9aa0b5; text-decoration: line-through; }
+  .session-step.skipped .session-step-detail { color: #b0894a; font-weight: 700; }
   .session-now.rest { background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 8px 22px rgba(39,185,138,0.28); }
   /* Down-time ticker — a little rotating "what's next" line during rest */
   .session-ticker {
@@ -8066,6 +8075,9 @@
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
+  // Exercises you've chosen to skip this session (step index → true). Skipped ones are
+  // passed over when the workout advances and never count as "done". Resets with the session.
+  let sessionSkipped = {};
   // Days from today (0 = today). The ‹ › arrows move this, so the date keeps counting
   // forward/backward across weeks instead of wrapping inside the current week.
   let sessionDayOffset = 0;
@@ -8355,7 +8367,8 @@
     else if (sessionPhase === "rest" || st.kind === "timed"){ act = "⏸ Pause"; pauseLook = true; }
     else if (st.kind === "laps"){ act = "✓ Lap (" + sessionLapDone + "/" + st.laps + ")"; }
     else { act = "✓ Done"; }
-    html += '<div class="session-now-foot"><button class="session-now-act' + (pauseLook ? ' pause' : '') + '" onclick="sessionToggle()">' + act + '</button></div>';
+    const skipBtn = '<button class="session-now-skip" onclick="sessionSkipStep(' + sessionIdx + ')">⏭ Skip</button>';
+    html += '<div class="session-now-foot">' + skipBtn + '<button class="session-now-act' + (pauseLook ? ' pause' : '') + '" onclick="sessionToggle()">' + act + '</button></div>';
     return '<div class="' + cls + '" id="sessionNow">' + html + '</div>';
   }
   function renderSession(){
@@ -8405,13 +8418,24 @@
                && sessionStepsArr[j + 1].name === st.name && sessionStepsArr[j + 1].reps > 0) j++;
       }
       const total = j - i + 1;
-      let allDone = true, doneSets = 0;
-      for (let k = i; k <= j; k++){ if (sessionDone[k]) doneSets++; else allDone = false; }
+      let allDone = true, doneSets = 0, allSkipped = true;
+      for (let k = i; k <= j; k++){ if (sessionDone[k]) doneSets++; else allDone = false; if (!sessionSkipped[k]) allSkipped = false; }
       const isCurrent = sessionActive && sessionIdx >= i && sessionIdx <= j;
       // The exercise you're on right now becomes the blue "now" area, right here in
       // the list. Done routines sit above it, not-yet-done ones below.
       if (isCurrent){
         html += sessionNowInline(sessionStepsArr[sessionIdx]);
+        exNum++;
+        i = j + 1;
+        continue;
+      }
+      // A skipped exercise: greyed out with an Undo (↩) to bring it back.
+      if (allSkipped){
+        const skName = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + (groupable ? '' : ' · ' + escapeHtml(st.label));
+        html += '<div class="session-step skipped"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
+          + '<div class="session-step-name">' + skName + '</div>'
+          + '<div class="session-step-detail">Skipped today</div></div>'
+          + '<button class="session-howto" title="Bring it back" onclick="sessionUnskip(' + i + ')">↩</button></div>';
         exNum++;
         i = j + 1;
         continue;
@@ -8433,7 +8457,9 @@
         + '<div class="session-step-name">' + nameLine + '</div>'
         + (detailLine ? '<div class="session-step-detail">' + escapeHtml(detailLine) + '</div>' : '') + '</div>'
         + (st.video ? '<button class="session-howto" title="Play video" onclick="sessionStepVideo(' + i + ')">🎬</button>' : '')
-        + '<button class="session-howto" title="How to do this" onclick="sessionHowToStep(' + i + ')">❓</button></div>';
+        + '<button class="session-howto" title="How to do this" onclick="sessionHowToStep(' + i + ')">❓</button>'
+        + (allDone ? '' : '<button class="session-howto session-skip" title="Skip this today" onclick="sessionSkipStep(' + i + ')">⏭</button>')
+        + '</div>';
       exNum++;
       i = j + 1;
     }
@@ -8471,11 +8497,50 @@
     sessionEndAt = (st.kind === "timed") ? (Date.now() + sessionRemain * 1000) : 0; // real-clock deadline
     renderSession();
   }
+  // The next step to actually do, hopping over anything you've skipped or already done.
+  function sessionNextLive(idx){
+    let n = idx + 1;
+    while (n < sessionStepsArr.length && (sessionSkipped[n] || sessionDone[n])) n++;
+    return n; // === length means we're finished
+  }
+  // The full range [a..b] of steps that make up one exercise (all its sets), for any index in it.
+  function sessionGroupRange(i){
+    const st = sessionStepsArr[i]; if (!st) return [i, i];
+    const groupable = (st.reps > 0 && st.type !== "warmup" && st.type !== "cooldown");
+    let a = i, b = i;
+    if (groupable){
+      while (a - 1 >= 0 && sessionStepsArr[a - 1].rid === st.rid && sessionStepsArr[a - 1].name === st.name && sessionStepsArr[a - 1].reps > 0) a--;
+      while (b + 1 < sessionStepsArr.length && sessionStepsArr[b + 1].rid === st.rid && sessionStepsArr[b + 1].name === st.name && sessionStepsArr[b + 1].reps > 0) b++;
+    }
+    return [a, b];
+  }
+  // Skip a whole exercise (all its sets) — from any row, even one you haven't reached yet.
+  function sessionSkipStep(i){
+    const range = sessionGroupRange(i);
+    for (let k = range[0]; k <= range[1]; k++){ sessionSkipped[k] = true; delete sessionDone[k]; }
+    // If you skipped the one you're on right now, jump straight to the next live exercise.
+    const active = sessionIdx >= 0 && sessionIdx < sessionStepsArr.length;
+    if (active && sessionIdx >= range[0] && sessionIdx <= range[1]){
+      sessionGpsStop(false);
+      const nl = sessionNextLive(range[1]);
+      if (nl >= sessionStepsArr.length){ sessionFinish(); return; }
+      if (sessionRunning){ sessionEnterWork(nl); return; }
+      sessionIdx = nl; sessionPhase = "work"; sessionRemain = 0;
+    }
+    renderSession();
+  }
+  // Bring a skipped exercise back.
+  function sessionUnskip(i){
+    const range = sessionGroupRange(i);
+    for (let k = range[0]; k <= range[1]; k++){ delete sessionSkipped[k]; }
+    renderSession();
+  }
+  window.sessionSkipStep = sessionSkipStep; window.sessionUnskip = sessionUnskip;
   function sessionCompleteStep(){
     if (sessionIdx < 0) return;
     sessionGpsStop(false);
     sessionDone[sessionIdx] = true;
-    const nextIdx = sessionIdx + 1;
+    const nextIdx = sessionNextLive(sessionIdx);
     if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
     // Three rest tiers: between sets < between exercises < between muscle types.
     // Warm-up/cool-down get quick, friendly transitions (not the long muscle-switch rest).
@@ -8551,12 +8616,12 @@
   window.sessionGpsStart = sessionGpsStart; window.sessionGpsStop = sessionGpsStop;
   function sessionStart(){
     if (!sessionStepsArr.length) return;
-    if (sessionStepsArr.every((_, i) => sessionDone[i])){ sessionDone = {}; sessionIdx = -1; }
+    if (sessionStepsArr.every((_, i) => sessionDone[i] || sessionSkipped[i])){ sessionDone = {}; sessionIdx = -1; }
     sessionRunning = true;
     if (sessionTimer) clearInterval(sessionTimer);
     sessionTimer = setInterval(sessionTick, 1000);
     if (sessionIdx < 0 || sessionIdx >= sessionStepsArr.length){
-      const first = sessionStepsArr.findIndex((_, i) => !sessionDone[i]);
+      const first = sessionStepsArr.findIndex((_, i) => !sessionDone[i] && !sessionSkipped[i]);
       sessionEnterWork(first < 0 ? 0 : first);
     } else {
       // Resuming: restart the real-clock deadline from the remaining time.
@@ -8623,14 +8688,14 @@
     // Weekday (for the plan lookup) is today's weekday shifted by the offset, wrapped 0-6.
     const todayIdx = days.indexOf(todayKey);
     sessionSelDay = days[(((todayIdx + sessionDayOffset) % days.length) + days.length) % days.length];
-    sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {};
+    sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionSkipped = {};
     renderSession();
   }
   function openSessionPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
     leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
-    sessionSelDay = todayKey; sessionDayOffset = 0; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionRunning = false;
+    sessionSelDay = todayKey; sessionDayOffset = 0; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionSkipped = {}; sessionRunning = false;
     if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionLoadSettings();
     renderSession();
@@ -9006,7 +9071,7 @@
   // Same "Surprise me" smart-pick, but triggered from Today's Session — refresh that view after.
   function sessionSurprise(){
     surpriseMe();
-    if (sessionShownAsPage()){ sessionSelDay = todayKey; sessionDayOffset = 0; sessionIdx = -1; sessionRemain = 0; renderSession(); }
+    if (sessionShownAsPage()){ sessionSelDay = todayKey; sessionDayOffset = 0; sessionIdx = -1; sessionRemain = 0; sessionDone = {}; sessionSkipped = {}; renderSession(); }
   }
   window.sessionSurprise = sessionSurprise;
   function renderPlan(){
