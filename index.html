@@ -7558,8 +7558,8 @@
   window.libResetToStarter = libResetToStarter;
   // Draw the library cards (one per saved routine) into #libraryList.
   // Routines are grouped by TYPE; you choose each routine's group on its card.
-  const LIB_GROUP_META = { weights:{ icon:"🏋️", name:"Weights" }, gym:{ icon:"🏢", name:"Gym" }, outdoor:{ icon:"🌳", name:"Outdoor" }, bodyonly:{ icon:"💪", name:"Body only" } };
-  const LIB_GROUP_ORDER = ["weights", "gym", "outdoor", "bodyonly", "__mine__"];
+  const LIB_GROUP_META = { weights:{ icon:"🏋️", name:"Weights" }, gym:{ icon:"🏢", name:"Gym" }, outdoor:{ icon:"🌳", name:"Outdoor" }, bodyonly:{ icon:"💪", name:"Body only" }, sports:{ icon:"⚽", name:"Sports" }, cardio:{ icon:"🏃", name:"Cardio" }, stretching:{ icon:"🧘", name:"Stretching" }, swimming:{ icon:"🏊", name:"Swimming" } };
+  const LIB_GROUP_ORDER = ["weights", "gym", "outdoor", "bodyonly", "sports", "cardio", "stretching", "swimming", "__mine__"];
   // Old location-based groups → new type-based groups (one-time, for existing routines).
   const LIB_GROUP_REMAP = { home:"bodyonly", outdoors:"outdoor" };
   function buildLibCard(r, num, isFirst, isLast){
@@ -7586,6 +7586,10 @@
           <button type="button" class="lib-grp-btn" data-g="gym" onclick="libSetGroup(this,'gym')">🏢 Gym</button>
           <button type="button" class="lib-grp-btn" data-g="outdoor" onclick="libSetGroup(this,'outdoor')">🌳 Outdoor</button>
           <button type="button" class="lib-grp-btn" data-g="bodyonly" onclick="libSetGroup(this,'bodyonly')">💪 Body only</button>
+          <button type="button" class="lib-grp-btn" data-g="sports" onclick="libSetGroup(this,'sports')">⚽ Sports</button>
+          <button type="button" class="lib-grp-btn" data-g="cardio" onclick="libSetGroup(this,'cardio')">🏃 Cardio</button>
+          <button type="button" class="lib-grp-btn" data-g="stretching" onclick="libSetGroup(this,'stretching')">🧘 Stretching</button>
+          <button type="button" class="lib-grp-btn" data-g="swimming" onclick="libSetGroup(this,'swimming')">🏊 Swimming</button>
         </div>
         <div class="lib-mode">
           <button type="button" class="lib-mode-btn" data-mode="sets" onclick="libSetMode(this,'sets')">Repeat sets</button>
