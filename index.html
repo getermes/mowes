@@ -8066,6 +8066,9 @@
 
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
+  // Days from today (0 = today). The ‹ › arrows move this, so the date keeps counting
+  // forward/backward across weeks instead of wrapping inside the current week.
+  let sessionDayOffset = 0;
   let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
   let sessionPaceVal = 3, sessionRestVal = 5, sessionExRestVal = 15, sessionTypeRestVal = 20, sessionRestMsg = "Rest";
   let sessionWarmupOn = true, sessionCooldownOn = true;
@@ -8294,10 +8297,9 @@
     return { rep: Math.min(total, Math.max(1, rep)), total: total };
   }
   // The calendar date (MM/DD/YYYY) for a weekday in the current week.
-  function sessionDateStr(day){
-    const idx = days.indexOf(day); if (idx < 0) return "";
-    const p = currentWeekKey.split("-"); // YYYY-MM-DD (this week's Monday)
-    const d = new Date(+p[0], +p[1] - 1, +p[2]); d.setDate(d.getDate() + idx);
+  function sessionDateStr(){
+    // The real calendar date, today + however many days you've paged (can cross weeks).
+    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + sessionDayOffset);
     const m = String(d.getMonth() + 1).padStart(2, "0"), da = String(d.getDate()).padStart(2, "0");
     return m + "/" + da + "/" + d.getFullYear();
   }
@@ -8359,7 +8361,7 @@
   function renderSession(){
     // Top line: "Today" on the current day, or that day's date when you page back/forward.
     const todayLineEl = document.getElementById("sessionTodayLine");
-    if (todayLineEl) todayLineEl.textContent = (sessionSelDay === todayKey) ? "Today" : sessionDateStr(sessionSelDay);
+    if (todayLineEl) todayLineEl.textContent = (sessionDayOffset === 0) ? "Today" : sessionDateStr();
     const dayEl = document.getElementById("sessionDay");
     if (dayEl) dayEl.textContent = (fullNames[sessionSelDay] || "").toUpperCase();
     sessionStepsArr = sessionStepsFor(sessionSelDay);
@@ -8617,7 +8619,10 @@
   }
   function sessionChangeDay(offset){
     sessionPause();
-    const i = days.indexOf(sessionSelDay); sessionSelDay = days[(i + offset + days.length) % days.length];
+    sessionDayOffset += offset;
+    // Weekday (for the plan lookup) is today's weekday shifted by the offset, wrapped 0-6.
+    const todayIdx = days.indexOf(todayKey);
+    sessionSelDay = days[(((todayIdx + sessionDayOffset) % days.length) + days.length) % days.length];
     sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {};
     renderSession();
   }
@@ -8625,7 +8630,7 @@
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
     leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
-    sessionSelDay = todayKey; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionRunning = false;
+    sessionSelDay = todayKey; sessionDayOffset = 0; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionRunning = false;
     if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionLoadSettings();
     renderSession();
@@ -9001,7 +9006,7 @@
   // Same "Surprise me" smart-pick, but triggered from Today's Session — refresh that view after.
   function sessionSurprise(){
     surpriseMe();
-    if (sessionShownAsPage()){ sessionSelDay = todayKey; sessionIdx = -1; sessionRemain = 0; renderSession(); }
+    if (sessionShownAsPage()){ sessionSelDay = todayKey; sessionDayOffset = 0; sessionIdx = -1; sessionRemain = 0; renderSession(); }
   }
   window.sessionSurprise = sessionSurprise;
   function renderPlan(){
