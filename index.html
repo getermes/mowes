@@ -2438,6 +2438,7 @@
   .session-now-name { font-size: 18px; font-weight: 900; }
   .session-now-detail { font-size: 14px; opacity: 0.92; margin-top: 3px; }
   .session-now-timer { font-size: 44px; font-weight: 900; line-height: 1.1; margin-top: 6px; }
+  .session-now-timer.session-rep .rep-of { font-size: 0.42em; font-weight: 700; color: #8a90b5; }
   .session-now.rest { background: linear-gradient(135deg, #2fa36b, #27b98a); box-shadow: 0 8px 22px rgba(39,185,138,0.28); }
   /* Down-time ticker — a little rotating "what's next" line during rest */
   .session-ticker {
@@ -8056,7 +8057,7 @@
   // ---- Today's Session: guided auto-advance through the day's steps ----
   let sessionSelDay = todayKey, sessionStepsArr = [], sessionDone = {}, sessionRunning = false;
   let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
-  let sessionPaceVal = 1.5, sessionRestVal = 5, sessionExRestVal = 60, sessionTypeRestVal = 180, sessionRestMsg = "Rest";
+  let sessionPaceVal = 3, sessionRestVal = 5, sessionExRestVal = 60, sessionTypeRestVal = 180, sessionRestMsg = "Rest";
   let sessionWarmupOn = true, sessionCooldownOn = true;
   // Down-time ticker: while you rest between steps, this rotates short "what's
   // next" lines so the wait feels alive and you know what's coming.
@@ -8166,7 +8167,7 @@
   }
   function sessionSaveSettings(){
     const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10), e = parseInt(document.getElementById("sessionExRest").value, 10), tp = parseInt(document.getElementById("sessionTypeRest").value, 10);
-    sessionPaceVal = (isNaN(p) || p <= 0) ? 1.5 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r; sessionExRestVal = (isNaN(e) || e < 0) ? 60 : e; sessionTypeRestVal = (isNaN(tp) || tp < 0) ? 180 : tp;
+    sessionPaceVal = (isNaN(p) || p <= 0) ? 3 : p; sessionRestVal = (isNaN(r) || r < 0) ? 5 : r; sessionExRestVal = (isNaN(e) || e < 0) ? 60 : e; sessionTypeRestVal = (isNaN(tp) || tp < 0) ? 180 : tp;
     const wu = document.getElementById("sessionWarmup"), cd = document.getElementById("sessionCooldown");
     if (wu) sessionWarmupOn = !!wu.checked; if (cd) sessionCooldownOn = !!cd.checked;
     try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal, exrest: sessionExRestVal, typerest: sessionTypeRestVal, warmup: sessionWarmupOn, cooldown: sessionCooldownOn })); } catch(e){}
@@ -8205,11 +8206,13 @@
     const video = (reps.video || "").trim(); // how-to / follow-along / companion clip
     if (reps.on && reps.sets){
       const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
-      reps.sets.forEach((s, i) => {
-        if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
-        const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0;
+      // Only the sets that actually have something in them; setIndex/setCount let the
+      // Today's Session list collapse them into ONE line ("3 Set, 10 Rep") per exercise.
+      const validSets = reps.sets.filter(s => s && (s.reps || s.weight || s.time || s.distance));
+      validSets.forEach((s, i) => {
+        const nReps = parseFloat(s.reps) || 0, nTime = parseFloat(s.time) || 0, nDist = parseFloat(s.distance) || 0, nWeight = parseFloat(s.weight) || 0;
         const parts = []; if (s.reps) parts.push(s.reps + " reps"); if (s.weight) parts.push(s.weight + " " + wUnit); if (s.time) parts.push(s.time + " min"); if (nDist) parts.push(s.distance + " " + dUnit);
-        const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, icon: cat.icon, restBetween: restBetween, restAfter: restAfter, video: video };
+        const step = { rid: rid, type: cat.type, name: r.name, label: "Set " + (i + 1), setIndex: i + 1, setCount: validSets.length, detail: parts.join(" × "), reps: nReps, time: nTime, dist: nDist, distUnit: dUnit, weight: nWeight, weightUnit: wUnit, icon: cat.icon, restBetween: restBetween, restAfter: restAfter, video: video };
         if (cols.distance && lapLen > 0 && nReps > 0){ step.kind = "laps"; step.laps = Math.round(nReps); step.icon = "🌀"; step.detail = Math.round(nReps) + " laps" + (s.weight ? " · " + s.weight + " " + wUnit : ""); }
         else if (nReps > 0 || nTime > 0){ step.kind = "timed"; }
         else if (nDist > 0){ step.kind = "manual"; }
@@ -8271,6 +8274,15 @@
     return 30; // default when we can't tell yet (laps/distance come later)
   }
   function sessionClock(s){ s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), ss = s % 60; return m + ":" + (ss < 10 ? "0" : "") + ss; }
+  // Which rep are we on right now? Derived from how much of the set's time has elapsed
+  // (one rep per Pace second), so the counter ticks 1,2,3… up to the set's rep count.
+  function sessionRepNow(st){
+    const total = Math.max(1, Math.round(st.reps || 0));
+    const dur = sessionStepDuration(st);
+    const elapsed = Math.max(0, dur - sessionRemain);
+    let rep = Math.floor(elapsed / (sessionPaceVal || 1)) + 1;
+    return { rep: Math.min(total, Math.max(1, rep)), total: total };
+  }
   // The calendar date (MM/DD/YYYY) for a weekday in the current week.
   function sessionDateStr(day){
     const idx = days.indexOf(day); if (idx < 0) return "";
@@ -8311,15 +8323,43 @@
     }
     if (innerEl) innerEl.classList.remove("rest-mode");
     if (btn) btn.style.display = "block";
+    // One line PER EXERCISE: collapse an exercise's sets (same rid + name) into a single
+    // row that reads "3 Set, 10 Rep, 7 lbs". Warm-up/cool-down/cardio stay one row each.
     let html = "";
-    sessionStepsArr.forEach((st, i) => {
-      const cls = "session-step" + (sessionDone[i] ? " done" : "") + (sessionRunning && i === sessionIdx ? " current" : "");
-      html += '<div class="' + cls + '"><div class="session-step-num">' + (i + 1) + '</div><div class="session-step-main">'
-        + '<div class="session-step-name">' + (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label) + '</div>'
-        + (st.detail ? '<div class="session-step-detail">' + escapeHtml(st.detail) + '</div>' : '') + '</div>'
+    let exNum = 0, i = 0;
+    while (i < sessionStepsArr.length){
+      const st = sessionStepsArr[i];
+      const groupable = (st.reps > 0 && st.type !== "warmup" && st.type !== "cooldown");
+      let j = i;
+      if (groupable){
+        while (j + 1 < sessionStepsArr.length && sessionStepsArr[j + 1].rid === st.rid
+               && sessionStepsArr[j + 1].name === st.name && sessionStepsArr[j + 1].reps > 0) j++;
+      }
+      const total = j - i + 1;
+      let allDone = true, doneSets = 0;
+      for (let k = i; k <= j; k++){ if (sessionDone[k]) doneSets++; else allDone = false; }
+      const isCurrent = sessionRunning && sessionIdx >= i && sessionIdx <= j;
+      const cls = "session-step" + (allDone ? " done" : "") + (isCurrent ? " current" : "");
+      let nameLine, detailLine;
+      if (groupable){
+        nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
+        const unitLbl = (st.kind === "laps") ? "Lap" : "Rep";
+        detailLine = total + " Set" + (total > 1 ? "s" : "") + ", " + st.reps + " " + unitLbl + (st.reps === 1 ? "" : "s");
+        if (st.weight > 0) detailLine += ", " + st.weight + " " + (st.weightUnit || "lbs");
+        if (isCurrent) detailLine += " · set " + Math.min(total, sessionIdx - i + 1) + "/" + total;
+        else if (doneSets > 0) detailLine += " · " + doneSets + "/" + total;
+      } else {
+        nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
+        detailLine = st.detail || "";
+      }
+      html += '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
+        + '<div class="session-step-name">' + nameLine + '</div>'
+        + (detailLine ? '<div class="session-step-detail">' + escapeHtml(detailLine) + '</div>' : '') + '</div>'
         + (st.video ? '<button class="session-howto" title="Play video" onclick="sessionStepVideo(' + i + ')">🎬</button>' : '')
         + '<button class="session-howto" title="How to do this" onclick="sessionHowToStep(' + i + ')">❓</button></div>';
-    });
+      exNum++;
+      i = j + 1;
+    }
     if (list) list.innerHTML = html;
     if (now){
       if (sessionRunning && sessionIdx >= 0 && sessionIdx < sessionStepsArr.length){
@@ -8349,6 +8389,16 @@
             inner += '<div class="session-now-detail">Tap ✓ Done when you finish</div>';
           }
           now.innerHTML = inner;
+        } else if (st.reps > 0){
+          // Rep-counting set: show "Set 2 of 3" + a big rep number that ticks 1,2,3…
+          now.className = "session-now on";
+          const nmOnly = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
+          const setLine = (st.setCount > 1) ? ('Set ' + st.setIndex + ' of ' + st.setCount) : 'Set ' + (st.setIndex || 1);
+          const wLine = (st.weight > 0) ? (' · ' + st.weight + ' ' + (st.weightUnit || 'lbs')) : '';
+          const rn = sessionRepNow(st);
+          now.innerHTML = '<div class="session-now-name">' + nmOnly + '</div>'
+            + '<div class="session-now-detail">' + setLine + wLine + '</div>'
+            + '<div class="session-now-timer session-rep"><span id="sessionRepNum">' + rn.rep + '</span><span class="rep-of"> / ' + rn.total + ' reps</span></div>';
         } else {
           now.className = "session-now on";
           now.innerHTML = '<div class="session-now-name">' + meta + '</div>' + (st.detail ? '<div class="session-now-detail">' + escapeHtml(st.detail) + '</div>' : '') + '<div class="session-now-timer">' + sessionClock(sessionRemain) + '</div>';
@@ -8499,7 +8549,14 @@
     sessionRemain = Math.max(0, Math.ceil((sessionEndAt - Date.now()) / 1000));
     if (sessionRemain > 0){
       const now = document.getElementById("sessionNow");
-      if (now){ const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain); }
+      if (now){
+        if (sessionPhase === "work" && st && st.kind === "timed" && st.reps > 0){
+          const repEl = now.querySelector("#sessionRepNum"); // count the reps up
+          if (repEl) repEl.textContent = sessionRepNow(st).rep;
+        } else {
+          const t = now.querySelector(".session-now-timer"); if (t) t.textContent = sessionClock(sessionRemain);
+        }
+      }
       // Rotate the down-time ticker every ~3s so the "what's next" lines cycle.
       if (sessionPhase === "rest"){
         const tk = now && now.querySelector("#sessionTicker");
