@@ -2283,6 +2283,7 @@
   .library-inner { max-width: 420px; margin: 0 auto; padding: 40px 20px calc(90px + env(safe-area-inset-bottom, 0px)); }
   .library-inner .routine-card { background: #fff; }
   .lib-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 24px 8px; }
+  .lib-hint { text-align: center; color: #7a80a0; font-size: 13px; line-height: 1.5; margin: 2px 6px 10px; }
   .lib-add-btn { width: 100%; margin-top: 6px; padding: 14px; border: 2px dashed #9aa8e0; border-radius: 14px;
     background: rgba(255,255,255,0.55); color: #3a4699; font-size: 16px; font-weight: 700; cursor: pointer; }
   .lib-add-btn:active { background: rgba(255,255,255,0.85); }
@@ -2292,7 +2293,27 @@
   .lib-group { font-size: 15px; font-weight: 800; color: #3a4699; margin: 20px 2px 8px; padding-bottom: 6px;
     border-bottom: 2px solid rgba(90,104,214,0.18); }
   .lib-group:first-child { margin-top: 4px; }
-  .lib-groups { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
+  /* My Library = a cabinet of drawers. Each category is a drawer you tap to open. */
+  .lib-drawer { border: 1px solid #e2e6f5; border-radius: 14px; background: #fbfcff; margin: 10px 0; overflow: hidden; }
+  .lib-drawer.open { border-color: #c3cbf0; box-shadow: 0 4px 12px rgba(60,90,140,0.08); }
+  .lib-drawer-head { width: 100%; display: flex; align-items: center; gap: 10px; padding: 14px; border: none; background: transparent; cursor: pointer; text-align: left; }
+  .lib-drawer.open .lib-drawer-head { background: #eef1fc; }
+  .lib-drawer-ic { font-size: 22px; line-height: 1; }
+  .lib-drawer-name { flex: 1 1 auto; font-size: 16px; font-weight: 800; color: #3a4699; }
+  .lib-drawer-count { flex: 0 0 auto; min-width: 22px; text-align: center; background: #dfe4fb; color: #3a4699; font-size: 12px; font-weight: 800; border-radius: 999px; padding: 2px 8px; }
+  .lib-drawer-chev { flex: 0 0 auto; color: #8a90b5; font-size: 15px; transition: transform 0.18s ease; }
+  .lib-drawer.open .lib-drawer-chev { transform: rotate(90deg); }
+  .lib-drawer-body { display: none; padding: 4px 12px 14px; }
+  .lib-drawer.open .lib-drawer-body { display: block; }
+  .lib-drawer-add { width: 100%; margin-top: 8px; padding: 12px; border: 2px dashed #9aa8e0; border-radius: 14px;
+    background: rgba(255,255,255,0.55); color: #3a4699; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .lib-drawer-add:active { background: rgba(255,255,255,0.85); }
+  .lib-empty-drawer { text-align: center; color: #9096b5; font-size: 13px; padding: 6px 4px 2px; }
+  /* Move-to-another-drawer: hidden until you tap "Move" on a routine. */
+  .lib-move-toggle { margin: 8px 0 2px; padding: 5px 11px; border: 1px solid #e0e4f2; border-radius: 999px;
+    background: #fff; color: #7a80a0; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .lib-groups { display: none; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
+  .lib-groups.show { display: flex; }
   .lib-grp-btn { padding: 6px 10px; border: 1px solid #d3d8f0; border-radius: 999px; background: #fafbff;
     color: #6b719c; font-size: 12px; font-weight: 700; cursor: pointer; }
   .lib-grp-btn.active { background: #3a4699; border-color: #3a4699; color: #fff; }
@@ -3023,8 +3044,8 @@
     <div class="library-inner">
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
       <div class="setup-title">📚 My Library</div>
+      <p class="lib-hint">Tap a drawer to open it and see its routines. Add new ones right inside the drawer.</p>
       <div id="libraryList"></div>
-      <button class="lib-add-btn" onclick="libAddRoutine()">＋ New routine</button>
       <button class="lib-reset-btn" onclick="libResetToStarter()">↺ Start over with the starter routines</button>
       <div class="msupport-compact msupport-auto"></div>
     </div>
@@ -7475,6 +7496,7 @@
   const LIBRARY_KEY = "mowes_library_v1";
   const LIBRARY_SEEDED_KEY = "mowes_library_seeded_v1";
   let libraryRoutines = [];
+  let libOpenGroup = null; // which drawer (category) is open in My Library
   let libIdSeq = 0;
   // Each library routine gets a stable id so a weekly day can REFERENCE it (edit the
   // routine once in the Library → every day that uses it updates too).
@@ -7581,6 +7603,7 @@
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
           <button class="routine-delete" title="Delete this routine" onclick="libDeleteRoutine(this)">✕</button>
         </div>
+        <button type="button" class="lib-move-toggle" onclick="libToggleMove(this)">📦 Move to another drawer</button>
         <div class="lib-groups">
           <button type="button" class="lib-grp-btn" data-g="weights" onclick="libSetGroup(this,'weights')">🏋️ Weights</button>
           <button type="button" class="lib-grp-btn" data-g="gym" onclick="libSetGroup(this,'gym')">🏢 Gym</button>
@@ -7639,27 +7662,40 @@
     list.querySelectorAll(".detail-field").forEach(stopRest);
     list.querySelectorAll(".interval-row").forEach(stopTimeRow);
     list.innerHTML = "";
-    if (!libraryRoutines.length){
-      const hint = document.createElement("div");
-      hint.className = "lib-empty";
-      hint.innerHTML = "No routines yet.";
-      list.appendChild(hint);
-      return;
-    }
     // Bucket by group; ungrouped routines (the user's own) go under "My own routines".
     const buckets = {};
     LIB_GROUP_ORDER.forEach(g => { buckets[g] = []; });
     libraryRoutines.forEach(r => { const g = LIB_GROUP_META[r.group] ? r.group : "__mine__"; buckets[g].push(r); });
+    // One drawer per category. Real categories always show (so you can add into them);
+    // the "My own routines" drawer only shows when it actually holds something.
     LIB_GROUP_ORDER.forEach(g => {
       const items = buckets[g];
-      if (!items.length) return;
-      const header = document.createElement("div");
-      header.className = "lib-group";
-      header.textContent = (g === "__mine__") ? "✍️ My own routines" : (LIB_GROUP_META[g].icon + " " + LIB_GROUP_META[g].name);
-      list.appendChild(header);
+      if (g === "__mine__" && !items.length) return;
+      const meta = (g === "__mine__") ? { icon:"✍️", name:"My own routines" } : LIB_GROUP_META[g];
+      const isOpen = (libOpenGroup === g);
+      const drawer = document.createElement("div");
+      drawer.className = "lib-drawer" + (isOpen ? " open" : "");
+      drawer.dataset.group = g;
+      const head = document.createElement("button");
+      head.type = "button";
+      head.className = "lib-drawer-head";
+      head.onclick = () => libToggleDrawer(g);
+      head.innerHTML = '<span class="lib-drawer-ic">' + meta.icon + '</span>'
+        + '<span class="lib-drawer-name">' + meta.name + '</span>'
+        + '<span class="lib-drawer-count">' + items.length + '</span>'
+        + '<span class="lib-drawer-chev">▸</span>';
+      drawer.appendChild(head);
+      const body = document.createElement("div");
+      body.className = "lib-drawer-body";
+      if (!items.length){
+        const empty = document.createElement("div");
+        empty.className = "lib-empty-drawer";
+        empty.textContent = "This drawer is empty — add your first routine below.";
+        body.appendChild(empty);
+      }
       items.forEach((r, i) => {
         const card = buildLibCard(r, i + 1, i === 0, i === items.length - 1);
-        list.appendChild(card);
+        body.appendChild(card);
         const repsFe = card.querySelector('.detail-field[data-field="reps"]');
         const timeFe = card.querySelector('.detail-field[data-field="time"]');
         renderSets(repsFe, r.details.reps);
@@ -7670,6 +7706,14 @@
         timeFe.classList.toggle("show", intervals);
         card.querySelectorAll(".lib-mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === card.dataset.libMode));
       });
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "lib-drawer-add";
+      add.textContent = "＋ New routine in " + meta.name;
+      add.onclick = () => libAddRoutineTo(g === "__mine__" ? "" : g);
+      body.appendChild(add);
+      drawer.appendChild(body);
+      list.appendChild(drawer);
     });
   }
   // Read the library cards' DOM back into libraryRoutines (mirrors captureDay).
@@ -7722,12 +7766,40 @@
     if (!card) return;
     const id = card.dataset.libId;
     card.dataset.libGroup = g;
-    captureLibrary(); saveLibrary(); renderLibrary(); // re-render so it moves into that section
-    // Keep the routine the user just tagged in view.
+    libOpenGroup = g; // open the drawer it moved into, so the user sees where it went
+    captureLibrary(); saveLibrary(); renderLibrary(); // re-render so it moves into that drawer
+    // Keep the routine the user just moved in view.
     const moved = [...document.querySelectorAll("#libraryList .routine-card")].find(c => c.dataset.libId === id);
     if (moved) moved.scrollIntoView({ block:"center", behavior:"smooth" });
   }
   window.libSetGroup = libSetGroup;
+  // Open/close a drawer (category). One drawer open at a time.
+  function libToggleDrawer(g){
+    try { captureLibrary(); saveLibrary(); } catch(e){} // keep any edits before re-render
+    libOpenGroup = (libOpenGroup === g) ? null : g;
+    renderLibrary();
+  }
+  window.libToggleDrawer = libToggleDrawer;
+  // Show/hide the "which drawer" pills on a single routine card.
+  function libToggleMove(btn){
+    const card = btn.closest(".routine-card");
+    const pills = card && card.querySelector(".lib-groups");
+    if (pills) pills.classList.toggle("show");
+  }
+  window.libToggleMove = libToggleMove;
+  // Add a new routine straight into a given drawer (category). "" = My own routines.
+  function libAddRoutineTo(group){
+    captureLibrary();
+    const nr = blankRoutine(); nr.id = genLibId();
+    if (group) nr.group = group;
+    libraryRoutines.push(nr);
+    libOpenGroup = group || "__mine__";
+    saveLibrary();
+    renderLibrary();
+    const card = [...document.querySelectorAll("#libraryList .routine-card")].find(c => c.dataset.libId === nr.id);
+    if (card){ const nm = card.querySelector(".routine-input"); if (nm) nm.focus(); card.scrollIntoView({ block:"center", behavior:"smooth" }); }
+  }
+  window.libAddRoutineTo = libAddRoutineTo;
   // Switch a routine card between "Repeat sets" and "Intervals (mix)" mode.
   function libSetMode(btn, mode){
     const card = btn.closest(".routine-card");
