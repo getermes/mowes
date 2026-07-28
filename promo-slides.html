@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MOWES Promo — From Download to Done</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,600;1,9..144,700;1,9..144,900&family=Playfair+Display:ital,wght@1,700;1,900&display=swap" rel="stylesheet">
 <style>
   :root{
     /* Studio backdrop (adapts light/dark). The phone SCREEN always shows the
@@ -69,20 +72,38 @@
   /* Every slide stacked; only .on is shown */
   .slide{ position:absolute; inset:0; display:flex; flex-direction:column;
     align-items:center; justify-content:center; text-align:center;
-    padding:30px 22px; gap:14px; opacity:0; transform:scale(1.03);
+    padding:200px 22px 30px; gap:14px; opacity:0; transform:scale(1.03);
     pointer-events:none; }
   .slide.on{ opacity:1; transform:none; pointer-events:auto;
     transition:opacity .5s ease, transform .6s cubic-bezier(.2,.7,.2,1); }
   @media (prefers-reduced-motion: reduce){ .slide,.slide.on{ transition:opacity .3s ease; transform:none; } }
 
   /* Baked-in on-screen caption (part of the "video") */
-  .cap{ position:absolute; left:0; right:0; bottom:20px; padding:0 22px;
-    display:flex; flex-direction:column; align-items:center; gap:8px; }
-  .cap .big{ font-size:21px; font-weight:900; line-height:1.15; text-wrap:balance; color:#20233f; }
-  .cap .pill{ font-size:12.5px; font-weight:800; letter-spacing:.02em; color:#fff;
-    background:linear-gradient(135deg,var(--indigo),var(--violet));
-    padding:6px 13px; border-radius:99px; box-shadow:0 8px 18px -6px rgba(91,108,255,.7); }
-  .eyebrow{ position:absolute; top:20px; left:0; right:0; text-align:center;
+  .cap{ position:absolute; left:0; right:0; top:15%; bottom:auto; padding:0 22px;
+    display:flex; flex-direction:column; align-items:center; gap:28px; }
+  .cap .big{ position:relative; font-family:'Fraunces','Playfair Display',Georgia,serif; font-style:italic;
+    font-size:30px; font-weight:900; line-height:1.1; letter-spacing:.2px; text-wrap:balance; color:#20233f;
+    filter:drop-shadow(0 10px 16px rgba(70,80,40,.30)); will-change:transform;
+    animation:capFloat 4s ease-in-out infinite; }
+  /* Soft glowing "cloud" the text floats on. */
+  .cap .big::before{ content:''; position:absolute; z-index:-1; left:50%; top:52%; transform:translate(-50%,-50%);
+    width:172%; height:255%; border-radius:50%; pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(52,211,153,.80) 0%, rgba(255,255,255,.96) 26%, rgba(110,231,183,.50) 56%, rgba(52,211,153,.12) 72%, transparent 82%);
+    filter:blur(30px); animation:cloudPulse 5.5s ease-in-out infinite; }
+  @keyframes cloudPulse{ 0%,100%{ opacity:.95; transform:translate(-50%,-50%) scale(1.02);} 50%{ opacity:1; transform:translate(-50%,-50%) scale(1.16);} }
+  @media (prefers-reduced-motion: reduce){ .cap .big::before{ animation:none; } }
+  @keyframes capFloat{ 0%,100%{ transform:translateY(0) rotate(-.6deg);} 50%{ transform:translateY(-10px) rotate(.6deg);} }
+  .cap .big .w{ display:inline-block; opacity:0; transform:translateY(12px) scale(.9) rotate(-2deg);
+    color:#0a6b46;
+    transition:opacity .34s ease, transform .46s cubic-bezier(.18,1.35,.35,1); }
+  .slide.on .cap .big .w{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){ .cap .big .w{ opacity:1; transform:none; transition:none; } .cap .big{ animation:none; } }
+  .cap .pill{ position:relative; z-index:2; font-size:12.5px; font-weight:800; letter-spacing:.02em; color:#fff; opacity:0;
+    background:linear-gradient(135deg,#10b981,#0a6b46);
+    padding:6px 13px; border-radius:99px; box-shadow:0 6px 16px -5px rgba(10,107,70,.55), 0 0 0 3px rgba(255,255,255,.5); }
+  .slide.on .cap .pill{ animation:pillPop .5s cubic-bezier(.2,1.35,.4,1) both; }
+  @keyframes pillPop{ 0%{ opacity:0; transform:scale(.55) translateY(8px);} 55%{ opacity:1; transform:scale(1.1);} 100%{ opacity:1; transform:scale(1);} }
+  .eyebrow{ position:absolute; top:15px; left:0; right:0; text-align:center;
     font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#8188b8; }
 
   /* ---------- scene bits (reused mock UI) ---------- */
@@ -281,13 +302,20 @@
   var notesBtn = document.getElementById('notes');
   var prompter = document.getElementById('prompter');
 
+  // Wrap each caption word in its own span so it can reveal one-by-one.
+  function wordsHTML(str){
+    return str.split(' ').map(function(w, i){
+      return '<span class="w" style="transition-delay:' + (0.55 + i * 0.12).toFixed(2) + 's">' + w + '</span>';
+    }).join(' ');
+  }
+
   // build slides + bars
   var fills = [];
   slides.forEach(function(s, i){
     var el = document.createElement('div');
     el.className = 'slide';
     el.innerHTML = '<div class="eyebrow">' + s.eyebrow + '</div>' + s.scene +
-      '<div class="cap"><div class="big">' + s.cap.big + '</div><div class="pill">' + s.cap.pill + '</div></div>';
+      '<div class="cap"><div class="pill">' + s.cap.pill + '</div><div class="big">' + wordsHTML(s.cap.big) + '</div></div>';
     screen.appendChild(el);
     s.el = el;
 
