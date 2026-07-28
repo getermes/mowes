@@ -2375,6 +2375,11 @@
   .wp-pick-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .wp-pick-name { font-size: 16px; font-weight: 700; color: #2f3350; }
   .wp-pick-sum { font-size: 13px; color: #7a80a0; }
+  /* Which days this routine is scheduled on (only shown if it has any). The day you're
+     viewing is highlighted, so you can tell at a glance if it belongs on this day. */
+  .wp-pick-days { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .wp-pd { font-size: 11px; font-weight: 800; color: #3a7a4a; background: #e7f6ea; border-radius: 6px; padding: 2px 6px; letter-spacing: .2px; }
+  .wp-pd.cur { background: #6bbf7b; color: #fff; }
   .wp-copy { margin-top: 18px; padding-top: 14px; border-top: 1px dashed #c3cbef; }
   .wp-copy-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 8px; }
   .wp-copy-days { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -8036,10 +8041,16 @@
     lib.forEach(r => {
       const on = picked.indexOf(r.id) >= 0;
       const sum = wpSummary(r);
+      // Which days is this routine scheduled on? Show them only if it has any (else clean).
+      const schDays = days.filter(function(d){ return (sel[d] || []).indexOf(r.id) >= 0; });
+      const daysBadge = schDays.length
+        ? '<span class="wp-pick-days">' + schDays.map(function(d){ return '<span class="wp-pd' + (d === weekPlanDay ? ' cur' : '') + '">' + d.slice(0,2) + '</span>'; }).join('') + '</span>'
+        : '';
       html += '<button class="wp-pick' + (on ? ' on' : '') + '" onclick="wpToggle(\'' + r.id + '\')">'
         + '<span class="wp-pick-check">' + (on ? '✓' : '＋') + '</span>'
         + '<span class="wp-pick-main"><span class="wp-pick-name">' + escapeHtml(r.name || "Unnamed routine") + '</span>'
-        + (sum ? '<span class="wp-pick-sum">' + escapeHtml(sum) + '</span>' : '') + '</span></button>';
+        + (sum ? '<span class="wp-pick-sum">' + escapeHtml(sum) + '</span>' : '')
+        + daysBadge + '</span></button>';
     });
     html += '</div>';
     if (picked.length){
