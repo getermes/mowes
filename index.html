@@ -2487,6 +2487,9 @@
   .session-step-main { flex: 1 1 auto; min-width: 0; }
   .session-step-name { font-weight: 800; color: #3a4066; font-size: 14px; }
   .session-step-detail { font-size: 12.5px; color: #8a90ad; margin-top: 1px; }
+  /* Right-side tools (video / how-to / skip) stacked vertically, one on top of the other. */
+  .session-step-tools { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .session-step-tools .session-howto { width: 30px; height: 30px; font-size: 15px; }
   .session-start { display: block; width: 100%; margin: 4px 0 20px; border: none; border-radius: 16px; padding: 17px;
     font-size: 18px; font-weight: 900; color: #fff; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.28); }
   .session-start.running { background: linear-gradient(135deg, #e5484d, #ff6b6b); box-shadow: 0 6px 18px rgba(229,72,77,0.28); }
@@ -2514,7 +2517,8 @@
     width: 74px; height: 66px; border: none; border-radius: 16px; background: #eef1fc; cursor: pointer;
     box-shadow: 0 3px 8px rgba(60,90,120,0.12); }
   .sa-btn:active { transform: translateY(1px); }
-  .sa-btn .sa-ic { font-size: 22px; line-height: 1; }
+  .sa-btn .sa-ic { font-size: 22px; line-height: 1; color: #5b6cff; }
+  .sa-btn .sa-ic svg { width: 22px; height: 22px; display: block; fill: #5b6cff; }
   .sa-btn .sa-lbl { font-size: 11px; font-weight: 800; color: #6a7088; letter-spacing: 0.2px; }
   .sa-btn.on { background: #d6dcfb; }
   .sa-bar { flex: 1 1 auto; height: 14px; background: #eef1fc; margin: 0 -1px; align-self: center; }
@@ -2848,7 +2852,7 @@
         <rect x="441" y="52" width="8" height="16" rx="3" fill="#F0A32E"/>
       </svg>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
-      <button class="welcome-btn" onclick="dismissWelcome()">Today's</button>
+      <button class="welcome-btn" onclick="dismissWelcome()">Go into the Gym →</button>
       <p class="welcome-note">Made with <span class="wn-heart">💛</span> by <span class="wn-name">EUgenio</span> — the Idea Guy</p>
       <div class="cover-support" id="coverSupport"></div>
     </div>
@@ -2884,11 +2888,11 @@
       <!-- Two square buttons joined by a bar: Settings (tucks the pacing away) + Add a Routine -->
       <div class="session-actions" id="sessionActions">
         <button class="sa-btn" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings">
-          <span class="sa-ic">⚙️</span><span class="sa-lbl">Settings</span>
+          <span class="sa-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span><span class="sa-lbl">Settings</span>
         </button>
         <span class="sa-bar"></span>
         <button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a routine" aria-label="Add a routine">
-          <span class="sa-ic">＋</span><span class="sa-lbl">Add</span>
+          <span class="sa-ic">＋</span><span class="sa-lbl">Routines</span>
         </button>
       </div>
       <div class="session-settings">
@@ -3231,7 +3235,7 @@
         <p class="privacy-text">
           🔒 <strong>Your privacy:</strong> No sign-up, no account, no email.
           Everything you type stays on your phone — it's never sent anywhere,
-          and I never see it. Free, and works offline.
+          and I never see it. Free right now, and works offline.
         </p>
         <div class="trust-badges">
           <button type="button" class="trust-badge" onclick="this.classList.toggle('open')"><span class="tb-emoji">🔒</span><span class="tb-text"><strong>Private</strong><span class="tb-desc">Your data stays on your device.</span></span></button>
@@ -8449,9 +8453,9 @@
           '</div>' +
           // Below the card: the same two-square barbell — Settings ⚙️ + Add ＋ joined by a bar.
           '<div class="restday-actions">' +
-            '<button class="sa-btn restday-gear" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings"><span class="sa-ic">⚙️</span><span class="sa-lbl">Settings</span></button>' +
+            '<button class="sa-btn restday-gear" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings"><span class="sa-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span><span class="sa-lbl">Settings</span></button>' +
             '<span class="sa-bar"></span>' +
-            '<button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a routine" aria-label="Add a routine"><span class="sa-ic">＋</span><span class="sa-lbl">Add</span></button>' +
+            '<button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a routine" aria-label="Add a routine"><span class="sa-ic">＋</span><span class="sa-lbl">Routines</span></button>' +
           '</div>';
       }
       if (btn) btn.style.display = "none";
@@ -8513,9 +8517,11 @@
       html += '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
         + '<div class="session-step-name">' + nameLine + '</div>'
         + (detailLine ? '<div class="session-step-detail">' + escapeHtml(detailLine) + '</div>' : '') + '</div>'
-        + (st.video ? '<button class="session-howto" title="Play video" onclick="sessionStepVideo(' + i + ')">🎬</button>' : '')
-        + '<button class="session-howto" title="How to do this" onclick="sessionHowToStep(' + i + ')">❓</button>'
+        + '<div class="session-step-tools">'
         + (allDone ? '' : '<button class="session-howto session-skip" title="Skip this today" onclick="sessionSkipStep(' + i + ')">⏭</button>')
+        + '<button class="session-howto" title="Watch how to do this" onclick="sessionHowToStep(' + i + ')">📺</button>'
+        + (st.video ? '<button class="session-howto" title="Play video" onclick="sessionStepVideo(' + i + ')">🎬</button>' : '')
+        + '</div>'
         + '</div>';
       exNum++;
       i = j + 1;
