@@ -3150,6 +3150,62 @@
     </div>
   </div>
 
+  <!-- Membership (honor-lock) — Brick 1: dormant foundation.
+       While MEMBER_LAUNCH_MODE is true, MOWES stays completely free and
+       nothing is locked. This panel just celebrates "free right now" and
+       accepts supporter codes; the real subscription is switched on later. -->
+  <style>
+    .member-status { text-align:center; font-size:15px; font-weight:700; color:#5b6cff; background:#eef1fd; border-radius:999px; padding:8px 16px; display:inline-block; margin:2px auto 14px; }
+    .member-free-note { text-align:center; color:#3aa76d; font-weight:700; font-size:14px; margin:0 0 16px; line-height:1.5; }
+    .member-code-row { display:flex; gap:8px; max-width:320px; margin:0 auto; }
+    .member-code-row input { flex:1; min-width:0; border:2px solid #e6e8f0; border-radius:10px; padding:10px; font-size:15px; text-align:center; text-transform:uppercase; letter-spacing:1px; }
+    .member-code-row button { border:none; background:#5b6cff; color:#fff; font-weight:700; border-radius:10px; padding:10px 16px; }
+    .member-msg { text-align:center; font-size:14px; margin:12px auto 0; min-height:18px; }
+    .member-msg.ok { color:#3aa76d; font-weight:700; }
+    .member-msg.err { color:#d24b5a; font-weight:700; }
+    .member-ladder { max-width:320px; margin:18px auto 0; font-size:13.5px; color:#6a7088; }
+    .member-ladder div { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #f0f1f6; }
+    .member-admin { display:none; margin:16px auto 0; max-width:320px; background:#fff8e6; border:1px solid #ffe3a3; border-radius:12px; padding:12px; }
+    .member-admin.show { display:block; }
+    .member-admin button { border:none; background:#ffb020; color:#3a2a00; font-weight:700; border-radius:8px; padding:8px 10px; margin:4px; font-size:13px; }
+    .member-admin-out { margin-top:8px; font-family:monospace; font-size:14px; text-align:center; word-break:break-all; color:#7a4f00; font-weight:700; }
+  </style>
+  <div class="rules-overlay" id="memberOverlay">
+    <div class="rules-inner">
+      <div class="setup-title" id="memberTitle" onclick="memberTitleTap()">💛 MOWES Membership</div>
+      <div style="text-align:center;"><span class="member-status" id="memberStatusPill">Free</span></div>
+      <p class="member-free-note" id="memberFreeNote">🎉 MOWES is completely free right now while we set things up. Enjoy everything!</p>
+
+      <p style="text-align:center;color:#6a7088;font-size:14px;margin:0 0 8px;">Have a supporter code? Enter it here:</p>
+      <div class="member-code-row">
+        <input id="memberCodeInput" type="text" placeholder="MOWES-…" autocomplete="off" onkeydown="if(event.key==='Enter')memberSubmitCode()">
+        <button onclick="memberSubmitCode()">Unlock</button>
+      </div>
+      <div class="member-msg" id="memberMsg"></div>
+
+      <div class="member-ladder">
+        <div><span>☕ Every $5 coffee</span><span>= 5 tokens</span></div>
+        <div><span>🎟️ 10 tokens</span><span>3 months</span></div>
+        <div><span>🎟️ 40 tokens</span><span>1 year</span></div>
+        <div><span>🎟️ 100 tokens</span><span>Lifetime 💛</span></div>
+      </div>
+
+      <div class="member-admin" id="memberAdmin">
+        <div style="text-align:center;font-weight:700;color:#7a4f00;margin-bottom:6px;">🔑 Make a code (owner only)</div>
+        <div style="text-align:center;">
+          <button onclick="memberGen('T')">3 months</button>
+          <button onclick="memberGen('Y')">1 year</button>
+          <button onclick="memberGen('L')">Lifetime</button>
+        </div>
+        <div class="member-admin-out" id="memberAdminOut">—</div>
+      </div>
+
+      <p class="setup-note">🔒 Saved only on your phone. No account, no email.</p>
+      <button class="cover-btn" style="margin-top:12px;" onclick="closeMemberPage()">Done</button>
+      <div class="msupport-compact msupport-auto"></div>
+    </div>
+  </div>
+
   <!-- Cover page: the app's "book cover" — shows every time it opens -->
   <div class="cover-overlay" id="coverOverlay">
     <div class="cover-box">
@@ -3170,6 +3226,7 @@
       <button class="cover-btn" onclick="openApp()">Open MOWES →</button>
       <p class="cover-note">Opening your routines… or tap to go now.</p>
       <button type="button" class="help-open-btn" onclick="openHelp()">How to use MOWES ❓</button>
+      <button type="button" class="help-open-btn" onclick="openMemberPage()">💛 Membership &amp; supporter codes</button>
       <div class="privacy-note">
         <p class="privacy-text">
           🔒 <strong>Your privacy:</strong> No sign-up, no account, no email.
@@ -9378,6 +9435,81 @@
   try { var _buildS = document.getElementById("buildSupport"); if (_buildS) _buildS.innerHTML = supportSetHTML('Help <span class="mowes-beat">MOWES</span> help ' + curlWordHTML('you', 'coach-red') + ' too!'); } catch(e){}
   // Every other page gets the like/coffee set at its bottom too — no matter the gap.
   try { var _autoS = document.querySelectorAll(".msupport-auto"); for (var _i = 0; _i < _autoS.length; _i++){ _autoS[_i].innerHTML = supportSetHTML('Help <span class="mowes-beat">MOWES</span> help ' + curlWordHTML('you', 'coach-red') + ' too!'); } } catch(e){}
+
+  /* ============================================================
+     MOWES Membership — honor-lock foundation (Brick 1).
+     MEMBER_LAUNCH_MODE = true keeps everything FREE; nothing is
+     locked yet. This sets up an anonymous on-device id, the token
+     ladder, supporter-code unlocking, and the panel. The real
+     subscription/paywall gets switched on in a later step.
+     ============================================================ */
+  var MEMBER_LAUNCH_MODE = true;                  // true = free for everyone (paywall OFF)
+  var MEMBER_KEY = "mowes_membership_v1";
+  var MEMBER_SECRET = "ermes-mowes-key-2026";     // signs codes so they can't be casually forged (honor system)
+  var MEMBER_PLANS = {
+    T: { days: 92,  tokens: 10,  label: "3 months" },
+    Y: { days: 366, tokens: 40,  label: "1 year" },
+    L: { days: 0,   tokens: 100, label: "Lifetime", lifetime: true }
+  };
+  function memberLoad(){ try { return JSON.parse(localStorage.getItem(MEMBER_KEY)) || {}; } catch(e){ return {}; } }
+  function memberSave(m){ try { localStorage.setItem(MEMBER_KEY, JSON.stringify(m)); } catch(e){} }
+  function memberDeviceId(){
+    var m = memberLoad();
+    if (!m.id){ m.id = "M-" + Math.random().toString(36).slice(2,8).toUpperCase() + "-" + Date.now().toString(36).toUpperCase(); if(!m.used) m.used=[]; memberSave(m); }
+    return m.id;
+  }
+  function memberHash(str){ var h=5381; for (var i=0;i<str.length;i++){ h=((h<<5)+h) ^ str.charCodeAt(i); } return (h>>>0).toString(36).toUpperCase(); }
+  function memberChk(plan, rand){ return memberHash(plan + rand + MEMBER_SECRET).slice(0,4); }
+  function memberMakeCode(plan){ var rand = memberHash(Math.random().toString()+Date.now()).slice(0,5); return "MOWES-"+plan+"-"+rand+"-"+memberChk(plan,rand); }
+  function memberValidateCode(code){
+    code=(code||"").trim().toUpperCase(); var p=code.split("-");
+    if (p.length!==4 || p[0]!=="MOWES") return null;
+    if (!MEMBER_PLANS[p[1]]) return null;
+    if (memberChk(p[1], p[2])!==p[3]) return null;
+    return { plan:p[1], code:code };
+  }
+  function memberIsPaid(){ var m=memberLoad(); if (m.lifetime) return true; if (m.paidUntil && m.paidUntil>Date.now()) return true; return false; }
+  function memberHasAccess(){ return MEMBER_LAUNCH_MODE || memberIsPaid(); }   // used later when the paywall turns on
+  function memberApplyCode(code){
+    var v=memberValidateCode(code); if(!v) return {ok:false,msg:"That code doesn't look right — please check it."};
+    var m=memberLoad(); if(!m.used) m.used=[];
+    if (m.used.indexOf(v.code)!==-1) return {ok:false,msg:"This code was already used on this phone."};
+    var plan=MEMBER_PLANS[v.plan];
+    if (plan.lifetime){ m.lifetime=true; }
+    else { var now=Date.now(); var base=(m.paidUntil&&m.paidUntil>now)?m.paidUntil:now; m.paidUntil=base+plan.days*86400000; }
+    m.tokens=(m.tokens||0)+plan.tokens; m.used.push(v.code); memberSave(m);
+    return {ok:true,msg:"🎉 Unlocked "+plan.label+"! Thank you for supporting MOWES."};
+  }
+  function memberStatusText(){
+    var m=memberLoad();
+    if (m.lifetime) return "💛 Lifetime member";
+    if (m.paidUntil && m.paidUntil>Date.now()){ var d=Math.ceil((m.paidUntil-Date.now())/86400000); return "✅ Member — "+d+" day"+(d===1?"":"s")+" left"; }
+    return "Free";
+  }
+  function memberRender(){
+    memberDeviceId();
+    var pill=document.getElementById("memberStatusPill"); if (pill) pill.textContent=memberStatusText();
+    var note=document.getElementById("memberFreeNote");
+    if (note){ if (MEMBER_LAUNCH_MODE){ note.style.display=""; } else { note.style.display="none"; } }
+    var out=document.getElementById("memberAdminOut"); if (out) out.textContent="—";
+    var msg=document.getElementById("memberMsg"); if (msg){ msg.textContent=""; msg.className="member-msg"; }
+  }
+  function openMemberPage(){ memberRender(); var el=document.getElementById("memberOverlay"); if (el) el.classList.add("show"); }
+  function closeMemberPage(){ var el=document.getElementById("memberOverlay"); if (el) el.classList.remove("show"); }
+  function memberSubmitCode(){
+    var inp=document.getElementById("memberCodeInput"); var msg=document.getElementById("memberMsg");
+    var r=memberApplyCode(inp?inp.value:"");
+    if (msg){ msg.textContent=r.msg; msg.className="member-msg "+(r.ok?"ok":"err"); }
+    if (r.ok){ if(inp) inp.value=""; var pill=document.getElementById("memberStatusPill"); if(pill) pill.textContent=memberStatusText(); }
+  }
+  var _memberTaps=0, _memberTapTimer=null;
+  function memberTitleTap(){
+    _memberTaps++;
+    if (_memberTapTimer) clearTimeout(_memberTapTimer);
+    _memberTapTimer=setTimeout(function(){ _memberTaps=0; }, 1500);
+    if (_memberTaps>=5){ _memberTaps=0; var a=document.getElementById("memberAdmin"); if (a) a.classList.toggle("show"); }
+  }
+  function memberGen(plan){ var out=document.getElementById("memberAdminOut"); if (out) out.textContent=memberMakeCode(plan); }
 
   // Register the offline worker (works once the app is on a secure https site)
   if ("serviceWorker" in navigator) {
