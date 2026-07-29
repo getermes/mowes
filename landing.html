@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ERMES — Apps to solve real problems</title>
-<meta name="description" content="ERMES makes free, private, simple apps that solve real problems. Starting with MOWES — My Own Weekly Exercise Sheet.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ERMES — Daily Life Problem Solving</title>
+<meta name="description" content="ERMES makes free, private, simple apps that solve real problems in daily life. I don't complain — I build the fix. Starting with MOWES.">
+<meta name="theme-color" content="#5b6cff">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -13,16 +15,17 @@
     background-attachment: fixed;
     color: #3a3f54;
     min-height: 100vh;
-    padding: 28px 18px 48px;
+    padding: 30px 18px 46px;
+    -webkit-font-smoothing: antialiased;
   }
   .wrap { max-width: 480px; margin: 0 auto; }
 
   /* ERMES brand header */
-  .brand { text-align: center; margin-bottom: 8px; }
+  .brand { text-align: center; margin-bottom: 4px; }
   .brand-mark {
-    font-size: 34px;
+    font-size: 36px;
     font-weight: 800;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     background: linear-gradient(135deg, #5b6cff, #7a5bff);
     -webkit-background-clip: text;
     background-clip: text;
@@ -31,18 +34,41 @@
   .brand-tag {
     margin-top: 6px;
     color: #5a6076;
-    font-size: 14.5px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  /* Hero catchphrase */
+  .hero {
+    margin: 26px auto 4px;
+    text-align: center;
+  }
+  .hero-line {
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-size: 25px;
+    line-height: 1.35;
+    color: #2f3550;
     font-weight: 600;
+  }
+  .hero-line .accent {
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
   }
 
   /* Mission */
   .mission {
-    margin: 22px auto 6px;
+    margin: 18px auto 6px;
     max-width: 420px;
     text-align: center;
     color: #4a5068;
     font-size: 14.5px;
-    line-height: 1.5;
+    line-height: 1.55;
   }
   .mission strong { color: #5b6cff; }
 
@@ -58,7 +84,7 @@
 
   /* App card */
   .app-card {
-    background: rgba(255,255,255,0.78);
+    background: rgba(255,255,255,0.80);
     border: 1px solid #d6dbf5;
     border-radius: 18px;
     padding: 20px;
@@ -89,6 +115,7 @@
     margin-top: 10px; text-align: center;
     font-size: 12px; color: #8a8fa3; line-height: 1.4;
   }
+  .install-hint strong { color: #6a7088; }
 
   /* Coming soon card */
   .soon-card {
@@ -103,7 +130,7 @@
   }
 
   /* Trust badges */
-  .badges { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 22px; }
+  .badges { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; }
   .badge {
     display: flex; align-items: center; gap: 8px;
     padding: 9px 11px;
@@ -115,8 +142,23 @@
   .badge .be { font-size: 16px; flex: 0 0 auto; }
   .badge strong { display: block; color: #5b6cff; }
 
+  /* Social follow */
+  .social { display: flex; gap: 10px; margin-bottom: 24px; }
+  .social a {
+    flex: 1; text-align: center; text-decoration: none;
+    padding: 12px 8px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid #d6dbf5;
+    border-radius: 14px;
+    color: #3a4066; font-weight: 700; font-size: 13.5px;
+    box-shadow: 0 4px 12px rgba(91,108,255,0.08);
+  }
+  .social a:active { transform: scale(0.99); }
+  .social .se { font-size: 18px; }
+  .social small { display: block; color: #8a8fa3; font-weight: 600; font-size: 11px; margin-top: 2px; }
+
   /* Footer */
-  .foot { text-align: center; color: #8a8fa3; font-size: 12.5px; line-height: 1.6; }
+  .foot { text-align: center; color: #8a8fa3; font-size: 12.5px; line-height: 1.7; }
   .foot a { color: #5b6cff; font-weight: 700; text-decoration: none; }
 </style>
 </head>
@@ -125,12 +167,19 @@
 
     <div class="brand">
       <div class="brand-mark">ERMES</div>
-      <div class="brand-tag">Apps to solve real problems</div>
+      <div class="brand-tag">Daily Life Problem Solving</div>
+    </div>
+
+    <div class="hero">
+      <p class="hero-line">
+        “When I see a problem, I don't complain —<br>
+        I <span class="accent">build the fix</span>.”
+      </p>
     </div>
 
     <p class="mission">
-      When I see a problem, I find a way to overcome it — then I share the fix
-      with you. <strong>Private by design. Simple by heart.</strong>
+      I make free, private apps that solve real problems in everyday life.
+      <strong>No sign-up. No tracking. Your data stays on your phone.</strong>
     </p>
 
     <div class="section-label">The Apps</div>
@@ -145,13 +194,13 @@
         </div>
       </div>
       <p class="app-desc">
-        A simple, private workout tracker for your phone. Plan every day of your
-        week, track reps, time, weight &amp; distance, with built-in timers —
-        no sign-up, and your data stays on your phone.
+        A simple, private workout companion. Build your own routines, plan your
+        week, and let MOWES pick your day — with timers, reps, weight &amp;
+        distance. No sign-up, works offline, and your data stays with you.
       </p>
       <a class="open-btn" href="./index.html">Open MOWES →</a>
       <p class="install-hint">
-        Tip: To install it like an app — open in your phone browser, tap
+        Tip: to install it like an app — open in your phone browser, tap
         <strong>Share</strong>, then <strong>“Add to Home Screen.”</strong>
       </p>
     </div>
@@ -159,6 +208,16 @@
     <!-- Coming soon -->
     <div class="soon-card">
       ✨ More ERMES apps coming soon…
+    </div>
+
+    <div class="section-label">Follow Along</div>
+    <div class="social">
+      <a href="https://www.tiktok.com/@mowesworkout" target="_blank" rel="noopener">
+        <span class="se">🎵</span><br>TikTok<small>@mowesworkout</small>
+      </a>
+      <a href="https://youtube.com/@ermesapps" target="_blank" rel="noopener">
+        <span class="se">▶️</span><br>YouTube<small>@ermesapps</small>
+      </a>
     </div>
 
     <div class="section-label">The ERMES Promise</div>
@@ -172,7 +231,7 @@
     </div>
 
     <p class="foot">
-      Made by EUgenio — the Idea Guy<br>
+      Made by Eugenio — the Idea Guy 💛<br>
       💬 Questions or ideas? <a href="mailto:get.ermes00@gmail.com?subject=ERMES">Contact ERMES</a>
     </p>
 
