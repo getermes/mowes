@@ -2512,6 +2512,12 @@
   .restday-emoji { font-size: 104px; line-height: 1; margin-bottom: 12px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.12)); }
   .restday-title { font-size: 26px; font-weight: 800; color: #2f7a52; letter-spacing: 0.3px; }
   .restday-card.restday-plain .restday-title { color: #3a4699; }
+  /* Tappable nudge on a rest day: says when the next workout is, and jumps there. */
+  .restday-next { display: inline-flex; align-items: center; gap: 6px; margin: 16px auto 0; padding: 11px 18px;
+    border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(180deg, #6bbf7b 0%, #4fa564 100%); color: #fff;
+    font-size: 15px; font-weight: 800; border-radius: 999px; box-shadow: 0 4px 10px rgba(79,165,100,0.35); }
+  .restday-next:active { transform: translateY(1px); }
   /* Row under the green card: settings gear (left) + a small Add button (right). */
   /* Rest day uses the SAME two-square barbell as the Today's-page action row below. */
   .restday-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 300px; margin: 18px auto 0; }
@@ -8454,6 +8460,16 @@
     html += '<div class="session-now-foot">' + skipBtn + '<button class="session-now-act' + (pauseLook ? ' pause' : '') + '" onclick="sessionToggle()">' + act + '</button></div>';
     return '<div class="' + cls + '" id="sessionNow">' + html + '</div>';
   }
+  // From a given day, find the next day within a week that actually has a workout.
+  function nextWorkoutInfo(fromDay){
+    const start = days.indexOf(fromDay);
+    if (start < 0) return null;
+    for (let off = 1; off <= 7; off++){
+      const dk = days[(start + off) % days.length];
+      if (sessionStepsFor(dk).length) return { day: dk, off: off };
+    }
+    return null;
+  }
   function renderSession(){
     // Top line: "Today" on the current day, or that day's date when you page back/forward.
     const todayLineEl = document.getElementById("sessionTodayLine");
@@ -8467,11 +8483,21 @@
       if (innerEl) innerEl.classList.add("rest-mode");
       if (list){
         const rest = isPlannedRestDay(sessionSelDay);
-        // Just the emoji + title in the green card — no extra text.
+        // On a real rest day, add a tappable nudge to the next day that has a workout.
+        let nextBanner = "";
+        if (rest){
+          const nw = nextWorkoutInfo(sessionSelDay);
+          if (nw){
+            const when = nw.off === 1 ? "tomorrow" : (fullNames[nw.day] || nw.day);
+            nextBanner = '<button class="restday-next" onclick="sessionChangeDay(' + nw.off + ')">💪 See ' + escapeHtml(when) + '’s workout →</button>';
+          }
+        }
+        // Emoji + title in the green card, plus the next-workout nudge on a rest day.
         list.innerHTML =
           '<div class="restday-card' + (rest ? '' : ' restday-plain') + '">' +
             '<div class="restday-emoji">' + (rest ? '🌴' : '🗓️') + '</div>' +
             '<div class="restday-title">' + (rest ? 'Rest Day' : 'Nothing set yet') + '</div>' +
+            nextBanner +
           '</div>' +
           // Below the card: the same two-square barbell — Settings ⚙️ + Add ＋ joined by a bar.
           '<div class="restday-actions">' +
