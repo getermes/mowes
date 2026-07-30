@@ -83,24 +83,36 @@
     display:flex; flex-direction:column; align-items:center; gap:28px; }
   .cap .big{ position:relative; font-family:'Fraunces','Playfair Display',Georgia,serif; font-style:italic;
     font-size:30px; font-weight:900; line-height:1.1; letter-spacing:.2px; text-wrap:balance; color:#20233f;
-    filter:drop-shadow(0 10px 16px rgba(70,80,40,.30)); will-change:transform;
+    text-shadow:-1.3px -1.3px 0 #b4530f, 1.3px -1.3px 0 #b4530f, -1.3px 1.3px 0 #b4530f, 1.3px 1.3px 0 #b4530f, 0 3px 9px rgba(120,45,18,.5);
+    filter:drop-shadow(0 8px 14px rgba(120,45,18,.28)); will-change:transform;
     animation:capFloat 4s ease-in-out infinite; }
   /* Soft glowing "cloud" the text floats on. */
-  .cap .big::before{ content:''; position:absolute; z-index:-1; left:50%; top:52%; transform:translate(-50%,-50%);
+  .cap .big::before{ content:''; position:absolute; z-index:-1; left:50%; top:38%; transform:translate(-50%,-50%);
     width:172%; height:255%; border-radius:50%; pointer-events:none;
-    background:radial-gradient(ellipse at center, rgba(52,211,153,.80) 0%, rgba(255,255,255,.96) 26%, rgba(110,231,183,.50) 56%, rgba(52,211,153,.12) 72%, transparent 82%);
-    filter:blur(30px); animation:cloudPulse 5.5s ease-in-out infinite; }
-  @keyframes cloudPulse{ 0%,100%{ opacity:.95; transform:translate(-50%,-50%) scale(1.02);} 50%{ opacity:1; transform:translate(-50%,-50%) scale(1.16);} }
+    background:radial-gradient(ellipse at center, rgba(234,88,12,.88) 0%, rgba(254,215,170,.94) 28%, rgba(249,115,22,.58) 56%, rgba(194,65,12,.20) 72%, transparent 82%);
+    filter:blur(30px); animation:cloudPulse 5s ease-in-out infinite; }
+  @keyframes cloudPulse{ 0%,100%{ opacity:.95; transform:translate(-50%,-54%) scale(1.02);} 50%{ opacity:1; transform:translate(-50%,-46%) scale(1.16);} }
   @media (prefers-reduced-motion: reduce){ .cap .big::before{ animation:none; } }
-  @keyframes capFloat{ 0%,100%{ transform:translateY(0) rotate(-.6deg);} 50%{ transform:translateY(-10px) rotate(.6deg);} }
+  @keyframes capFloat{ 0%,100%{ transform:translateY(6px) rotate(-.6deg);} 50%{ transform:translateY(-16px) rotate(.6deg);} }
   .cap .big .w{ display:inline-block; opacity:0; transform:translateY(12px) scale(.9) rotate(-2deg);
-    color:#0a6b46;
+    color:#ffffff;
     transition:opacity .34s ease, transform .46s cubic-bezier(.18,1.35,.35,1); }
   .slide.on .cap .big .w{ opacity:1; transform:none; }
   @media (prefers-reduced-motion: reduce){ .cap .big .w{ opacity:1; transform:none; transition:none; } .cap .big{ animation:none; } }
-  .cap .pill{ position:relative; z-index:2; font-size:12.5px; font-weight:800; letter-spacing:.02em; color:#fff; opacity:0;
-    background:linear-gradient(135deg,#10b981,#0a6b46);
-    padding:6px 13px; border-radius:99px; box-shadow:0 6px 16px -5px rgba(10,107,70,.55), 0 0 0 3px rgba(255,255,255,.5); }
+  .cap .pill{ position:relative; z-index:2; font-size:12.5px; font-weight:800; letter-spacing:.02em; color:#7c2d12; opacity:0;
+    background:linear-gradient(135deg,#fed7aa,#fdba74);
+    padding:6px 13px; border-radius:99px; box-shadow:0 6px 16px -5px rgba(194,65,12,.55), 0 0 0 2.5px #fff; }
+  .cap .pill{ display:none; }   /* pills removed from all slides for a cleaner look */
+  /* Tappable "open the app" button on the final slide */
+  .cap .cta-btn{ display:inline-block; margin-top:18px; text-decoration:none; position:relative; z-index:3;
+    font-size:15px; font-weight:800; letter-spacing:.01em; color:#fff;
+    background:linear-gradient(135deg,#f97316,#c2410c); padding:13px 22px; border-radius:99px;
+    box-shadow:0 8px 20px -6px rgba(194,65,12,.6), 0 0 0 2.5px #fff;
+    opacity:0; transform:translateY(10px) scale(.92);
+    transition:opacity .4s ease, transform .5s cubic-bezier(.2,1.35,.4,1); transition-delay:1.1s; }
+  .slide.on .cap .cta-btn{ opacity:1; transform:none; animation:ctaPulse 1.8s ease-in-out 1.7s infinite; }
+  .cap .cta-btn:active{ transform:scale(.97); }
+  @keyframes ctaPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.05);} }
   .slide.on .cap .pill{ animation:pillPop .5s cubic-bezier(.2,1.35,.4,1) both; }
   @keyframes pillPop{ 0%{ opacity:0; transform:scale(.55) translateY(8px);} 55%{ opacity:1; transform:scale(1.1);} 100%{ opacity:1; transform:scale(1);} }
   .eyebrow{ position:absolute; top:15px; left:0; right:0; text-align:center;
@@ -232,13 +244,8 @@
   var SLIDE_MS = 4200;
 
   var slides = [
-    { eyebrow:"Why MOWES",
-      cap:{ big:"Made because I needed it", pill:"A real problem, solved" },
-      say:"Quick story on why I made this. Every workout app wanted my email, my money, or tracked my data — just to follow a simple routine. I couldn't find a private, simple one, so I built MOWES. And if it helps you the way it helps me, even better.",
-      scene:'<div class="logo-wrap"><div class="logo" style="font-size:30px"><span class="fist" style="top:-18px;font-size:18px">💪</span>MOWES</div></div><div style="font-size:20px;font-weight:900;color:#2a2e4d;line-height:1.28;text-wrap:balance;max-width:280px">“Working out shouldn’t cost your privacy.”</div><div class="tag" style="font-size:12.5px;max-width:255px;line-height:1.45">Every app wanted my email, my money, my data. I just wanted to follow a workout — so I built my own.</div>' },
-
     { eyebrow:"Meet MOWES",
-      cap:{ big:"Your whole workout — start to finish", pill:"Free right now · No sign-up" },
+      cap:{ big:"Your whole workout, start to finish", pill:"Free right now · No sign-up" },
       say:"Let me show you my free workout app — from the second you get it, to finishing your whole workout.",
       scene:'<div class="logo-wrap"><div class="barbell">🏋️</div><div class="logo"><span class="fist">💪</span>MOWES</div><div class="tag">My Own Weekly Exercise Sheet</div></div><div class="badge">🔒 Private · Works offline</div>' },
 
@@ -248,7 +255,7 @@
       scene:'<div class="sheet"><div class="row"><span>Copy Link</span><span class="ic">🔗</span></div><div class="div"></div><div class="row hot"><span>Add to Home Screen</span><span class="ic">➕</span></div><div class="div"></div><div class="row"><span>Add Bookmark</span><span class="ic">📑</span></div></div>' },
 
     { eyebrow:"Step 2 · Open",
-      cap:{ big:"No account. No email.", pill:"Just tap to open" },
+      cap:{ big:"No email, / No account, / Right now FREE!", pill:"Just tap to open" },
       say:"Open it up — no account, no email, nothing to sign up for.",
       scene:'<div class="logo-wrap"><div class="barbell">🏋️</div><div class="logo"><span class="fist">💪</span>MOWES</div><div class="tag">My Own Weekly Exercise Sheet</div></div><div class="btn glow">Go into the Gym →</div>' },
 
@@ -263,14 +270,14 @@
       scene:'<div class="steps"><div class="step"><div class="n">1</div><div class="t">🤸 Warm-up<small>Get moving</small></div></div><div class="step"><div class="n">2</div><div class="t">💪 Push-ups<small>3 sets · 12 reps</small></div></div><div class="step"><div class="n">3</div><div class="t">🦵 Squats<small>3 sets · 12 reps</small></div></div><div class="step"><div class="n">4</div><div class="t">🧘 Cool-down<small>Stretch it out</small></div></div></div>' },
 
     { eyebrow:"Step 5 · The magic",
-      cap:{ big:"Tap Start — it walks you through", pill:"Today · Friday" },
+      cap:{ big:"Tap Start / it walks you through", pill:"Today · Friday" },
       say:"Now the magic: tap Start, and it walks you through the whole thing.",
       scene:'<div class="tag" style="font-size:15px;font-weight:800;color:#2a2e4d">Today · Friday</div><div class="btn glow" style="font-size:19px;padding:16px 40px">▶ Start</div>' },
 
     { eyebrow:"Step 6 · It ticks for you",
       cap:{ big:"Each step counts down for you", pill:"Hands-free timing" },
       say:"Each step counts down for you — no fiddling with a stopwatch.",
-      scene:'<div class="nowcard"><div class="nm">💪 Push-ups · Set 1</div><div class="dt">12 reps — go!</div><div class="clk" id="liveclk">0:38</div></div>' },
+      scene:'<div class="nowcard"><div class="nm">💪 Push-ups · Set 1</div><div class="dt">12 reps · go!</div><div class="clk" id="liveclk">0:38</div></div>' },
 
     { eyebrow:"Step 7 · The ticker",
       cap:{ big:"It tells you what's coming next", pill:"Never lose your place" },
@@ -288,9 +295,10 @@
       scene:'<div class="done-emoji">🎉</div><div style="font-size:22px;font-weight:900;color:#2a2e4d">Done!</div><div class="tag">Great work today. 💪</div>' },
 
     { eyebrow:"Try it free",
-      cap:{ big:"Yours, private — free right now", pill:"getermes.github.io/mowes" },
+      cap:{ big:"Yours, private, free right now", pill:"" },
+      cta:"https://getermes.github.io/mowes", ctaLabel:"MOWES 🔗",
       say:"It's free, it's private, and your data stays on your phone. Link's in the description — give it a try, and hit Subscribe. No sign-up, your data stays on your phone. Free.",
-      scene:'<div class="logo-wrap"><div class="logo" style="font-size:34px"><span class="fist" style="top:-20px;font-size:20px">💪</span>MOWES</div></div><div class="link">getermes.github.io/mowes</div><div class="trust"><span>🔒 No sign-up</span><span>📵 Works offline</span><span>💯 Free right now</span></div>' }
+      scene:'<div class="link">getermes.github.io/mowes</div>' }
   ];
 
   var screen = document.getElementById('screen');
@@ -304,8 +312,12 @@
 
   // Wrap each caption word in its own span so it can reveal one-by-one.
   function wordsHTML(str){
-    return str.split(' ').map(function(w, i){
-      return '<span class="w" style="transition-delay:' + (0.55 + i * 0.12).toFixed(2) + 's">' + w + '</span>';
+    var n = 0;
+    return str.split(' ').map(function(w){
+      if(w === '/') return '<br>';            // '/' forces a line break between words
+      var span = '<span class="w" style="transition-delay:' + (0.55 + n * 0.12).toFixed(2) + 's">' + w + '</span>';
+      n++;
+      return span;
     }).join(' ');
   }
 
@@ -315,7 +327,9 @@
     var el = document.createElement('div');
     el.className = 'slide';
     el.innerHTML = '<div class="eyebrow">' + s.eyebrow + '</div>' + s.scene +
-      '<div class="cap"><div class="pill">' + s.cap.pill + '</div><div class="big">' + wordsHTML(s.cap.big) + '</div></div>';
+      '<div class="cap"><div class="pill">' + s.cap.pill + '</div><div class="big">' + wordsHTML(s.cap.big) + '</div>' +
+      (s.cta ? '<a class="cta-btn" href="' + s.cta + '" target="_blank" rel="noopener">' + (s.ctaLabel || 'Open') + '</a>' : '') +
+      '</div>';
     screen.appendChild(el);
     s.el = el;
 
@@ -344,7 +358,10 @@
     var elapsed = Date.now() - startAt;
     var p = Math.min(1, elapsed / SLIDE_MS);
     fills[idx].style.width = (p * 100) + '%';
-    if(p >= 1){ show(idx + 1); }
+    if(p >= 1){
+      if(idx < slides.length - 1){ show(idx + 1); }
+      else { playing = false; }   // freeze on the final slide so the "open app" button can be tapped
+    }
     raf = requestAnimationFrame(tick);
   }
 
