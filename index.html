@@ -3708,6 +3708,26 @@
   </div>
 
 <script>
+  // Secret "fresh start": open the app with ?fresh (or #fresh) in the web address to
+  // wipe ALL saved MOWES data and load the true brand-new first-time experience
+  // (cover → intro → guided start → Today's Plan with a ready workout). Handy for demos
+  // and recording. Normal users never add this, so their own data is never touched.
+  (function(){
+    try {
+      var q = ((location.search || "") + " " + (location.hash || "")).toLowerCase();
+      if (q.indexOf("fresh") >= 0 || q.indexOf("reset") >= 0){
+        var kill = [];
+        for (var i = 0; i < localStorage.length; i++){
+          var k = localStorage.key(i);
+          if (k && k.toLowerCase().indexOf("mowes") === 0) kill.push(k);
+        }
+        kill.forEach(function(k){ localStorage.removeItem(k); });
+        // Clean the address bar so a plain refresh doesn't wipe again.
+        try { history.replaceState(null, "", location.pathname); } catch(e){}
+      }
+    } catch(e){}
+  })();
+
   const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const fullNames = {Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday",Sat:"Saturday",Sun:"Sunday"};
   // Which weekday is today (JS getDay: Sun=0..Sat=6 -> our Mon-first list)
