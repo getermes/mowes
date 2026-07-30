@@ -8277,6 +8277,11 @@
   function starterSessionSteps(){
     let picks = [];
     try { picks = JSON.parse(localStorage.getItem(PICKED_EXERCISES_KEY) || "[]") || []; } catch(e){}
+    picks = (picks || []).filter(n => (n || "").trim());
+    // Never land on an empty plan: if nothing was picked in the guided start, fall
+    // back to a simple, everyone-can-do-it bodyweight starter so a fresh open of the
+    // app always shows a ready-to-run workout.
+    if (!picks.length) picks = ["Squats", "Push-ups", "Plank"];
     const out = [];
     picks.forEach((name, pi) => {
       if (!(name || "").trim()) return;
@@ -8349,6 +8354,12 @@
         const r = lib.find(x => x.id === id);
         if (r) routineToSteps(r, "lib:" + id + ":" + ri).forEach(s => steps.push(s));
       });
+      // Fresh start: routines exist but the whole week is still unassigned. Rather than
+      // a dead "Nothing set yet" screen, drop in the ready starter so today runs. Once
+      // ANY day has picks, blank days are respected as the user's own rest days.
+      if (!steps.length && days.every(d => (sel[d] || []).length === 0)){
+        starterSessionSteps().forEach(s => steps.push(s));
+      }
       return wrapWarmCool(steps);
     }
     // OLD model (no Library yet): build from the routine sheet pages; brand-new users
