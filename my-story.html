@@ -113,6 +113,11 @@
   .slide.on .cap .cta-btn{ opacity:1; transform:none; animation:ctaPulse 1.8s ease-in-out 1.7s infinite; }
   .cap .cta-btn:active{ transform:scale(.97); }
   @keyframes ctaPulse{ 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.05);} }
+  /* Secondary "Next Video" button — red, slightly smaller, no pulse */
+  .cap .cta-btn.cta-2{ margin-top:12px; font-size:14px; padding:11px 20px; transition-delay:1.4s;
+    background:linear-gradient(135deg,#ef4444,#b91c1c);
+    box-shadow:0 8px 20px -6px rgba(185,28,28,.55), 0 0 0 2.5px #fff; }
+  .slide.on .cap .cta-btn.cta-2{ animation:none; }
   .slide.on .cap .pill{ animation:pillPop .5s cubic-bezier(.2,1.35,.4,1) both; }
   @keyframes pillPop{ 0%{ opacity:0; transform:scale(.55) translateY(8px);} 55%{ opacity:1; transform:scale(1.1);} 100%{ opacity:1; transform:scale(1);} }
   .eyebrow{ position:absolute; top:15px; left:0; right:0; text-align:center;
@@ -302,6 +307,7 @@
     { eyebrow:"Try it free",
       cap:{ big:"Yours, private, / free right now", pill:"" },
       cta:"https://getermes.github.io/mowes", ctaLabel:"MOWES 🔗",
+      cta2:"https://youtube.com/shorts/27bc9Jlvmp4", cta2Label:"▶ Next Video",
       say:"It is yours, private, and free right now. Tap to open it and give it a try.",
       scene:'<div class="link">getermes.github.io/mowes</div>' }
   ];
@@ -334,6 +340,7 @@
     el.innerHTML = '<div class="eyebrow">' + s.eyebrow + '</div>' + s.scene +
       '<div class="cap"><div class="pill">' + s.cap.pill + '</div><div class="big">' + wordsHTML(s.cap.big) + '</div>' +
       (s.cta ? '<a class="cta-btn" href="' + s.cta + '" target="_blank" rel="noopener">' + (s.ctaLabel || 'Open') + '</a>' : '') +
+      (s.cta2 ? '<a class="cta-btn cta-2" href="' + s.cta2 + '" target="_blank" rel="noopener">' + (s.cta2Label || 'Next') + '</a>' : '') +
       '</div>';
     screen.appendChild(el);
     s.el = el;
