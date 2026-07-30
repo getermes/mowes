@@ -8137,19 +8137,29 @@
     try {
       const lib = getLibrary();
       const sel = loadWeekSel();
-      let raw = {}; try { raw = JSON.parse(localStorage.getItem("mowes_weeks_v1") || "{}") || {}; } catch(e){ raw = {}; }
       const hasContent = w => days.some(d => (w[d] || []).some(r => r && (r.name || "").trim()));
-      let week = raw[currentWeekKey];
-      if (!week || !hasContent(week)){ for (const k in raw){ if (hasContent(raw[k])){ week = raw[k]; break; } } }
-      week = week || {};
       let changed = false;
-      days.forEach(d => {
-        (week[d] || []).forEach(r => {
-          if (!r || !(r.name || "").trim()) return;
-          const nm = r.name.trim().toLowerCase();
-          let match = lib.find(x => (x.name || "").trim().toLowerCase() === nm);
-          if (!match){ match = JSON.parse(JSON.stringify(r)); match.id = genLibId(); lib.push(match); changed = true; }
-          if (sel[d].indexOf(match.id) < 0){ sel[d].push(match.id); changed = true; }
+      // Migrate EVERY routine sheet — the main one plus any extra sheet pages (e.g. the
+      // Walk/Run page). Reading only the main sheet used to drop days that live on another
+      // sheet (like the sample plan's Tue/Thu Run & Walk), leaving them as blank rest days.
+      const sheetKeys = [];
+      for (let i = 0; i < localStorage.length; i++){
+        const k = localStorage.key(i);
+        if (k === WEEKS_KEY || (k && k.indexOf(WEEKS_KEY + "__") === 0)) sheetKeys.push(k);
+      }
+      sheetKeys.forEach(sk => {
+        let raw = {}; try { raw = JSON.parse(localStorage.getItem(sk) || "{}") || {}; } catch(e){ raw = {}; }
+        let week = raw[currentWeekKey];
+        if (!week || !hasContent(week)){ for (const k in raw){ if (hasContent(raw[k])){ week = raw[k]; break; } } }
+        week = week || {};
+        days.forEach(d => {
+          (week[d] || []).forEach(r => {
+            if (!r || !(r.name || "").trim()) return;
+            const nm = r.name.trim().toLowerCase();
+            let match = lib.find(x => (x.name || "").trim().toLowerCase() === nm);
+            if (!match){ match = JSON.parse(JSON.stringify(r)); match.id = genLibId(); lib.push(match); changed = true; }
+            if (sel[d].indexOf(match.id) < 0){ sel[d].push(match.id); changed = true; }
+          });
         });
       });
       if (changed){ writeLibraryStore(lib); saveWeekSel(sel); }
