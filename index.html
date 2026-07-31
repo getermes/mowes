@@ -562,6 +562,11 @@
   .msupport-compact .msupport-row { gap: 12px; }
   .msupport-compact .msupport-like svg { width: 26px; height: 26px; }
   .msupport-compact .msupport-coffee .cup-icon { width: 30px; height: 30px; }
+  .msupport-fb { margin: 10px 0 0; text-align: center; }
+  .msupport-fb a { font-size: 13px; font-weight: 600; color: #8a93a6; text-decoration: none; }
+  .msupport-fb a:hover { text-decoration: underline; color: #5b6cff; }
+  .msupport-compact .msupport-fb { margin-top: 6px; }
+  .msupport-compact .msupport-fb a { font-size: 12px; }
   /* Shift the heart + cup right so they sit under the last two words of the line. */
   .msupport-nudge-right .msupport-row { transform: translateX(64px); }
   .msupport-like.liked svg path { fill: #ff2d55; }
@@ -5139,7 +5144,9 @@
       + '<div class="msupport-row">'
       + '<button type="button" class="msupport-like' + liked + '" onclick="likeApp(this)" title="Like the app" aria-label="Like the app"><svg viewBox="0 0 24 24" fill="none" stroke="#ff2d55" stroke-width="2" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></button>'
       + '<a class="msupport-coffee" href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener" title="Buy me a coffee" aria-label="Buy me a coffee"><svg class="cup-icon" viewBox="0 0 48 48" aria-hidden="true"><g class="cup-steam" stroke="#9b7a5a" stroke-width="2.8" stroke-linecap="round" fill="none"><path d="M16 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M22 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/><path d="M28 16 c-3 -3 -3 -6 0 -9 c3 -3 3 -6 0 -9"/></g><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linejoin="round" d="M8 19 h26 v7 a13 13 0 0 1 -13 13 a13 13 0 0 1 -13 -13 z"/><path fill="none" stroke="#6f4e37" stroke-width="2.8" stroke-linecap="round" d="M34 21 h5 a6 6 0 0 1 0 12 h-4"/></svg></a>'
-      + '</div></div>';
+      + '</div>'
+      + '<p class="msupport-fb"><a href="mailto:get.ermes00@gmail.com?subject=MOWES%20feedback%20or%20idea&body=Hi!%20Here%27s%20my%20feedback%2Fidea%20for%20MOWES%3A%0A%0A" title="Send feedback or report a problem">💬 Send feedback</a></p>'
+      + '</div>';
   }
   function likeApp(el){
     localStorage.setItem("mowes_liked", "1");
