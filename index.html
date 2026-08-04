@@ -2615,6 +2615,7 @@
     max-width: 360px; width: 100%;
     text-align: center;
     display: flex; flex-direction: column;
+    position: relative;
   }
   /* Spread the cover: ERMES stays up top, the cluster floats to the middle, and the
      like/coffee set drops to the bottom — the two auto margins share the free space. */
@@ -2659,6 +2660,64 @@
     background: rgba(255,255,255,0.7); border: 1px solid #d6dbf5;
     border-radius: 999px; padding: 6px 11px;
   }
+  /* Today's Thought as a soft cloud that drifts in and floats over the logo. */
+  .welcome-cloud {
+    position: absolute; top: 19%; left: 50%;
+    width: min(440px, 97vw); aspect-ratio: 300 / 180;
+    z-index: 4; pointer-events: none;
+    filter: drop-shadow(0 12px 18px rgba(91,108,255,0.20));
+    animation: cloudDriftIn 2.3s cubic-bezier(.22,.61,.36,1) both,
+               cloudFloat 6.5s ease-in-out 2.3s infinite;
+  }
+  .welcome-cloud-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .welcome-cloud-text {
+    position: absolute; left: 18%; right: 18%; top: 34%; bottom: 17%;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; overflow: hidden;
+  }
+  .welcome-cloud-msg { margin: 0; font-size: 21px; line-height: 1.32; color: #3a4060; font-weight: 800; white-space: pre-line; }
+  @keyframes cloudDriftIn {
+    0%   { opacity: 0; transform: translate(calc(-50% - 235px), -48px); }
+    55%  { opacity: 1; }
+    100% { opacity: 1; transform: translate(-50%, 0); }
+  }
+  @keyframes cloudFloat {
+    0%, 100% { transform: translate(-50%, 0); }
+    50%      { transform: translate(calc(-50% + 7px), 12px); }
+  }
+  /* Corner gear → Cover settings (icon-only, no text). */
+  .welcome-gear-btn {
+    position: absolute; top: 12px; right: 12px; z-index: 6;
+    background: rgba(255,255,255,0.6); border: 1px solid #d6dbf5;
+    font-size: 18px; line-height: 1; border-radius: 999px;
+    width: 40px; height: 40px; cursor: pointer;
+  }
+  .welcome-gear-btn:active { background: rgba(255,255,255,0.95); }
+  .cover-settings {
+    position: absolute; inset: 0; z-index: 20; display: none;
+    align-items: center; justify-content: center; background: rgba(40,44,80,0.28);
+  }
+  .cover-settings.open { display: flex; }
+  .cover-settings-card {
+    background: #fff; border-radius: 22px; padding: 20px;
+    box-shadow: 0 18px 44px rgba(40,44,80,0.28);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .cs-group { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .cs-cap { font-size: 12px; font-weight: 700; color: #9096ad; letter-spacing: 0.3px; }
+  .cs-seg { display: flex; gap: 10px; }
+  .cs-seg-btn {
+    width: 56px; height: 50px; font-size: 23px; line-height: 1;
+    border: 2px solid #e6e8f5; background: #f6f7fd; border-radius: 14px; cursor: pointer;
+  }
+  .cs-seg-btn.on { background: #eef0ff; border-color: #7a5bff; }
+  .cs-divider { width: 100%; height: 1px; background: #eef0f6; }
+  .cs-topics { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; max-width: 232px; }
+  .cs-chip {
+    width: 48px; height: 48px; font-size: 21px; line-height: 1;
+    border: 2px solid #e6e8f5; background: #f6f7fd; border-radius: 50%; cursor: pointer;
+  }
+  .cs-chip.on { background: #eef0ff; border-color: #7a5bff; }
   /* The "go" control is shaped like an arrow pointing right (not a pill). */
   .welcome-btn {
     display: block; width: 100%; margin-top: 30px;
@@ -2811,6 +2870,30 @@
 
   <!-- First-time-only ERMES welcome (shows once, then never again) -->
   <div class="welcome-overlay" id="welcomeOverlay">
+    <button type="button" class="welcome-gear-btn" onclick="openCoverSettings()" aria-label="Cover settings">⚙️</button>
+    <div class="cover-settings" id="coverSettings" onclick="if(event.target===this) closeCoverSettings()">
+      <div class="cover-settings-card">
+        <div class="cs-group">
+          <div class="cs-cap">Cover</div>
+          <div class="cs-seg" id="csShowSeg">
+            <button type="button" class="cs-seg-btn" data-v="show" onclick="setCoverShow(true)" aria-label="Show cover">👁️</button>
+            <button type="button" class="cs-seg-btn" data-v="hide" onclick="setCoverShow(false)" aria-label="Hide cover">🙈</button>
+          </div>
+        </div>
+        <div class="cs-group">
+          <div class="cs-cap">Start</div>
+          <div class="cs-seg" id="csStartSeg">
+            <button type="button" class="cs-seg-btn" data-v="auto" onclick="setCoverStart('auto')" aria-label="Auto start">⚡</button>
+            <button type="button" class="cs-seg-btn" data-v="tap" onclick="setCoverStart('tap')" aria-label="Tap to start">👆</button>
+          </div>
+        </div>
+        <div class="cs-divider"></div>
+        <div class="cs-group">
+          <div class="cs-cap">Thoughts</div>
+          <div class="cs-topics" id="csTopics"></div>
+        </div>
+      </div>
+    </div>
     <div class="welcome-box">
       <div class="welcome-mark">ERMES</div>
       <div class="welcome-tag">Apps to solve real problems</div>
@@ -2868,9 +2951,23 @@
         <rect x="441" y="52" width="8" height="16" rx="3" fill="#F0A32E"/>
       </svg>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
-      <button class="welcome-btn" onclick="dismissWelcome()">Go into the Gym →</button>
+      <div class="welcome-cloud" id="welcomeCloud">
+        <svg class="welcome-cloud-svg" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g fill="#ffffff">
+            <rect x="38" y="74" width="224" height="86" rx="43"/>
+            <circle cx="150" cy="74" r="66"/>
+            <circle cx="86"  cy="94" r="48"/>
+            <circle cx="214" cy="94" r="48"/>
+            <circle cx="58"  cy="120" r="34"/>
+            <circle cx="242" cy="120" r="34"/>
+          </g>
+        </svg>
+        <div class="welcome-cloud-text">
+          <p class="welcome-cloud-msg" id="welcomeMsg">—</p>
+        </div>
+      </div>
+      <button class="welcome-btn" onclick="dismissWelcome()">Let's Workout →</button>
       <p class="welcome-note">Made with <span class="wn-heart">💛</span> by <span class="wn-name">EUgenio</span> — the Idea Guy</p>
-      <div class="cover-support" id="coverSupport"></div>
     </div>
   </div>
 
@@ -6668,19 +6765,19 @@
     { id: "fun",        emoji: "😄", label: "Fun" }
   ];
   const THOUGHTS = [
-    { topic: "motivation", text: "Small steps every day beat big leaps once in a while. Show up today." },
+    { topic: "motivation", text: "Small steps every day get you far." },
     { topic: "motivation", text: "You don't have to be extreme, just consistent." },
-    { topic: "motivation", text: "The hardest part is starting. You already opened the app — that's the win." },
-    { topic: "faith",      text: "Take care of your body; it's the only place you have to live." },
-    { topic: "faith",      text: "Gratitude turns what you have into enough. Be thankful for today's strength." },
-    { topic: "sports",     text: "Champions aren't made in the gym. They're made from something deep inside: a desire." },
-    { topic: "sports",     text: "Train like there's no finish line — then sprint at the end." },
-    { topic: "science",    text: "Exercise sends more oxygen to your brain — a workout makes you think sharper too." },
-    { topic: "science",    text: "Muscle grows while you rest, not while you lift. Recovery is part of the plan." },
-    { topic: "wellness",   text: "Drink water, move your body, breathe deep. Your future self says thank you." },
-    { topic: "wellness",   text: "Sleep is the cheapest performance booster there is. Protect your rest." },
-    { topic: "fun",        text: "Dance counts. Chasing the dog counts. Movement is movement!" },
-    { topic: "fun",        text: "Reward yourself after a workout — you earned that smile." }
+    { topic: "motivation", text: "The hardest part is starting — and you just did." },
+    { topic: "faith",      text: "Take care of your body — it's the only place you live." },
+    { topic: "faith",      text: "Be thankful for today's strength." },
+    { topic: "sports",     text: "Champions are made from desire." },
+    { topic: "sports",     text: "Train hard, then finish strong." },
+    { topic: "science",    text: "Exercise makes your brain sharper too." },
+    { topic: "science",    text: "Muscle grows while you rest." },
+    { topic: "wellness",   text: "Drink water, move, and breathe deep." },
+    { topic: "wellness",   text: "Sleep is your cheapest performance boost." },
+    { topic: "fun",        text: "Dance counts — movement is movement!" },
+    { topic: "fun",        text: "Reward yourself — you earned it!" }
   ];
   const TOPICS_KEY = "mowes_topics_v1";
 
@@ -6710,6 +6807,43 @@
   function renderThought(){
     const coverEl = document.getElementById("coverThought");
     if (coverEl) coverEl.textContent = getTodaysThoughtText();
+  }
+
+  // ---- The Cover cloud message: a real, personal cheer + a goal-matched thought ----
+  // Part 1 (cheer) comes from the person's actual progress (streak / workouts).
+  // Part 2 (thought) is chosen to match the goal they picked in the guided start.
+  function getOnbGoal(){
+    try { const a = JSON.parse(localStorage.getItem(ONB_ANSWERS_KEY) || "{}") || {}; return a.goal || ""; } catch(e){ return ""; }
+  }
+  const GOAL_THOUGHTS = {
+    lose_weight: ["Your little steps are getting you far!",
+                  "Lighter and stronger, one day at a time."],
+    strength:    ["You're getting stronger every day.",
+                  "Strength is built one rep at a time."],
+    active:      ["Just keep moving today!",
+                  "A little movement beats none."],
+    healthier:   ["Your body thanks you for showing up.",
+                  "Healthy is a habit you're building."]
+  };
+  const DEFAULT_THOUGHTS = ["Small steps every day get you far.",
+                            "Just be consistent — that's the secret."];
+  function getCoverMessage(){
+    let s = { streak:0, weekWorkouts:0, weekSetsDone:0, allWorkouts:0, allSetsDone:0 };
+    try { s = computeStats(); } catch(e){}
+    // ONE message. When there's real progress, celebrate it (personal).
+    if (s.streak >= 2) return "You're a Champ! 🏆\n" + s.streak + " weeks in a row!!!";
+    if (s.weekWorkouts >= 1) return "You'll finish your week with " + s.weekWorkouts + (s.weekWorkouts === 1 ? " workout" : " workouts") + " so far! 💪";
+    if (s.allWorkouts >= 1) return "Welcome back! " + s.allWorkouts + (s.allWorkouts === 1 ? " workout" : " workouts") + " and counting. 👊";
+    // Otherwise a thought: goal-matched, blended with the subjects they picked.
+    let pool = (GOAL_THOUGHTS[getOnbGoal()] || []).slice();
+    const sel = getSelectedTopics();
+    pool = pool.concat(THOUGHTS.filter(t => sel.includes(t.topic)).map(t => t.text));
+    if (!pool.length) pool = DEFAULT_THOUGHTS;
+    return pool[dayOfYear() % pool.length];
+  }
+  function renderCoverCloud(){
+    const el = document.getElementById("welcomeMsg");
+    if (el) el.textContent = getCoverMessage();
   }
   function renderTopicChips(){
     const selected = getSelectedTopics();
@@ -9143,19 +9277,111 @@
   }
   window.onbPick = onbPick; window.onbToggle = onbToggle; window.onbContinue = onbContinue; window.onbPrev = onbPrev; window.finishOnboarding = finishOnboarding;
 
+  // ---- Cover auto-advance + "sleeper" (skip the Cover on future opens) ----
+  const WELCOME_AUTO_MS = 6000; // show the Thought for ~6s, then glide into Today's
+  const COVER_SLEEP_KEY = "mowes_cover_sleep_v1";
+  let welcomeAutoTimer = null;
+  function coverIsAsleep(){
+    try { return localStorage.getItem(COVER_SLEEP_KEY) === "1"; } catch(e){ return false; }
+  }
+  function stopWelcomeAutoAdvance(){
+    if (welcomeAutoTimer){ clearTimeout(welcomeAutoTimer); welcomeAutoTimer = null; }
+  }
+  function startWelcomeAutoAdvance(){
+    stopWelcomeAutoAdvance();
+    welcomeAutoTimer = setTimeout(function(){
+      welcomeAutoTimer = null;
+      const ov = document.getElementById("welcomeOverlay");
+      if (ov && ov.classList.contains("show")) dismissWelcome();
+    }, WELCOME_AUTO_MS);
+  }
+  // ---- Cover settings (icon-only): show/hide, auto/tap start, thought subjects ----
+  const COVER_START_KEY = "mowes_cover_start_v1";
+  function coverStartMode(){ try { return localStorage.getItem(COVER_START_KEY) === "tap" ? "tap" : "auto"; } catch(e){ return "auto"; } }
+  function setCoverShow(show){
+    try { localStorage.setItem(COVER_SLEEP_KEY, show ? "0" : "1"); } catch(e){}
+    syncCoverSettingsUI();
+  }
+  function setCoverStart(mode){
+    const m = mode === "tap" ? "tap" : "auto";
+    try { localStorage.setItem(COVER_START_KEY, m); } catch(e){}
+    if (m === "tap") stopWelcomeAutoAdvance();
+    syncCoverSettingsUI();
+  }
+  function syncCoverSettingsUI(){
+    const asleep = coverIsAsleep(), mode = coverStartMode();
+    const showSeg = document.getElementById("csShowSeg");
+    if (showSeg) showSeg.querySelectorAll(".cs-seg-btn").forEach(b => b.classList.toggle("on", b.dataset.v === (asleep ? "hide" : "show")));
+    const startSeg = document.getElementById("csStartSeg");
+    if (startSeg) startSeg.querySelectorAll(".cs-seg-btn").forEach(b => b.classList.toggle("on", b.dataset.v === mode));
+  }
+  function renderCsTopics(){
+    const wrap = document.getElementById("csTopics");
+    if (!wrap) return;
+    const selected = getSelectedTopics();
+    wrap.innerHTML = "";
+    THOUGHT_TOPICS.forEach(t => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "cs-chip" + (selected.includes(t.id) ? " on" : "");
+      chip.textContent = t.emoji;
+      chip.setAttribute("aria-label", t.label);
+      chip.onclick = () => {
+        let sel = getSelectedTopics();
+        if (sel.includes(t.id)) sel = sel.filter(x => x !== t.id);
+        else sel = sel.concat(t.id);
+        setSelectedTopics(sel);
+        renderCsTopics();
+        renderCoverCloud();
+      };
+      wrap.appendChild(chip);
+    });
+  }
+  function openCoverSettings(){
+    stopWelcomeAutoAdvance();
+    renderCsTopics();
+    syncCoverSettingsUI();
+    document.getElementById("coverSettings").classList.add("open");
+  }
+  function closeCoverSettings(){
+    document.getElementById("coverSettings").classList.remove("open");
+    const ov = document.getElementById("welcomeOverlay");
+    if (coverStartMode() === "auto" && ov && ov.classList.contains("show")) startWelcomeAutoAdvance();
+  }
+  window.openCoverSettings = openCoverSettings; window.closeCoverSettings = closeCoverSettings;
+  window.setCoverShow = setCoverShow; window.setCoverStart = setCoverStart;
+
   function dismissWelcome(){
-    leaveCoverPage();
-    // A brand-new person gets the guided start first; everyone else goes straight
-    // to Today's Session (the guided page) with the bar on.
-    if (needsOnboarding()) showOnboarding();
-    else openSessionPage();
+    stopWelcomeAutoAdvance();
+    // A brand-new person gets the guided start first (plain, no peel).
+    if (needsOnboarding()){ leaveCoverPage(); showOnboarding(); return; }
+    // Returning person: peel the Cover away (left-to-right) to reveal Today's.
+    peelCoverToSession();
+  }
+  // Turn-the-page reveal: show Today's underneath, then wipe the Cover off the top.
+  function peelCoverToSession(){
+    const welcome = document.getElementById("welcomeOverlay");
+    openSessionPage(); // shows Today's underneath (also clears the Cover's "show")
+    if (!welcome || typeof playDotTrace !== "function") return; // safe fallback
+    welcome.style.zIndex = "9000";      // drop below the peel's dots (9300/9500)
+    welcome.classList.add("show");      // bring the Cover back on top to be peeled
+    playDotTrace({
+      overlay: welcome,
+      onEnd: function(){
+        welcome.classList.remove("show", "cover-as-page");
+        welcome.style.zIndex = "";
+        welcome.style.clipPath = ""; welcome.style.webkitClipPath = "";
+      }
+    });
   }
   window.openApp = openApp;
   window.dismissWelcome = dismissWelcome;
   // Going back from the Introduction page to the Cover
   function showWelcome(){
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
+    renderCoverCloud();
     document.getElementById("welcomeOverlay").classList.add("show");
+    if (coverStartMode() === "auto") startWelcomeAutoAdvance();
   }
   window.showWelcome = showWelcome;
 
@@ -9425,7 +9651,15 @@
   // Today's Thought screen stays HIDDEN until you tap the "💭 Thought" tab, so it
   // never blocks the flow (we just preload its text).
   document.getElementById("coverThought").textContent = getTodaysThoughtText();
-  document.getElementById("welcomeOverlay").classList.add("show");
+  renderCoverCloud();
+  if (coverIsAsleep()) {
+    // The user chose "Don't show" — skip the Cover and go straight into the app
+    // (deferred a tick so the rest of boot finishes first).
+    setTimeout(function(){ dismissWelcome(); }, 0);
+  } else {
+    document.getElementById("welcomeOverlay").classList.add("show");
+    if (coverStartMode() === "auto") startWelcomeAutoAdvance();
+  }
 
   // ---- Swipe to flip between the book pages: Cover <-> Introduction <-> workspace ----
   // Same feel as the rest of the app: swipe LEFT = go forward, swipe RIGHT = go back.
@@ -9589,7 +9823,6 @@
   // Brand-new device → start with the 5 starter routines (runs once; after all
   // definitions are initialized, so it's safe here at the end of startup).
   try { seedStarterLibraryIfEmpty(); } catch(e){}
-  try { var _cs = document.getElementById("coverSupport"); if (_cs) _cs.innerHTML = supportSetHTML(); } catch(e){}
   try { var _gs = document.getElementById("goalsSupport"); if (_gs) _gs.innerHTML = supportSetHTML('Is <span class="mowes-beat">MOWES</span> ' + curlWordHTML('coaching', 'coach-red') + ' you?'); } catch(e){}
   try { var _bs = document.getElementById("bodySupport"); if (_bs) _bs.innerHTML = supportSetHTML('Feeling the <span class="mowes-beat">MOWES</span> ' + curlWordHTML('change', 'coach-red') + '?'); } catch(e){}
   try { var _buildS = document.getElementById("buildSupport"); if (_buildS) _buildS.innerHTML = supportSetHTML('Help <span class="mowes-beat">MOWES</span> help ' + curlWordHTML('you', 'coach-red') + ' too!'); } catch(e){}
