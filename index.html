@@ -2432,10 +2432,23 @@
   .session-overlay.show { display: block; }
   .session-inner { max-width: 420px; margin: 0 auto; padding: 30px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; }
   .session-todayline { text-align: center; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #9096ad; margin-bottom: 2px; }
-  .session-daynav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
-  .session-arrow { width: 42px; height: 42px; border: none; border-radius: 12px; background: #eef0fb; color: #5b6cff; font-size: 22px; font-weight: 900; cursor: pointer; }
-  .session-arrow:active { transform: scale(0.95); }
-  .session-day { font-size: 20px; font-weight: 900; color: #3a4066; min-width: 130px; text-align: center; }
+  /* Sliding day strip: today spotlighted in the center, neighbors faded at the edges. */
+  .session-daystrip {
+    position: relative; overflow: hidden; height: 34px; margin-bottom: 12px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 26%, #000 74%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 26%, #000 74%, transparent 100%);
+  }
+  .session-daystrip-row {
+    position: absolute; top: 0; left: 0; height: 100%; width: max-content;
+    display: flex; align-items: center; gap: 28px;
+    transition: transform 0.38s cubic-bezier(.4,0,.2,1);
+  }
+  .sd-day {
+    background: none; border: none; padding: 0; cursor: pointer; white-space: nowrap; line-height: 1;
+    font-size: 15px; font-weight: 700; color: #b6bcd6;
+    transition: color .3s ease, font-size .3s ease;
+  }
+  .sd-day.on { font-size: 22px; font-weight: 900; color: #3a4066; }
   /* The 4 pacing settings stay tucked away until the ⚙️ gear opens them. */
   .session-settings { display: none; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: 16px; margin-bottom: 4px; font-size: 12.5px; color: #6a7088; }
   .session-inner.settings-open .session-settings { display: flex; margin-top: 14px; }
@@ -2500,10 +2513,24 @@
   /* Right-side tools (video / how-to / skip) stacked vertically, one on top of the other. */
   .session-step-tools { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .session-step-tools .session-howto { width: 30px; height: 30px; font-size: 15px; }
-  .session-start { display: block; width: 100%; margin: 4px 0 20px; border: none; border-radius: 16px; padding: 17px;
-    font-size: 18px; font-weight: 900; color: #fff; cursor: pointer; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.28); }
-  .session-start.running { background: linear-gradient(135deg, #e5484d, #ff6b6b); box-shadow: 0 6px 18px rgba(229,72,77,0.28); }
-  .session-start:active { transform: scale(0.99); }
+  /* The Start button is a glowing sun — spinning rays + a warm face with a short word. */
+  .session-start { position: relative; display: block; width: 152px; height: 152px;
+    margin: 6px auto 16px; padding: 0; border: none; background: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; }
+  .session-start .sun-rays { position: absolute; inset: 0; border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, #F7D3A6 0deg 6deg, transparent 6deg 20deg);
+    opacity: 0.7; animation: sunSpin 20s linear infinite; }
+  .session-start .sun-face { position: absolute; inset: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 36% 30%, #FFD3AE, #F5A985 72%, #EDA07C);
+    box-shadow: 0 8px 20px rgba(230,150,110,0.28), inset 0 2px 8px rgba(255,255,255,0.5);
+    animation: sunPulse 2.6s ease-in-out infinite; }
+  .session-start .sun-face > span { color: #fff; font-weight: 800; font-size: 20px; line-height: 1.08;
+    letter-spacing: 0.5px; padding: 0 12px; text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(150,85,45,0.35); }
+  .session-start:active { transform: scale(0.95); }
+  @keyframes sunSpin { to { transform: rotate(360deg); } }
+  @keyframes sunPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
   .session-surprise {
     display: block; width: 100%; margin-top: 14px; border: 2px dashed #c7b3ff; cursor: pointer;
     background: #f6f2ff; color: #7a5bff; font-weight: 800; font-size: 15px; padding: 13px; border-radius: 14px;
@@ -2990,12 +3017,13 @@
   <div class="session-overlay" id="sessionOverlay">
     <div class="session-inner">
       <div class="session-todayline" id="sessionTodayLine">Today</div>
-      <div class="session-daynav">
-        <button class="session-arrow" onclick="sessionChangeDay(-1)">‹</button>
-        <div class="session-day" id="sessionDay">Today</div>
-        <button class="session-arrow" onclick="sessionChangeDay(1)">›</button>
+      <div class="session-daystrip" id="sessionDayStrip">
+        <div class="session-daystrip-row" id="sessionDayRow"></div>
       </div>
-      <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">▶ Start</button>
+      <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">
+        <span class="sun-rays"></span>
+        <span class="sun-face"><span id="sessionStartLabel">To the finish line</span></span>
+      </button>
       <div class="session-toggles">
         <label class="session-toggle"><input type="checkbox" id="sessionWarmup" onchange="sessionSaveSettings()"> 🤸 Warm-up first</label>
         <label class="session-toggle"><input type="checkbox" id="sessionCooldown" onchange="sessionSaveSettings()"> 🧘 Cool-down after</label>
@@ -8648,8 +8676,7 @@
     // Top line: "Today" on the current day, or that day's date when you page back/forward.
     const todayLineEl = document.getElementById("sessionTodayLine");
     if (todayLineEl) todayLineEl.textContent = (sessionDayOffset === 0) ? "Today" : sessionDateStr();
-    const dayEl = document.getElementById("sessionDay");
-    if (dayEl) dayEl.textContent = (fullNames[sessionSelDay] || "").toUpperCase();
+    renderDayStrip();
     sessionStepsArr = sessionStepsFor(sessionSelDay);
     const list = document.getElementById("sessionList"), btn = document.getElementById("sessionStartBtn");
     const innerEl = document.querySelector(".session-inner");
@@ -8761,7 +8788,8 @@
         btn.style.display = "none";
       } else {
         btn.style.display = "block";
-        btn.textContent = Object.keys(sessionDone).length ? "▶ Resume" : "▶ Start";
+        const _lbl = document.getElementById("sessionStartLabel");
+        if (_lbl) _lbl.textContent = Object.keys(sessionDone).length ? "Finish it" : "To the finish line";
         btn.classList.remove("running");
       }
     }
@@ -8967,6 +8995,51 @@
     if ([1, 5, 10, 25, 50, 100, 200, 365].indexOf(n) >= 0) celebrate("🏅", n + (n === 1 ? " workout done!" : " workouts done!"), "You're building a real habit — keep it going! 💪");
     else celebrate("🎉", "Workout complete!", "Great work today. That's " + n + " workouts logged. 💪");
   }
+  // ---- Sliding day strip ----
+  function renderDayStrip(){
+    const row = document.getElementById("sessionDayRow");
+    if (!row) return;
+    row.innerHTML = "";
+    days.forEach(function(d){
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "sd-day" + (d === sessionSelDay ? " on" : "");
+      b.textContent = (fullNames[d] || d);
+      b.onclick = function(){ sessionSelectDay(d); };
+      row.appendChild(b);
+    });
+    const strip = document.getElementById("sessionDayStrip");
+    if (strip && !strip._swipeBound){ strip._swipeBound = true; bindDayStripSwipe(strip); }
+    centerDayStrip();
+  }
+  function centerDayStrip(){
+    const strip = document.getElementById("sessionDayStrip");
+    const row = document.getElementById("sessionDayRow");
+    if (!strip || !row) return;
+    const sel = row.querySelector(".sd-day.on");
+    const w = strip.clientWidth;
+    if (!sel || !w) return; // not visible/laid out yet
+    row.style.transform = "translateX(" + ((w / 2) - (sel.offsetLeft + sel.offsetWidth / 2)) + "px)";
+  }
+  function sessionSelectDay(d){
+    if (d === sessionSelDay) return;
+    sessionDayOffset = days.indexOf(d) - days.indexOf(todayKey);
+    sessionChangeDay(0);
+  }
+  function bindDayStripSwipe(strip){
+    let sx = 0, sy = 0, tracking = false;
+    strip.addEventListener("touchstart", function(e){
+      if (e.touches.length !== 1){ tracking = false; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+    }, { passive: true });
+    strip.addEventListener("touchend", function(e){
+      if (!tracking) return; tracking = false;
+      const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) sessionChangeDay(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  }
+  window.sessionSelectDay = sessionSelectDay;
+
   function sessionChangeDay(offset){
     sessionPause();
     sessionDayOffset += offset;
@@ -8986,6 +9059,14 @@
     renderSession();
     document.getElementById("sessionOverlay").classList.add("show");
     renderPageBar();
+    // Center the day strip now that the page is visible (no slide on first show).
+    requestAnimationFrame(function(){
+      const row = document.getElementById("sessionDayRow");
+      if (!row) return;
+      row.style.transition = "none";
+      centerDayStrip();
+      requestAnimationFrame(function(){ if (row) row.style.transition = ""; });
+    });
   }
   function leaveSessionPage(){ const el = document.getElementById("sessionOverlay"); if (el && el.classList.contains("show")){ el.classList.remove("show"); sessionPause(); } }
   function sessionShownAsPage(){ const el = document.getElementById("sessionOverlay"); return !!(el && el.classList.contains("show")); }
