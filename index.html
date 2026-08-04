@@ -2663,12 +2663,15 @@
   /* Today's Thought as a soft cloud that drifts in and floats over the logo. */
   .welcome-cloud {
     position: absolute; top: 19%; left: 50%;
+    transform: translate(-50%, 0); /* centered even when the animation is frozen */
     width: min(440px, 97vw); aspect-ratio: 300 / 180;
     z-index: 4; pointer-events: none;
     filter: drop-shadow(0 12px 18px rgba(91,108,255,0.20));
     animation: cloudDriftIn 2.3s cubic-bezier(.22,.61,.36,1) both,
                cloudFloat 6.5s ease-in-out 2.3s infinite;
   }
+  /* While the Cover is peeling away, freeze the cloud so it doesn't re-drift-in. */
+  .welcome-overlay.peeling .welcome-cloud { animation: none !important; }
   .welcome-cloud-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .welcome-cloud-text {
     position: absolute; left: 18%; right: 18%; top: 34%; bottom: 17%;
@@ -9363,12 +9366,13 @@
     const welcome = document.getElementById("welcomeOverlay");
     openSessionPage(); // shows Today's underneath (also clears the Cover's "show")
     if (!welcome || typeof playDotTrace !== "function") return; // safe fallback
-    welcome.style.zIndex = "9000";      // drop below the peel's dots (9300/9500)
-    welcome.classList.add("show");      // bring the Cover back on top to be peeled
+    welcome.classList.add("peeling"); // freeze the cloud so it doesn't re-drift-in
+    welcome.style.zIndex = "9000";    // drop below the peel's dots (9300/9500)
+    welcome.classList.add("show");    // bring the Cover back on top to be peeled
     playDotTrace({
       overlay: welcome,
       onEnd: function(){
-        welcome.classList.remove("show", "cover-as-page");
+        welcome.classList.remove("show", "cover-as-page", "peeling");
         welcome.style.zIndex = "";
         welcome.style.clipPath = ""; welcome.style.webkitClipPath = "";
       }
