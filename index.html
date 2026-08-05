@@ -2459,8 +2459,8 @@
   /* Warm-up / Cool-down as small on-off buttons flanking the sun (top corners). */
   /* The sun and its two flank buttons share a positioned wrapper, so the flanks always
      hug the sun no matter what sits above it (e.g. the coach greeting line). */
-  .session-sun-wrap { position: relative; }
-  .session-flank { position: absolute; top: 40px; z-index: 6; border: none; border-radius: 999px;
+  .session-sun-wrap { position: relative; padding-top: 46px; }
+  .session-flank { position: absolute; top: 4px; z-index: 6; border: none; border-radius: 999px;
     padding: 8px 13px; font-size: 12.5px; font-weight: 800; cursor: pointer; line-height: 1; white-space: nowrap;
     background: transparent; color: #b6bcd6; box-shadow: none; opacity: 0.85; transition: background .2s, color .2s, opacity .2s; }
   .session-inner.rest-mode .session-flank { display: none; }  /* no warm-up/cool-down on a rest day */
@@ -2599,6 +2599,13 @@
     color: #5b6cff; font-weight: 800; font-size: 13px; border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; cursor: pointer; }
   .session-step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
   .session-step-main { flex: 1 1 auto; min-width: 0; }
+  /* Tap-to-edit: the card's name area opens the routine in My Library. */
+  .session-step-main.tappable { cursor: pointer; border-radius: 8px; margin: -4px -6px; padding: 4px 6px; transition: background .15s; }
+  .session-step-main.tappable:active { background: #eef1ff; }
+  .session-step-edit { font-size: 12px; opacity: 0.5; margin-left: 3px; vertical-align: middle; }
+  /* Glow the card that was just tapped open in the Library. */
+  .routine-card.just-opened { animation: libJustOpened 1.6s ease-out; }
+  @keyframes libJustOpened { 0%, 55% { box-shadow: 0 0 0 3px rgba(91,108,255,0.55); } 100% { box-shadow: 0 0 0 0 rgba(91,108,255,0); } }
   .session-step-tag { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #9aa0b5; margin-bottom: 1px; }
   .session-step.s-warm .session-step-tag { color: #d9534f; }
   .session-step.s-cool .session-step-tag { color: #2fa36b; }
@@ -2697,6 +2704,43 @@
   .celebrate-btn { margin-top: 20px; border: none; border-radius: 14px; padding: 14px 28px; font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
     background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.28); }
   .celebrate-btn:active { transform: scale(0.98); }
+  /* Quick-edit routine modal (tap a card on Today's page). */
+  .qedit-overlay { position: fixed; inset: 0; z-index: 10050; display: none; align-items: center; justify-content: center;
+    background: rgba(30,34,60,0.55); padding: 18px; overflow-y: auto; }
+  .qedit-overlay.show { display: flex; }
+  .qedit-card { background: #fff; border-radius: 22px; padding: 18px 18px 16px; max-width: 360px; width: 100%;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.3); animation: celeb-pop 0.32s cubic-bezier(.2,1.2,.4,1); max-height: 88vh; display: flex; flex-direction: column; }
+  .qedit-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .qedit-title { flex: 1 1 auto; font-size: 18px; font-weight: 900; color: #3a4066; min-width: 0; }
+  .qedit-x { flex: 0 0 auto; border: none; background: #f0f2fb; color: #6a7088; width: 32px; height: 32px; border-radius: 50%;
+    font-size: 15px; font-weight: 800; cursor: pointer; }
+  .qedit-x:active { transform: scale(0.94); }
+  .qedit-body { overflow-y: auto; }
+  .qedit-set { border: 1px solid #eef0f7; border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; }
+  .qedit-set-title { font-size: 12px; font-weight: 800; color: #9aa0b5; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .qedit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+  .qedit-fld { display: flex; flex-direction: column; gap: 3px; }
+  .qedit-fld > span { font-size: 12px; font-weight: 700; color: #6a7088; }
+  .qedit-inrow { display: flex; align-items: center; gap: 5px; }
+  .qedit-inrow input { flex: 1 1 auto; width: 100%; border: 2px solid #e6e8f0; border-radius: 9px; padding: 8px; font-size: 15px; text-align: center; }
+  .qedit-inrow input:focus { border-color: #5b6cff; outline: none; }
+  .qedit-unit { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: #9aa0b5; }
+  .qedit-add { width: 100%; border: 2px dashed #cdd3ec; background: #f7f8fe; color: #5b6cff; font-weight: 800; font-size: 14px;
+    border-radius: 12px; padding: 10px; cursor: pointer; }
+  .qedit-add:active { transform: scale(0.99); }
+  .qedit-scope { margin-top: 6px; padding-top: 12px; border-top: 1px solid #eef0f7; }
+  .qedit-scope-label { font-size: 13px; font-weight: 800; color: #3a4066; margin-bottom: 7px; }
+  .qedit-scope-toggle { display: flex; gap: 8px; }
+  .qedit-scope-btn { flex: 1 1 0; border: 2px solid #e6e8f0; background: #fff; color: #6a7088; font-weight: 800; font-size: 13.5px;
+    border-radius: 11px; padding: 10px 6px; cursor: pointer; }
+  .qedit-scope-btn.on { border-color: #5b6cff; background: #eef0ff; color: #4550cc; }
+  .qedit-scope-hint { font-size: 12px; color: #8a90ad; margin-top: 7px; line-height: 1.4; }
+  .qedit-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .qedit-cancel { flex: 0 0 auto; border: 2px solid #e6e8f0; background: #fff; color: #6a7088; font-weight: 800; font-size: 15px;
+    border-radius: 13px; padding: 12px 18px; cursor: pointer; }
+  .qedit-save { flex: 1 1 auto; border: none; border-radius: 13px; padding: 12px; font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.28); }
+  .qedit-save:active, .qedit-cancel:active { transform: scale(0.98); }
   .plan-box { max-width: 380px; width: 100%; }
   .plan-mark { text-align: center; font-size: 24px; font-weight: 800; color: #5b6cff; }
   .plan-day { text-align: center; color: #6a7088; font-weight: 600; font-size: 14px; margin: 2px 0 20px; }
@@ -2796,7 +2840,7 @@
   }
   /* Today's Thought as a soft cloud that drifts in and floats over the logo. */
   .welcome-cloud {
-    position: absolute; top: 8%; left: 50%;
+    position: absolute; top: 15%; left: 50%;
     transform: translate(-50%, 0); /* centered even when the animation is frozen */
     width: min(560px, 99vw); aspect-ratio: 300 / 158;
     z-index: 4; pointer-events: none;
@@ -3206,6 +3250,29 @@
       <div class="celebrate-title" id="celebrateTitle">Workout done!</div>
       <div class="celebrate-sub" id="celebrateSub"></div>
       <button class="celebrate-btn" onclick="closeCelebrate()">Nice! 🙌</button>
+    </div>
+  </div>
+
+  <!-- Quick edit: tap a routine card on Today's page to tweak its numbers on the spot. -->
+  <div class="qedit-overlay" id="qeditOverlay" onclick="if(event.target===this)qeditClose()">
+    <div class="qedit-card">
+      <div class="qedit-head">
+        <div class="qedit-title" id="qeditTitle">Edit routine</div>
+        <button class="qedit-x" onclick="qeditClose()" aria-label="Close">✕</button>
+      </div>
+      <div class="qedit-body" id="qeditBody"></div>
+      <div class="qedit-scope">
+        <div class="qedit-scope-label">Apply this change:</div>
+        <div class="qedit-scope-toggle">
+          <button type="button" class="qedit-scope-btn" data-scope="today" onclick="qeditSetScope('today')">Just for today</button>
+          <button type="button" class="qedit-scope-btn on" data-scope="always" onclick="qeditSetScope('always')">From now on</button>
+        </div>
+        <div class="qedit-scope-hint" id="qeditScopeHint"></div>
+      </div>
+      <div class="qedit-actions">
+        <button class="qedit-cancel" onclick="qeditClose()">Cancel</button>
+        <button class="qedit-save" onclick="qeditSave()">Save</button>
+      </div>
     </div>
   </div>
 
@@ -8472,6 +8539,133 @@
   // From Today's MOWES rest-day → jump to the picker on the day you're viewing.
   function sessionAddRoutine(){ openWeekPlanPage(sessionSelDay); }
   window.sessionAddRoutine = sessionAddRoutine;
+  // ---- Quick edit: tap a routine card on Today's page to tweak its numbers on the spot. ----
+  // "From now on" edits the saved routine; "Just for today" stores a one-day override that
+  // resets on its own tomorrow (Today's Session rebuilds from the saved routines each time).
+  const TODAY_OVR_KEY = "mowes_today_overrides_v1";
+  function todayDateKey(){ const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+  function loadTodayOvr(){
+    let o = null; try { o = JSON.parse(localStorage.getItem(TODAY_OVR_KEY) || "null"); } catch(e){ o = null; }
+    if (!o || o.date !== todayDateKey()){ o = { date: todayDateKey(), ovr: {} }; try { localStorage.setItem(TODAY_OVR_KEY, JSON.stringify(o)); } catch(e){} }
+    if (!o.ovr) o.ovr = {};
+    return o;
+  }
+  function todayOvrMap(){ return loadTodayOvr().ovr || {}; }
+  function setTodayOvr(id, details){ const o = loadTodayOvr(); o.ovr[id] = details; try { localStorage.setItem(TODAY_OVR_KEY, JSON.stringify(o)); } catch(e){} }
+  function clearTodayOvr(id){ const o = loadTodayOvr(); if (o.ovr && o.ovr[id] != null){ delete o.ovr[id]; try { localStorage.setItem(TODAY_OVR_KEY, JSON.stringify(o)); } catch(e){} } }
+
+  let qeditId = null, qeditMode = "reps", qeditScope = "always", qeditWorking = null;
+  function sessionEditRoutine(rid){
+    if (!rid || rid === "__warmup__" || rid === "__cooldown__") return;
+    if (rid.indexOf("lib:") === 0){
+      const rest = rid.slice(4), li = rest.lastIndexOf(":");
+      openQuickEdit(li >= 0 ? rest.slice(0, li) : rest);
+      return;
+    }
+    openLibraryPage(); // old sheet / starter session: edit it in the Library instead
+  }
+  window.sessionEditRoutine = sessionEditRoutine;
+
+  function openQuickEdit(id){
+    qeditId = id;
+    loadLibrary();
+    const r = (libraryRoutines || []).find(x => x && x.id === id);
+    if (!r){ openLibraryPage(); return; }
+    const ovr = todayOvrMap()[id];
+    qeditScope = ovr ? "today" : "always";              // if today already has an override, start there
+    qeditWorking = JSON.parse(JSON.stringify(ovr || r.details || {}));
+    qeditMode = (qeditWorking.time && qeditWorking.time.on) ? "time" : "reps";
+    document.getElementById("qeditTitle").textContent = r.name || "Edit routine";
+    syncQeditScope();
+    qeditRenderBody();
+    document.getElementById("qeditOverlay").classList.add("show");
+  }
+  window.openQuickEdit = openQuickEdit;
+
+  function qeditFldHtml(label, key, val, unit){
+    const v = (val == null) ? "" : val;
+    return '<label class="qedit-fld"><span>' + label + '</span><div class="qedit-inrow">'
+      + '<input type="number" min="0" step="any" inputmode="decimal" data-k="' + key + '" value="' + escapeHtml(v) + '" placeholder="—">'
+      + (unit ? '<span class="qedit-unit">' + escapeHtml(unit) + '</span>' : '') + '</div></label>';
+  }
+  function qeditRenderBody(){
+    const body = document.getElementById("qeditBody");
+    const det = qeditWorking || (qeditWorking = {});
+    if (qeditMode === "time"){
+      const rows = (det.time && det.time.rows) || [];
+      body.innerHTML = rows.map(function(row, i){
+        return '<div class="qedit-set" data-i="' + i + '"><div class="qedit-set-title">Part ' + (i+1) + '</div>'
+          + '<label class="qedit-fld" style="margin-bottom:8px"><span>Name (e.g. Run / Walk)</span><div class="qedit-inrow">'
+          + '<input type="text" data-k="label" value="' + escapeHtml(row.label || "") + '" placeholder="Run"></div></label>'
+          + '<div class="qedit-grid">' + qeditFldHtml("Time", "min", row.min, "min") + qeditFldHtml("Distance", "miles", row.miles, "mi") + '</div></div>';
+      }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddPart()">＋ Add part</button>';
+    } else {
+      if (!det.reps) det.reps = { sets: [] };
+      const wU = det.reps.weightUnit || "lbs", dU = det.reps.distUnit || "mi";
+      const sets = det.reps.sets || (det.reps.sets = []);
+      body.innerHTML = sets.map(function(s, i){
+        return '<div class="qedit-set" data-i="' + i + '"><div class="qedit-set-title">Set ' + (i+1) + '</div><div class="qedit-grid">'
+          + qeditFldHtml("Reps", "reps", s.reps, "")
+          + qeditFldHtml("Weight", "weight", s.weight, wU)
+          + qeditFldHtml("Time", "time", s.time, "min")
+          + qeditFldHtml("Distance", "distance", s.distance, dU)
+          + '</div></div>';
+      }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddSet()">＋ Add set</button>';
+    }
+  }
+  // Read the on-screen inputs back into the working copy (so typing survives Add/Save).
+  function qeditCollect(){
+    const body = document.getElementById("qeditBody");
+    if (!body) return;
+    const det = qeditWorking || (qeditWorking = {});
+    const cards = body.querySelectorAll(".qedit-set");
+    const grab = function(card, k){ const el = card.querySelector('[data-k="' + k + '"]'); return el ? el.value.trim() : ""; };
+    if (qeditMode === "time"){
+      const rows = [];
+      cards.forEach(function(c){ rows.push({ label: grab(c,"label"), min: grab(c,"min"), miles: grab(c,"miles"), done:false }); });
+      if (!det.time) det.time = { on:true, rows:[] };
+      det.time.on = true; det.time.rows = rows;
+    } else {
+      const sets = [];
+      cards.forEach(function(c){ sets.push({ reps: grab(c,"reps"), weight: grab(c,"weight"), time: grab(c,"time"), distance: grab(c,"distance"), done:false }); });
+      if (!det.reps) det.reps = {};
+      det.reps.on = true; det.reps.sets = sets;
+    }
+  }
+  function qeditAddSet(){ qeditCollect(); qeditWorking.reps.sets.push({ reps:"", weight:"", time:"", distance:"", done:false }); qeditRenderBody(); }
+  function qeditAddPart(){ qeditCollect(); if (!qeditWorking.time) qeditWorking.time = { on:true, rows:[] }; qeditWorking.time.rows.push({ label:"", min:"", miles:"", done:false }); qeditRenderBody(); }
+  window.qeditAddSet = qeditAddSet; window.qeditAddPart = qeditAddPart;
+  function qeditSetScope(scope){ qeditScope = (scope === "today") ? "today" : "always"; syncQeditScope(); }
+  window.qeditSetScope = qeditSetScope;
+  function syncQeditScope(){
+    document.querySelectorAll("#qeditOverlay .qedit-scope-btn").forEach(function(b){ b.classList.toggle("on", b.dataset.scope === qeditScope); });
+    const hint = document.getElementById("qeditScopeHint");
+    if (hint) hint.textContent = (qeditScope === "today")
+      ? "Only for today — tomorrow goes back to your saved routine."
+      : "Updates your saved routine, so every day uses these numbers.";
+  }
+  function qeditSave(){
+    qeditCollect();
+    const det = qeditWorking;
+    // Turn on any column the user actually filled, so the Library editor shows it too.
+    if (qeditMode !== "time" && det.reps){
+      const cols = det.reps.cols || (det.reps.cols = { reps:true, weight:false, time:false, distance:false });
+      ["reps","weight","time","distance"].forEach(function(k){ if ((det.reps.sets || []).some(function(s){ return s[k]; })) cols[k] = true; });
+    }
+    if (qeditScope === "today"){
+      setTodayOvr(qeditId, det);
+    } else {
+      loadLibrary();
+      const r = (libraryRoutines || []).find(function(x){ return x && x.id === qeditId; });
+      if (r){ r.details = det; saveLibrary(); }
+      clearTodayOvr(qeditId); // a permanent edit supersedes any leftover just-for-today tweak
+    }
+    qeditClose();
+    if (typeof renderSession === "function") renderSession();
+  }
+  window.qeditSave = qeditSave;
+  function qeditClose(){ const el = document.getElementById("qeditOverlay"); if (el) el.classList.remove("show"); qeditId = null; qeditWorking = null; }
+  window.qeditClose = qeditClose;
   // The ⚙️ gear tucks the 4 pacing settings away; tap to show/hide them.
   function toggleSessionSettings(){
     const inner = document.querySelector(".session-inner");
@@ -8814,9 +9008,13 @@
     // PICKED for it in My Weekly Plan. A day with nothing picked = a rest day (no steps).
     if (lib.length){
       const sel = loadWeekSel();
+      // "Just for today" tweaks only apply to the real today (the day you're actually on).
+      const ovr = (sessionDayOffset === 0) ? todayOvrMap() : null;
       (sel[day] || []).forEach((id, ri) => {
-        const r = lib.find(x => x.id === id);
-        if (r) routineToSteps(r, "lib:" + id + ":" + ri).forEach(s => steps.push(s));
+        let r = lib.find(x => x.id === id);
+        if (!r) return;
+        if (ovr && ovr[id]) r = Object.assign({}, r, { details: ovr[id] });
+        routineToSteps(r, "lib:" + id + ":" + ri).forEach(s => steps.push(s));
       });
       // Fresh start: routines exist but the whole week is still unassigned. Rather than
       // a dead "Nothing set yet" screen, drop in the ready starter so today runs. Once
@@ -9138,9 +9336,14 @@
         nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.label || st.name);
         detailLine = st.detail || "";
       }
-      const rowHtml = '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
+      // Warm-up / cool-down are fixed moves; every other card taps open to edit its routine.
+      const editable = (st.type !== "warmup" && st.type !== "cooldown");
+      const mainAttr = editable
+        ? ' class="session-step-main tappable" title="Tap to edit this routine" onclick="sessionEditRoutine(\'' + st.rid + '\')"'
+        : ' class="session-step-main"';
+      const rowHtml = '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div' + mainAttr + '>'
         + (tagLine ? '<div class="session-step-tag">' + escapeHtml(tagLine) + '</div>' : '')
-        + '<div class="session-step-name">' + nameLine + '</div>'
+        + '<div class="session-step-name">' + nameLine + (editable ? ' <span class="session-step-edit">✏️</span>' : '') + '</div>'
         + (detailLine ? '<div class="session-step-detail">' + escapeHtml(detailLine) + '</div>' : '') + '</div>'
         + '<div class="session-step-tools">'
         + (allDone ? '' : '<button class="session-howto session-skip" title="Skip this today" onclick="sessionSkipStep(' + i + ')">⏭</button>')
