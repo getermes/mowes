@@ -2464,6 +2464,7 @@
     padding: 8px 13px; font-size: 12.5px; font-weight: 800; cursor: pointer; line-height: 1; white-space: nowrap;
     background: transparent; color: #b6bcd6; box-shadow: none; opacity: 0.85; transition: background .2s, color .2s, opacity .2s; }
   .session-inner.rest-mode .session-flank { display: none; }  /* no warm-up/cool-down on a rest day */
+  .session-inner.running .session-flank { display: none; }    /* once you punch the sun, tuck them away for room */
   .session-flank.warmup { left: 12px; }
   .session-flank.cooldown { right: 12px; }
   .session-flank.warmup.on { background: #FBDCD8; color: #d24a42; }
@@ -9240,13 +9241,17 @@
   function renderSession(){
     // Top line: "Today" on the current day, or that day's date when you page back/forward.
     const todayLineEl = document.getElementById("sessionTodayLine");
-    if (todayLineEl) todayLineEl.textContent = (sessionDayOffset === 0) ? "Today" : sessionDateStr();
+    if (todayLineEl){
+      todayLineEl.textContent = (sessionDayOffset === 0) ? "Today" : sessionDateStr();
+      // On today, the day strip already spotlights "Wednesday", so drop the label for room.
+      todayLineEl.style.display = (sessionDayOffset === 0) ? "none" : "block";
+    }
     renderDayStrip();
     sessionStepsArr = sessionStepsFor(sessionSelDay);
     const list = document.getElementById("sessionList"), btn = document.getElementById("sessionStartBtn");
     const innerEl = document.querySelector(".session-inner");
     if (!sessionStepsArr.length){
-      if (innerEl) innerEl.classList.add("rest-mode");
+      if (innerEl){ innerEl.classList.add("rest-mode"); innerEl.classList.remove("running"); }
       if (list){
         const rest = isPlannedRestDay(sessionSelDay);
         // On a real rest day, add a tappable nudge to the next day that has a workout.
@@ -9280,6 +9285,7 @@
     // A session is "active" once you've started and before you finish — this stays true
     // even while PAUSED, so the blue area stays put in the list instead of collapsing.
     const sessionActive = sessionIdx >= 0 && sessionIdx < sessionStepsArr.length;
+    if (innerEl) innerEl.classList.toggle("running", sessionActive);  // hide warm-up/cool-down once punched
     // One line PER EXERCISE: collapse an exercise's sets (same rid + name) into a single
     // row that reads "3 Set, 10 Rep, 7 lbs". Warm-up/cool-down/cardio stay one row each.
     // Buckets so the running card can lock right under the sun: done-deck → now → upcoming.
@@ -9355,15 +9361,15 @@
       exNum++;
       i = j + 1;
     }
-    // Done routines collapse into a playing-card stack at the top (tap to expand);
-    // then the magnified running card, then what's coming next.
+    // Done routines collapse into a playing-card stack (tap to expand). While a workout
+    // is running it sits BELOW the magnified running card so the running card rides up top.
     let deckHtml = "";
     if (doneList.length){
       deckHtml = doneDeckOpen
         ? ('<button type="button" class="done-deck-open" onclick="toggleDoneDeck()">▾ ' + doneList.length + ' done — tap to hide</button>' + doneHtml)
         : buildDoneDeck(doneList);
     }
-    let html = sessionActive ? (deckHtml + nowHtml + upcomingHtml + skippedHtml)
+    let html = sessionActive ? (nowHtml + deckHtml + upcomingHtml + skippedHtml)
                              : (deckHtml + upcomingHtml + skippedHtml);
     // When you're not mid-workout there's no inline blue area, so keep one empty
     // #sessionNow at the top — the finish "🎉 Done!" banner fills it in.
