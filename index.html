@@ -2437,7 +2437,7 @@
     background: transparent; color: #b6bcd6; box-shadow: none; opacity: 0.85; transition: background .2s, color .2s, opacity .2s; }
   .session-flank.warmup { left: 12px; }
   .session-flank.cooldown { right: 12px; }
-  .session-flank.warmup.on { background: linear-gradient(135deg, #FFC24D, #FF9E33); color: #6a3d00; }
+  .session-flank.warmup.on { background: linear-gradient(135deg, #FF8E8E, #E5544D); color: #fff; }
   .session-flank.cooldown.on { background: linear-gradient(135deg, #7fd7b4, #37b98a); color: #0c5a3e; }
   .session-flank:active { transform: scale(0.95); }
   .session-todayline { text-align: center; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #9096ad; margin-bottom: 2px; }
@@ -2457,7 +2457,10 @@
     font-size: 15px; font-weight: 700; color: #b6bcd6;
     transition: color .3s ease, font-size .3s ease;
   }
-  .sd-day.on { font-size: 22px; font-weight: 900; color: #3a4066; }
+  .sd-day.on { font-size: 25px; font-weight: 900; letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #6a7bff 0%, #a06bff 55%, #ff8ac0 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+    filter: drop-shadow(0 2px 3px rgba(122,91,255,0.28)); }
   /* The 4 pacing settings stay tucked away until the ⚙️ gear opens them. */
   .session-settings { display: none; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: 16px; margin-bottom: 4px; font-size: 12.5px; color: #6a7088; }
   .session-inner.settings-open .session-settings { display: flex; margin-top: 14px; }
@@ -2530,6 +2533,10 @@
   .session-gps-btn:active { transform: scale(0.98); }
   .session-gps-btn.stop { background: rgba(255,255,255,0.18); color: #fff; box-shadow: none; }
   .session-step { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 7px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  /* Phase colors: warm-up = light red (heating up), main = light yellow, cool-down = light green. */
+  .session-step.s-warm { background: #FDEBE9; }
+  .session-step.s-main { background: #FFF8DA; }
+  .session-step.s-cool { background: #EAF7F0; }
   .session-step.current { border: 2px solid #5b6cff; }
   /* Finished routines live in the done-deck; when expanded they list plainly. */
   .session-step.done { opacity: 0.72; }
@@ -2548,7 +2555,11 @@
     color: #5b6cff; font-weight: 800; font-size: 13px; border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; cursor: pointer; }
   .session-step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
   .session-step-main { flex: 1 1 auto; min-width: 0; }
-  .session-step-name { font-weight: 800; color: #3a4066; font-size: 14px; }
+  .session-step-tag { font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #9aa0b5; margin-bottom: 1px; }
+  .session-step.s-warm .session-step-tag { color: #d9534f; }
+  .session-step.s-cool .session-step-tag { color: #2fa36b; }
+  .session-step.s-main .session-step-tag { color: #c98a1a; }
+  .session-step-name { font-weight: 800; color: #3a4066; font-size: 15px; }
   .session-step-detail { font-size: 12.5px; color: #8a90ad; margin-top: 1px; }
   /* Right-side tools (video / how-to / skip) stacked vertically, one on top of the other. */
   .session-step-tools { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -8856,8 +8867,9 @@
         i = j + 1;
         continue;
       }
-      const cls = "session-step" + (allDone ? " done" : "") + (isCurrent ? " current" : "");
-      let nameLine, detailLine;
+      const cls = "session-step" + (allDone ? " done" : "") + (isCurrent ? " current" : "")
+        + (st.type === "warmup" ? " s-warm" : (st.type === "cooldown" ? " s-cool" : " s-main"));
+      let nameLine, detailLine, tagLine = "";
       if (groupable){
         nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
         const unitLbl = (st.kind === "laps") ? "Lap" : "Rep";
@@ -8866,10 +8878,12 @@
         if (isCurrent) detailLine += " · set " + Math.min(total, sessionIdx - i + 1) + "/" + total;
         else if (doneSets > 0) detailLine += " · " + doneSets + "/" + total;
       } else {
-        nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
+        tagLine = st.label; // small caps type header (WARM-UP / COOL-DOWN / RUN / WALK)
+        nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
         detailLine = st.detail || "";
       }
       const rowHtml = '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
+        + (tagLine ? '<div class="session-step-tag">' + escapeHtml(tagLine) + '</div>' : '')
         + '<div class="session-step-name">' + nameLine + '</div>'
         + (detailLine ? '<div class="session-step-detail">' + escapeHtml(detailLine) + '</div>' : '') + '</div>'
         + '<div class="session-step-tools">'
