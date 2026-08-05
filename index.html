@@ -2437,8 +2437,8 @@
     background: transparent; color: #b6bcd6; box-shadow: none; opacity: 0.85; transition: background .2s, color .2s, opacity .2s; }
   .session-flank.warmup { left: 12px; }
   .session-flank.cooldown { right: 12px; }
-  .session-flank.warmup.on { background: linear-gradient(135deg, #FF8E8E, #E5544D); color: #fff; }
-  .session-flank.cooldown.on { background: linear-gradient(135deg, #7fd7b4, #37b98a); color: #0c5a3e; }
+  .session-flank.warmup.on { background: #FBDCD8; color: #d24a42; }
+  .session-flank.cooldown.on { background: #DBF1E5; color: #2a9d6f; }
   .session-flank:active { transform: scale(0.95); }
   .session-todayline { text-align: center; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #9096ad; margin-bottom: 2px; }
   /* Sliding day strip: today spotlighted in the center, neighbors faded at the edges. */
@@ -2568,9 +2568,8 @@
   .session-start { position: relative; display: block; width: 190px; height: 190px;
     margin: 10px auto 20px; padding: 0; border: none; background: none; cursor: pointer;
     -webkit-tap-highlight-color: transparent; }
-  .session-start .sun-rays { position: absolute; inset: 0; border-radius: 50%;
-    background: repeating-conic-gradient(from 0deg, #F7D3A6 0deg 6deg, transparent 6deg 20deg);
-    opacity: 0.7; }
+  .session-start .sun-rays { position: absolute; inset: 0; opacity: 0.7; color: #F7D3A6; }
+  .session-start .sun-rays svg { display: block; width: 100%; height: 100%; }
   .session-start .sun-face { position: absolute; inset: 24px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     background: radial-gradient(circle at 36% 30%, #FFD3AE, #F5A985 72%, #EDA07C);
@@ -2580,17 +2579,17 @@
     text-shadow: 0 1px 4px rgba(150,80,40,0.22); }
   .session-start:active { transform: scale(0.95); }
   /* Sun status light: red=ready, yellow=going, green=paused (rest), gold=done. */
-  .session-start.ready .sun-rays { opacity: 1; background: repeating-conic-gradient(from 0deg, #EE6A62 0deg 8deg, transparent 8deg 20deg); }
+  .session-start.ready .sun-rays { opacity: 1; color: #EE6A62; }
   .session-start.ready .sun-face { background: radial-gradient(circle at 36% 30%, #FF8E8E, #E5544D 70%, #D63B3F); }
   .session-start.ready .sun-face > span { color: rgba(255,246,240,0.8); text-shadow: 0 1px 3px rgba(120,20,20,0.22); }
   /* Only the GOING sun moves — it stays still until you punch it. */
-  .session-start.going .sun-rays { opacity: 1; background: repeating-conic-gradient(from 0deg, #FF9E33 0deg 8deg, transparent 8deg 20deg); animation: sunSpin 20s linear infinite; }
+  .session-start.going .sun-rays { opacity: 1; color: #FF9E33; animation: sunSpin 20s linear infinite; }
   .session-start.going .sun-face { background: radial-gradient(circle at 36% 30%, #FFF2C4, #FFD972 70%, #F8CB4A); animation: sunPulse 2.6s ease-in-out infinite; }
   .session-start.going .sun-face > span { color: #7a4a00; text-shadow: 0 1px 3px rgba(255,255,255,0.35); }
-  .session-start.paused .sun-rays { opacity: 1; background: repeating-conic-gradient(from 0deg, #4FC79A 0deg 8deg, transparent 8deg 20deg); }
+  .session-start.paused .sun-rays { opacity: 1; color: #4FC79A; }
   .session-start.paused .sun-face { background: radial-gradient(circle at 36% 30%, #86DBB8, #37B98A 70%, #2AA77B); }
   .session-start.paused .sun-face > span { color: #0b573b; text-shadow: 0 1px 3px rgba(255,255,255,0.3); }
-  .session-start.done .sun-rays { opacity: 1; background: repeating-conic-gradient(from 0deg, #F5B60F 0deg 8deg, transparent 8deg 20deg); }
+  .session-start.done .sun-rays { opacity: 1; color: #F5B60F; }
   .session-start.done .sun-face { background: radial-gradient(circle at 36% 30%, #FFE07A, #F2B310 70%, #E0A000); }
   .session-start.done .sun-face > span { color: #6e4d00; text-shadow: 0 1px 3px rgba(255,255,255,0.4); }
   @keyframes sunSpin { to { transform: rotate(360deg); } }
@@ -8596,6 +8595,22 @@
   function sessionToggleWarmup(){ sessionWarmupOn = !sessionWarmupOn; sessionPersistSettings(); syncFlankBtns(); if (!sessionRunning) renderSession(); }
   function sessionToggleCooldown(){ sessionCooldownOn = !sessionCooldownOn; sessionPersistSettings(); syncFlankBtns(); if (!sessionRunning) renderSession(); }
   window.sessionToggleWarmup = sessionToggleWarmup; window.sessionToggleCooldown = sessionToggleCooldown;
+  // Build the sun's pointy rays as an SVG star (fill follows the state color).
+  function buildSunRays(){
+    const span = document.querySelector(".session-start .sun-rays");
+    if (!span || span.querySelector("svg")) return;
+    const spikes = 18, outer = 50, inner = 35, cx = 50, cy = 50, pts = [];
+    for (let i = 0; i < spikes * 2; i++){
+      const r = (i % 2 === 0) ? outer : inner;
+      const a = (Math.PI / spikes) * i - Math.PI / 2;
+      pts.push((cx + r * Math.cos(a)).toFixed(2) + "," + (cy + r * Math.sin(a)).toFixed(2));
+    }
+    span.innerHTML = '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'
+      + '<defs><radialGradient id="sunRayGrad" cx="50%" cy="50%" r="50%">'
+      + '<stop offset="0.66" stop-color="currentColor"/><stop offset="1" stop-color="#FFCF3E"/>'
+      + '</radialGradient></defs>'
+      + '<polygon points="' + pts.join(" ") + '" fill="url(#sunRayGrad)"/></svg>';
+  }
   // Brand-new user's ready-made session: the exercises they picked in the guided
   // start, already filled in with example sets — so they can just follow along and
   // tweak later, instead of having to type reps/weight before anything works.
@@ -9238,6 +9253,7 @@
     renderSession();
     document.getElementById("sessionOverlay").classList.add("show");
     renderPageBar();
+    buildSunRays();
     // Center the day strip now that the page is visible (no slide on first show).
     requestAnimationFrame(function(){
       const row = document.getElementById("sessionDayRow");
