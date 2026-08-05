@@ -8877,9 +8877,15 @@
         if (st.weight > 0) detailLine += ", " + st.weight + " " + (st.weightUnit || "lbs");
         if (isCurrent) detailLine += " · set " + Math.min(total, sessionIdx - i + 1) + "/" + total;
         else if (doneSets > 0) detailLine += " · " + doneSets + "/" + total;
-      } else {
-        tagLine = st.label; // small caps type header (WARM-UP / COOL-DOWN / RUN / WALK)
+      } else if (st.type === "warmup" || st.type === "cooldown") {
+        tagLine = st.label; // WARM-UP / COOL-DOWN header, exercise name below
         nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
+        detailLine = st.detail || "";
+      } else {
+        // Cardio intervals (e.g. Run & Walk): routine name is the small header, the
+        // interval (Run / Walk) is the big name.
+        tagLine = st.name;
+        nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.label || st.name);
         detailLine = st.detail || "";
       }
       const rowHtml = '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
