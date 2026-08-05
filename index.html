@@ -2430,7 +2430,16 @@
   .session-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .session-overlay.show { display: block; }
-  .session-inner { max-width: 420px; margin: 0 auto; padding: 30px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; }
+  .session-inner { max-width: 420px; margin: 0 auto; padding: 30px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; position: relative; }
+  /* Warm-up / Cool-down as small on-off buttons flanking the sun (top corners). */
+  .session-flank { position: absolute; top: 104px; z-index: 6; border: none; border-radius: 999px;
+    padding: 8px 13px; font-size: 12.5px; font-weight: 800; cursor: pointer; line-height: 1; white-space: nowrap;
+    background: transparent; color: #b6bcd6; box-shadow: none; opacity: 0.85; transition: background .2s, color .2s, opacity .2s; }
+  .session-flank.warmup { left: 12px; }
+  .session-flank.cooldown { right: 12px; }
+  .session-flank.warmup.on { background: linear-gradient(135deg, #FFC24D, #FF9E33); color: #6a3d00; }
+  .session-flank.cooldown.on { background: linear-gradient(135deg, #7fd7b4, #37b98a); color: #0c5a3e; }
+  .session-flank:active { transform: scale(0.95); }
   .session-todayline { text-align: center; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #9096ad; margin-bottom: 2px; }
   /* Sliding day strip: today spotlighted in the center, neighbors faded at the edges. */
   .session-daystrip {
@@ -2457,14 +2466,32 @@
   .session-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4a5068; font-weight: 600; cursor: pointer; }
   .session-toggle input { width: 18px; height: 18px; accent-color: #5b6cff; cursor: pointer; }
   .session-now { text-align: center; min-height: 10px; margin-bottom: 10px; }
-  .session-now.on { min-height: auto; background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-radius: 18px; padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 22px rgba(91,108,255,0.28); }
-  .session-now-name { font-size: 18px; font-weight: 900; text-align: left; }
-  .session-now-detail { font-size: 14px; opacity: 0.92; margin-top: 3px; }
-  .session-now-timer { font-size: 44px; font-weight: 900; line-height: 1.1; margin-top: 6px; }
+  /* Spotlight zoom: the current exercise swells in; the finished one shrinks away. */
+  .session-now.on.zoom-in { animation: nowZoomIn 0.42s cubic-bezier(.2,.7,.3,1.15) both; }
+  @keyframes nowZoomIn { 0% { transform: scale(0.72); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  .session-now-ghost { position: fixed; z-index: 12000; pointer-events: none; transform-origin: center center;
+    animation: nowZoomOut 0.34s cubic-bezier(.4,0,.6,1) forwards; }
+  @keyframes nowZoomOut { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.66); opacity: 0; } }
+  /* Coach cloud: the same soft cloud floats in mid-workout with a push, then drifts away. */
+  .coach-cloud { position: fixed; top: 15%; left: 50%; width: min(340px, 88vw); aspect-ratio: 300 / 180;
+    transform: translate(-50%, -12px); z-index: 11000; pointer-events: none; opacity: 0;
+    filter: drop-shadow(0 12px 20px rgba(91,108,255,0.22));
+    transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.3,1.1); }
+  .coach-cloud.show { opacity: 1; transform: translate(-50%, 0); }
+  .coach-cloud.leaving { opacity: 0; transform: translate(-46%, -26px);
+    transition: opacity .6s ease, transform .6s ease; }
+  .coach-cloud-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .coach-cloud-text { position: absolute; left: 16%; right: 16%; top: 52%; transform: translateY(-50%);
+    text-align: center; font-size: 18px; line-height: 1.25; font-weight: 800; color: #3a4060; }
+  .session-now.on { min-height: auto; background: linear-gradient(135deg, #FFC08A, #F4977C); color: #fff; border-radius: 18px; padding: 18px; margin-bottom: 14px;
+    box-shadow: 0 0 0 5px rgba(255,201,74,0.95), 0 0 0 8px rgba(255,158,51,0.5), 0 0 44px 12px rgba(255,150,60,0.6), 0 12px 28px rgba(240,150,110,0.3); }
+  .session-now-name { font-size: 27px; font-weight: 900; text-align: center; line-height: 1.15; }
+  .session-now-detail { font-size: 15px; opacity: 0.92; margin-top: 4px; text-align: center; }
+  .session-now-timer { font-size: 62px; font-weight: 900; line-height: 1.05; margin-top: 8px; text-align: center; }
   /* The "Set 2 of 3" line as a bold pill so it stands out inside the blue area. */
   .session-now-set { display: inline-block; margin-top: 10px; padding: 5px 15px; border-radius: 999px;
     background: rgba(255,255,255,0.20); font-size: 15px; font-weight: 800; letter-spacing: 0.2px; }
-  .session-now-timer.session-rep { font-size: 54px; margin-top: 8px; }
+  .session-now-timer.session-rep { font-size: 70px; margin-top: 8px; }
   .session-now-timer.session-rep .rep-of { font-size: 0.34em; font-weight: 800; color: rgba(255,255,255,0.9); }
   /* The action button (Pause / Done / Lap) lives INSIDE the blue area, bottom-right,
      so it's always right under your thumb — no scrolling up to the top button. */
@@ -2504,8 +2531,21 @@
   .session-gps-btn.stop { background: rgba(255,255,255,0.18); color: #fff; box-shadow: none; }
   .session-step { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 7px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
   .session-step.current { border: 2px solid #5b6cff; }
-  .session-step.done { opacity: 0.55; }
-  .session-step.done .session-step-name { text-decoration: line-through; }
+  /* Finished routines live in the done-deck; when expanded they list plainly. */
+  .session-step.done { opacity: 0.72; }
+  .session-step.done .session-step-name { text-decoration: line-through; font-size: 13.5px; }
+  .session-step.done .session-step-detail, .session-step.done .session-step-tools { display: none; }
+  /* The done "playing card" stack: one card on top, a thin edge per routine behind it. */
+  .done-deck { position: relative; margin: 34px 0 16px; cursor: pointer; }
+  .done-deck-top { position: relative; z-index: 20; display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #FFE7A0, #FFD25C); border-radius: 12px; padding: 12px 14px; box-shadow: 0 5px 14px rgba(240,180,40,0.32); }
+  .done-deck-check { font-size: 17px; flex: 0 0 auto; }
+  .done-deck-label { flex: 1; min-width: 0; font-size: 14px; color: #7a5200; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .done-deck-label b { color: #5a3d00; }
+  .done-deck-caret { color: #b58a2a; font-weight: 900; flex: 0 0 auto; }
+  .done-deck-edge { position: absolute; height: 14px; background: #FBE3A0; border-radius: 10px; box-shadow: 0 3px 8px rgba(200,150,30,0.16); }
+  .done-deck-open { display: block; width: 100%; text-align: left; border: none; background: #eef0fb;
+    color: #5b6cff; font-weight: 800; font-size: 13px; border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; cursor: pointer; }
   .session-step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
   .session-step-main { flex: 1 1 auto; min-width: 0; }
   .session-step-name { font-weight: 800; color: #3a4066; font-size: 14px; }
@@ -2514,21 +2554,34 @@
   .session-step-tools { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .session-step-tools .session-howto { width: 30px; height: 30px; font-size: 15px; }
   /* The Start button is a glowing sun — spinning rays + a warm face with a short word. */
-  .session-start { position: relative; display: block; width: 152px; height: 152px;
-    margin: 6px auto 16px; padding: 0; border: none; background: none; cursor: pointer;
+  .session-start { position: relative; display: block; width: 190px; height: 190px;
+    margin: 10px auto 20px; padding: 0; border: none; background: none; cursor: pointer;
     -webkit-tap-highlight-color: transparent; }
   .session-start .sun-rays { position: absolute; inset: 0; border-radius: 50%;
     background: repeating-conic-gradient(from 0deg, #F7D3A6 0deg 6deg, transparent 6deg 20deg);
-    opacity: 0.7; animation: sunSpin 20s linear infinite; }
-  .session-start .sun-face { position: absolute; inset: 18px; border-radius: 50%;
+    opacity: 0.7; }
+  .session-start .sun-face { position: absolute; inset: 24px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     background: radial-gradient(circle at 36% 30%, #FFD3AE, #F5A985 72%, #EDA07C);
-    box-shadow: 0 8px 20px rgba(230,150,110,0.28), inset 0 2px 8px rgba(255,255,255,0.5);
-    animation: sunPulse 2.6s ease-in-out infinite; }
-  .session-start .sun-face > span { color: #fff; font-weight: 800; font-size: 20px; line-height: 1.08;
-    letter-spacing: 0.5px; padding: 0 12px; text-transform: uppercase;
-    text-shadow: 0 1px 2px rgba(150,85,45,0.35); }
+    box-shadow: 0 8px 20px rgba(230,150,110,0.28), inset 0 2px 8px rgba(255,255,255,0.5); }
+  .session-start .sun-face > span { color: #fff; font-weight: 700; font-size: 20px; line-height: 1.2;
+    letter-spacing: 0.2px; padding: 0 16px;
+    text-shadow: 0 1px 4px rgba(150,80,40,0.22); }
   .session-start:active { transform: scale(0.95); }
+  /* Sun status light: red=ready, yellow=going, green=paused (rest), gold=done. */
+  .session-start.ready .sun-rays { opacity: 1; background: repeating-conic-gradient(from 0deg, #EE6A62 0deg 8deg, transparent 8deg 20deg); }
+  .session-start.ready .sun-face { background: radial-gradient(circle at 36% 30%, #FF8E8E, #E5544D 70%, #D63B3F); }
+  .session-start.ready .sun-face > span { color: rgba(255,246,240,0.8); text-shadow: 0 1px 3px rgba(120,20,20,0.22); }
+  /* Only the GOING sun moves — it stays still until you punch it. */
+  .session-start.going .sun-rays { opacity: 1; background: repeating-conic-gradient(from 0deg, #FF9E33 0deg 8deg, transparent 8deg 20deg); animation: sunSpin 20s linear infinite; }
+  .session-start.going .sun-face { background: radial-gradient(circle at 36% 30%, #FFF2C4, #FFD972 70%, #F8CB4A); animation: sunPulse 2.6s ease-in-out infinite; }
+  .session-start.going .sun-face > span { color: #7a4a00; text-shadow: 0 1px 3px rgba(255,255,255,0.35); }
+  .session-start.paused .sun-rays { opacity: 1; background: repeating-conic-gradient(from 0deg, #4FC79A 0deg 8deg, transparent 8deg 20deg); }
+  .session-start.paused .sun-face { background: radial-gradient(circle at 36% 30%, #86DBB8, #37B98A 70%, #2AA77B); }
+  .session-start.paused .sun-face > span { color: #0b573b; text-shadow: 0 1px 3px rgba(255,255,255,0.3); }
+  .session-start.done .sun-rays { opacity: 1; background: repeating-conic-gradient(from 0deg, #F5B60F 0deg 8deg, transparent 8deg 20deg); }
+  .session-start.done .sun-face { background: radial-gradient(circle at 36% 30%, #FFE07A, #F2B310 70%, #E0A000); }
+  .session-start.done .sun-face > span { color: #6e4d00; text-shadow: 0 1px 3px rgba(255,255,255,0.4); }
   @keyframes sunSpin { to { transform: rotate(360deg); } }
   @keyframes sunPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
   .session-surprise {
@@ -3022,12 +3075,10 @@
       </div>
       <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">
         <span class="sun-rays"></span>
-        <span class="sun-face"><span id="sessionStartLabel">To the finish line</span></span>
+        <span class="sun-face"><span id="sessionStartLabel">Punch it!</span></span>
       </button>
-      <div class="session-toggles">
-        <label class="session-toggle"><input type="checkbox" id="sessionWarmup" onchange="sessionSaveSettings()"> 🤸 Warm-up first</label>
-        <label class="session-toggle"><input type="checkbox" id="sessionCooldown" onchange="sessionSaveSettings()"> 🧘 Cool-down after</label>
-      </div>
+      <button type="button" class="session-flank warmup" id="sessionWarmupBtn" onclick="sessionToggleWarmup()">🤸 Warm-up</button>
+      <button type="button" class="session-flank cooldown" id="sessionCooldownBtn" onclick="sessionToggleCooldown()">🧘 Cool-down</button>
       <div id="sessionList"></div>
       <!-- Two square buttons joined by a bar: Settings (tucks the pacing away) + Add a Routine -->
       <div class="session-actions" id="sessionActions">
@@ -8362,6 +8413,51 @@
   // forward/backward across weeks instead of wrapping inside the current week.
   let sessionDayOffset = 0;
   let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
+  let sessionLastNowKey = ""; // tracks which step is spotlighted, so the zoom only plays on a change
+  let sessionHalfShown = false, coachCloudTimer = null; // halfway coach-cloud push
+  let doneDeckOpen = false; // the done routines: collapsed playing-card stack vs. expanded list
+  // The finished routines as a "playing card" stack: top card fully shown, a thin
+  // edge-line peeking behind for each one under it. Always ~one card of space.
+  function buildDoneDeck(list){
+    const n = list.length, top = list[n - 1];
+    let edges = "";
+    const maxE = Math.min(n - 1, 6);
+    for (let e = 0; e < maxE; e++){
+      const inset = 9 + e * 5;
+      edges += '<div class="done-deck-edge" style="top:-' + (6 + e * 5) + 'px;left:' + inset + 'px;right:' + inset + 'px;z-index:' + (10 - e) + ';"></div>';
+    }
+    return '<div class="done-deck" onclick="toggleDoneDeck()">' + edges
+      + '<div class="done-deck-top"><span class="done-deck-check">🎉</span>'
+      + '<span class="done-deck-label"><b>' + n + ' done</b> — great work!</span>'
+      + '<span class="done-deck-caret">▸</span></div></div>';
+  }
+  function toggleDoneDeck(){ doneDeckOpen = !doneDeckOpen; renderSession(); }
+  window.toggleDoneDeck = toggleDoneDeck;
+  function showCoachCloud(msg){
+    let el = document.getElementById("coachCloud");
+    if (!el){
+      el = document.createElement("div");
+      el.id = "coachCloud"; el.className = "coach-cloud";
+      el.innerHTML = '<svg class="coach-cloud-svg" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+        + '<g fill="#ffffff"><rect x="38" y="74" width="224" height="86" rx="43"/><circle cx="150" cy="74" r="66"/>'
+        + '<circle cx="86" cy="94" r="48"/><circle cx="214" cy="94" r="48"/><circle cx="58" cy="120" r="34"/><circle cx="242" cy="120" r="34"/></g></svg>'
+        + '<div class="coach-cloud-text" id="coachCloudText"></div>';
+      document.body.appendChild(el);
+    }
+    const t = document.getElementById("coachCloudText");
+    if (t) t.textContent = msg;
+    el.classList.remove("leaving", "show"); void el.offsetWidth; // restart the drift-in
+    el.classList.add("show");
+    if (coachCloudTimer) clearTimeout(coachCloudTimer);
+    coachCloudTimer = setTimeout(hideCoachCloud, 3400);
+  }
+  function hideCoachCloud(){
+    const el = document.getElementById("coachCloud");
+    if (!el) return;
+    if (coachCloudTimer){ clearTimeout(coachCloudTimer); coachCloudTimer = null; }
+    el.classList.add("leaving"); el.classList.remove("show");
+    setTimeout(function(){ if (el) el.classList.remove("leaving"); }, 700);
+  }
   let sessionPaceVal = 3, sessionRestVal = 5, sessionExRestVal = 15, sessionTypeRestVal = 20, sessionRestMsg = "Rest";
   let sessionWarmupOn = true, sessionCooldownOn = true;
   // Down-time ticker: while you rest between steps, this rotates short "what's
@@ -8467,8 +8563,7 @@
     try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; if (s.typerest != null) sessionTypeRestVal = +s.typerest; if (s.warmup != null) sessionWarmupOn = !!s.warmup; if (s.cooldown != null) sessionCooldownOn = !!s.cooldown; } catch(e){}
     const p = document.getElementById("sessionPace"), r = document.getElementById("sessionRest"), e = document.getElementById("sessionExRest"), tp = document.getElementById("sessionTypeRest");
     if (p) p.value = sessionPaceVal; if (r) r.value = sessionRestVal; if (e) e.value = sessionExRestVal; if (tp) tp.value = sessionTypeRestVal;
-    const wu = document.getElementById("sessionWarmup"), cd = document.getElementById("sessionCooldown");
-    if (wu) wu.checked = sessionWarmupOn; if (cd) cd.checked = sessionCooldownOn;
+    syncFlankBtns();
   }
   function sessionSaveSettings(){
     const p = parseFloat(document.getElementById("sessionPace").value), r = parseInt(document.getElementById("sessionRest").value, 10), e = parseInt(document.getElementById("sessionExRest").value, 10), tp = parseInt(document.getElementById("sessionTypeRest").value, 10);
@@ -8479,6 +8574,17 @@
     // Rebuild so warm-up/cool-down appear or disappear immediately (only when not mid-run).
     if (!sessionRunning) renderSession();
   }
+  function sessionPersistSettings(){
+    try { localStorage.setItem("mowes_session_settings_v1", JSON.stringify({ pace: sessionPaceVal, rest: sessionRestVal, exrest: sessionExRestVal, typerest: sessionTypeRestVal, warmup: sessionWarmupOn, cooldown: sessionCooldownOn })); } catch(e){}
+  }
+  function syncFlankBtns(){
+    const wb = document.getElementById("sessionWarmupBtn"), cb = document.getElementById("sessionCooldownBtn");
+    if (wb) wb.classList.toggle("on", sessionWarmupOn);
+    if (cb) cb.classList.toggle("on", sessionCooldownOn);
+  }
+  function sessionToggleWarmup(){ sessionWarmupOn = !sessionWarmupOn; sessionPersistSettings(); syncFlankBtns(); if (!sessionRunning) renderSession(); }
+  function sessionToggleCooldown(){ sessionCooldownOn = !sessionCooldownOn; sessionPersistSettings(); syncFlankBtns(); if (!sessionRunning) renderSession(); }
+  window.sessionToggleWarmup = sessionToggleWarmup; window.sessionToggleCooldown = sessionToggleCooldown;
   // Brand-new user's ready-made session: the exercises they picked in the guided
   // start, already filled in with example sets — so they can just follow along and
   // tweak later, instead of having to type reps/weight before anything works.
@@ -8717,7 +8823,8 @@
     const sessionActive = sessionIdx >= 0 && sessionIdx < sessionStepsArr.length;
     // One line PER EXERCISE: collapse an exercise's sets (same rid + name) into a single
     // row that reads "3 Set, 10 Rep, 7 lbs". Warm-up/cool-down/cardio stay one row each.
-    let html = "";
+    // Buckets so the running card can lock right under the sun: done-deck → now → upcoming.
+    let nowHtml = "", upcomingHtml = "", doneHtml = "", skippedHtml = "", doneList = [];
     let exNum = 0, i = 0;
     while (i < sessionStepsArr.length){
       const st = sessionStepsArr[i];
@@ -8731,10 +8838,9 @@
       let allDone = true, doneSets = 0, allSkipped = true;
       for (let k = i; k <= j; k++){ if (sessionDone[k]) doneSets++; else allDone = false; if (!sessionSkipped[k]) allSkipped = false; }
       const isCurrent = sessionActive && sessionIdx >= i && sessionIdx <= j;
-      // The exercise you're on right now becomes the blue "now" area, right here in
-      // the list. Done routines sit above it, not-yet-done ones below.
+      // The exercise you're on becomes the glowing "now" card, locked at the top.
       if (isCurrent){
-        html += sessionNowInline(sessionStepsArr[sessionIdx]);
+        nowHtml += sessionNowInline(sessionStepsArr[sessionIdx]);
         exNum++;
         i = j + 1;
         continue;
@@ -8742,7 +8848,7 @@
       // A skipped exercise: greyed out with an Undo (↩) to bring it back.
       if (allSkipped){
         const skName = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + (groupable ? '' : ' · ' + escapeHtml(st.label));
-        html += '<div class="session-step skipped"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
+        skippedHtml += '<div class="session-step skipped"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
           + '<div class="session-step-name">' + skName + '</div>'
           + '<div class="session-step-detail">Skipped today</div></div>'
           + '<button class="session-howto" title="Bring it back" onclick="sessionUnskip(' + i + ')">↩</button></div>';
@@ -8763,7 +8869,7 @@
         nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
         detailLine = st.detail || "";
       }
-      html += '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
+      const rowHtml = '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div class="session-step-main">'
         + '<div class="session-step-name">' + nameLine + '</div>'
         + (detailLine ? '<div class="session-step-detail">' + escapeHtml(detailLine) + '</div>' : '') + '</div>'
         + '<div class="session-step-tools">'
@@ -8772,27 +8878,66 @@
         + (st.video ? '<button class="session-howto" title="Play video" onclick="sessionStepVideo(' + i + ')">🎬</button>' : '')
         + '</div>'
         + '</div>';
+      if (allDone){ doneHtml += rowHtml; doneList.push(nameLine); } else upcomingHtml += rowHtml;
       exNum++;
       i = j + 1;
     }
+    // Done routines collapse into a playing-card stack at the top (tap to expand);
+    // then the magnified running card, then what's coming next.
+    let deckHtml = "";
+    if (doneList.length){
+      deckHtml = doneDeckOpen
+        ? ('<button type="button" class="done-deck-open" onclick="toggleDoneDeck()">▾ ' + doneList.length + ' done — tap to hide</button>' + doneHtml)
+        : buildDoneDeck(doneList);
+    }
+    let html = sessionActive ? (deckHtml + nowHtml + upcomingHtml + skippedHtml)
+                             : (deckHtml + upcomingHtml + skippedHtml);
     // When you're not mid-workout there's no inline blue area, so keep one empty
     // #sessionNow at the top — the finish "🎉 Done!" banner fills it in.
     if (!sessionActive){
       html = '<div class="session-now" id="sessionNow"></div>' + html;
     }
+    // Capture the outgoing "now" card so it can zoom out as the next one zooms in.
+    const _prevNow = document.getElementById("sessionNow");
+    const _prevOn = !!(_prevNow && _prevNow.classList.contains("on"));
+    const _prevRect = _prevOn ? _prevNow.getBoundingClientRect() : null;
+    const _prevHTML = _prevOn ? _prevNow.outerHTML : null;
     if (list) list.innerHTML = html;
-    if (btn){
-      // Mid-workout (running OR paused), the action lives in the blue area — hide the big
-      // top button so you're not scrolling up to reach it. It's back only for Start.
-      if (sessionActive){
-        btn.style.display = "none";
-      } else {
-        btn.style.display = "block";
-        const _lbl = document.getElementById("sessionStartLabel");
-        if (_lbl) _lbl.textContent = Object.keys(sessionDone).length ? "Finish it" : "To the finish line";
-        btn.classList.remove("running");
-      }
+    // Spotlight zoom: swell the new step in; ghost the finished one out — only on a real change.
+    const _nowKey = sessionRunning ? (sessionIdx + ":" + sessionPhase) : "";
+    if (_nowKey && _nowKey !== sessionLastNowKey){
+      const _nowEl = document.getElementById("sessionNow");
+      if (_nowEl && _nowEl.classList.contains("on")) _nowEl.classList.add("zoom-in");
+      if (_prevRect && _prevHTML && sessionLastNowKey) spawnNowGhost(_prevHTML, _prevRect);
     }
+    sessionLastNowKey = _nowKey;
+    if (btn){
+      // The sun stays on screen the whole workout — a color-coded status light you can
+      // read from across the room: red = ready to go, yellow = you're going.
+      btn.style.display = "block";
+      const _lbl = document.getElementById("sessionStartLabel");
+      const _allDone = sessionStepsArr.length > 0 && sessionStepsArr.every(function(_, i){ return sessionDone[i] || sessionSkipped[i]; });
+      let _state, _word;
+      if (sessionRunning){ _state = "going"; _word = "Keep going"; }         // yellow
+      else if (sessionActive){ _state = "paused"; _word = "On pause"; }      // green (resting)
+      else if (_allDone){ _state = "done"; _word = "Done!"; }               // gold (finished)
+      else { _state = "ready"; _word = "Punch it!"; }                        // red (tap to start)
+      ["ready", "going", "paused", "done"].forEach(function(c){ btn.classList.toggle(c, c === _state); });
+      if (_lbl) _lbl.textContent = _word;
+    }
+  }
+  // A short-lived clone of the finished exercise card that zooms out on top of the page.
+  function spawnNowGhost(html, rect){
+    const g = document.createElement("div");
+    g.className = "session-now-ghost";
+    g.style.left = rect.left + "px";
+    g.style.top = rect.top + "px";
+    g.style.width = rect.width + "px";
+    g.innerHTML = html;
+    const inner = g.querySelector(".session-now");
+    if (inner) inner.classList.remove("zoom-in");
+    document.body.appendChild(g);
+    setTimeout(function(){ if (g && g.parentNode) g.parentNode.removeChild(g); }, 360);
   }
   function sessionToggle(){
     if (!sessionRunning){ sessionStart(); return; }
@@ -8853,6 +8998,13 @@
     if (sessionIdx < 0) return;
     sessionGpsStop(false);
     sessionDone[sessionIdx] = true;
+    // Halfway push: when you cross the middle of the workout, the coach cloud floats in.
+    const _totalLive = sessionStepsArr.filter(function(_, k){ return !sessionSkipped[k]; }).length;
+    const _doneNow = Object.keys(sessionDone).length;
+    if (!sessionHalfShown && _totalLive >= 4 && _doneNow >= Math.ceil(_totalLive / 2) && _doneNow < _totalLive){
+      sessionHalfShown = true;
+      showCoachCloud("Halfway there — keep going! 💪");
+    }
     const nextIdx = sessionNextLive(sessionIdx);
     if (nextIdx >= sessionStepsArr.length){ sessionFinish(); return; }
     // Three rest tiers: between sets < between exercises < between muscle types.
@@ -8929,7 +9081,7 @@
   window.sessionGpsStart = sessionGpsStart; window.sessionGpsStop = sessionGpsStop;
   function sessionStart(){
     if (!sessionStepsArr.length) return;
-    if (sessionStepsArr.every((_, i) => sessionDone[i] || sessionSkipped[i])){ sessionDone = {}; sessionIdx = -1; }
+    if (sessionStepsArr.every((_, i) => sessionDone[i] || sessionSkipped[i])){ sessionDone = {}; sessionIdx = -1; sessionHalfShown = false; }
     sessionRunning = true;
     if (sessionTimer) clearInterval(sessionTimer);
     sessionTimer = setInterval(sessionTick, 1000);
@@ -8992,8 +9144,15 @@
     if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>' + supportSetHTML(); }
     // Celebrate — and mark milestone workouts.
     const n = bumpWorkoutCount();
-    if ([1, 5, 10, 25, 50, 100, 200, 365].indexOf(n) >= 0) celebrate("🏅", n + (n === 1 ? " workout done!" : " workouts done!"), "You're building a real habit — keep it going! 💪");
-    else celebrate("🎉", "Workout complete!", "Great work today. That's " + n + " workouts logged. 💪");
+    // Quick end-of-workout report: what you just did + your streak.
+    const _doneEx = new Set();
+    Object.keys(sessionDone).forEach(function(k){ const st = sessionStepsArr[k]; if (st) _doneEx.add((st.rid || "") + "|" + st.name); });
+    const _exCount = _doneEx.size;
+    let _streak = 0; try { _streak = computeStats().streak; } catch(e){}
+    let _report = "You did " + _exCount + (_exCount === 1 ? " exercise" : " exercises") + " — that's workout #" + n + ".";
+    _report += (_streak >= 2) ? " " + _streak + " weeks in a row! 🔥" : " Keep it going! 💪";
+    if ([1, 5, 10, 25, 50, 100, 200, 365].indexOf(n) >= 0) celebrate("🏅", n + (n === 1 ? " workout done!" : " workouts done!"), _report);
+    else celebrate("🎉", "You made it to the finish line! 🏁", _report);
   }
   // ---- Sliding day strip ----
   function renderDayStrip(){
