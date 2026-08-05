@@ -2170,6 +2170,10 @@
   .setup-value { color: #555; font-size: 14px; text-align: right; font-weight: 600; flex: 1 1 auto; }
   .setup-value.empty { color: #aab; font-style: italic; font-weight: 500; }
   .setup-edit-hint { flex: 0 0 auto; color: #9096ad; font-size: 15px; }
+  /* A non-question row in My Set-up: a labelled toggle (👁️/🙈) to bring the Cover back after it's hidden. */
+  .setup-toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;
+    background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .setup-toggle-sub { color: #8a90a8; font-size: 12px; font-weight: 600; margin-top: 2px; }
   .setup-hint { text-align: center; font-size: 13px; color: #6a7088; font-weight: 600; margin: 16px 0 8px; }
   .setup-redo { display: block; margin: 0 auto; background: none; border: none; color: #8a90a8; font-weight: 700; font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 6px; }
   .setup-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: auto; padding-top: 20px; }
@@ -2370,6 +2374,27 @@
   .wp-todaytag { font-size: 12px; font-weight: 700; color: #fff; background: #6bbf7b; border-radius: 8px; padding: 2px 8px; vertical-align: middle; }
   .wp-note { font-size: 13px; color: #666; margin: 4px 2px 12px; line-height: 1.5; }
   .wp-note.wp-rest { color: #3a7a4a; font-weight: 600; background: #e7f6ea; border-radius: 12px; padding: 10px 12px; }
+  /* Per-day workout-time chip on the Weekly Plan (blue to match the plan's palette). */
+  .wp-time { margin: 6px 2px 12px; }
+  .wp-time-chip { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; font-weight: 800; font-size: 13px;
+    color: #5a68d6; background: #eef0ff; border: 1px solid #cfd6ff; border-radius: 999px; padding: 7px 13px; }
+  .wp-time-chip.on { color: #3a4699; }
+  .wp-time-chip:active { transform: scale(0.97); }
+  .wp-time-clear { margin-left: 6px; border: none; background: transparent; color: #7a84c8; font-weight: 800;
+    cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 4px; }
+  /* Workout Schedule page: same/per-day mode toggle + time rows. */
+  .sched-modes { display: flex; gap: 8px; margin: 8px 2px 16px; }
+  .sched-mode { flex: 1; padding: 11px 8px; border-radius: 12px; border: 2px solid #e5e9f8; background: #fff;
+    color: #5a68d6; font-weight: 800; font-size: 13px; cursor: pointer; }
+  .sched-mode.on { border-color: #7a5bff; background: #eef0ff; color: #3a4699; }
+  .sched-mode:active { transform: scale(0.98); }
+  .sched-same { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 4px 2px; }
+  .sched-hint { font-size: 12.5px; color: #8a90a8; font-weight: 600; }
+  .sched-days { display: flex; flex-direction: column; gap: 8px; }
+  .sched-day-row { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .sched-day-name { font-weight: 800; color: #3a4066; font-size: 14px; }
+  .sched-rest { color: #3a7a4a; font-weight: 700; font-size: 13px; }
   .wp-picks { display: flex; flex-direction: column; gap: 8px; }
   .wp-pick { display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border: 2px solid #e5e9f8;
     border-radius: 14px; background: #fff; cursor: pointer; }
@@ -2432,15 +2457,34 @@
   .session-overlay.show { display: block; }
   .session-inner { max-width: 420px; margin: 0 auto; padding: 30px 20px calc(90px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; min-height: 100dvh; box-sizing: border-box; position: relative; }
   /* Warm-up / Cool-down as small on-off buttons flanking the sun (top corners). */
-  .session-flank { position: absolute; top: 104px; z-index: 6; border: none; border-radius: 999px;
+  /* The sun and its two flank buttons share a positioned wrapper, so the flanks always
+     hug the sun no matter what sits above it (e.g. the coach greeting line). */
+  .session-sun-wrap { position: relative; }
+  .session-flank { position: absolute; top: 40px; z-index: 6; border: none; border-radius: 999px;
     padding: 8px 13px; font-size: 12.5px; font-weight: 800; cursor: pointer; line-height: 1; white-space: nowrap;
     background: transparent; color: #b6bcd6; box-shadow: none; opacity: 0.85; transition: background .2s, color .2s, opacity .2s; }
+  .session-inner.rest-mode .session-flank { display: none; }  /* no warm-up/cool-down on a rest day */
   .session-flank.warmup { left: 12px; }
   .session-flank.cooldown { right: 12px; }
   .session-flank.warmup.on { background: #FBDCD8; color: #d24a42; }
   .session-flank.cooldown.on { background: #DBF1E5; color: #2a9d6f; }
   .session-flank:active { transform: scale(0.95); }
   .session-todayline { text-align: center; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #9096ad; margin-bottom: 2px; }
+  /* Coach line: a warm greeting under the day strip that names today's plan (or the rest day). */
+  .session-coach { display: none; text-align: center; font-size: 14px; font-weight: 700; color: #5a4326;
+    background: #fff7ec; border: 1px solid #ffe6c2; border-radius: 14px; padding: 9px 14px; margin: 0 auto 12px;
+    max-width: 340px; line-height: 1.35; box-shadow: 0 2px 8px rgba(60,64,102,0.05); }
+  .session-coach.on { display: block; }
+  .session-coach.rest { background: #eef7f0; border-color: #cfe6d6; color: #2f5d43; }
+  /* Workout-time chip under the greeting: tap to set/change the time you plan to work out. */
+  .session-time-chip { margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer;
+    background: #fff; color: #a06a1f; font-weight: 800; font-size: 12.5px; border: 1px solid #ffe0b0;
+    border-radius: 999px; padding: 6px 12px; }
+  .session-time-chip:active { transform: scale(0.97); }
+  .session-time-clear { margin-left: 6px; border: none; background: transparent; color: #b98a4e;
+    font-weight: 800; cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 4px; }
+  /* The real time picker stays out of sight; the chip opens it. */
+  .session-time-input { position: absolute; opacity: 0; height: 0; width: 0; padding: 0; border: 0; pointer-events: none; }
   /* Sliding day strip: today spotlighted in the center, neighbors faded at the edges. */
   .session-daystrip {
     position: relative; overflow: hidden; height: 34px; margin-bottom: 12px;
@@ -2722,8 +2766,8 @@
     margin-top: 5px; color: #B5760F; font-size: 13px; font-weight: 700;
   }
   .welcome-dumbbell { display: block; width: 104px; height: auto; margin: auto auto 0; transform: translateY(-12px); }
-  .welcome-emoji { font-size: 46px; margin: -42px 0 0; position: relative; z-index: 2; }
-  .welcome-title { font-weight: 800; }
+  .welcome-emoji { font-size: 46px; margin: -42px 0 0; position: relative; z-index: 5; }
+  .welcome-title { font-weight: 800; position: relative; z-index: 5; }
   .welcome-greet {
     display: block; font-size: 15px; font-weight: 700; color: #6a7088;
     margin-bottom: 2px;
@@ -2735,8 +2779,8 @@
     -webkit-background-clip: text; background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .welcome-sub { font-size: 13px; color: #5b6cff; margin-top: -50px; }
-  .welcome-barbell { display: block; position: relative; left: 50%; transform: translateX(-50%); width: 98vw; max-width: 460px; height: auto; margin: -20px 0 0; }
+  .welcome-sub { font-size: 13px; color: #5b6cff; margin-top: -50px; position: relative; z-index: 5; }
+  .welcome-barbell { display: block; position: relative; left: 50%; transform: translateX(-50%); width: 98vw; max-width: 460px; height: auto; margin: -20px 0 0; z-index: 5; }
   .welcome-desc {
     margin: 16px auto 4px; max-width: 320px;
     font-size: 14px; line-height: 1.55; color: #4a5068;
@@ -2752,9 +2796,9 @@
   }
   /* Today's Thought as a soft cloud that drifts in and floats over the logo. */
   .welcome-cloud {
-    position: absolute; top: 19%; left: 50%;
+    position: absolute; top: 8%; left: 50%;
     transform: translate(-50%, 0); /* centered even when the animation is frozen */
-    width: min(440px, 97vw); aspect-ratio: 300 / 180;
+    width: min(560px, 99vw); aspect-ratio: 300 / 158;
     z-index: 4; pointer-events: none;
     filter: drop-shadow(0 12px 18px rgba(91,108,255,0.20));
     animation: cloudDriftIn 2.3s cubic-bezier(.22,.61,.36,1) both,
@@ -2762,6 +2806,19 @@
   }
   /* While the Cover is peeling away, freeze the cloud so it doesn't re-drift-in. */
   .welcome-overlay.peeling .welcome-cloud { animation: none !important; }
+  /* Small wispy clouds drifting across the sky, left → right, on a loop, behind the big cloud. */
+  .sky-clouds { position: absolute; top: 13%; left: 0; right: 0; height: 44%; overflow: hidden; pointer-events: none; z-index: 1; }
+  .sky-cloud { position: absolute; left: 0; will-change: transform; }
+  .sky-cloud svg { display: block; width: 100%; height: auto; }
+  .sky-cloud-1 { width: 86px;  top: 14%; opacity: 0.82; filter: blur(3px);   animation: skyCross 30s linear infinite; }
+  .sky-cloud-2 { width: 58px;  top: 34%; opacity: 0.72; filter: blur(2.5px); animation: skyCross 40s linear infinite; animation-delay: -15s; }
+  .sky-cloud-3 { width: 112px; top: 4%;  opacity: 0.60; filter: blur(4px);   animation: skyCross 52s linear infinite; animation-delay: -33s; }
+  .sky-cloud-4 { width: 44px;  top: 52%; opacity: 0.68; filter: blur(2px);   animation: skyCross 24s linear infinite; animation-delay: -9s; }
+  @keyframes skyCross {
+    from { transform: translateX(-170px); }
+    to   { transform: translateX(calc(100vw + 170px)); }
+  }
+  .welcome-overlay.peeling .sky-cloud { animation-play-state: paused; }
   .welcome-cloud-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .welcome-cloud-text {
     position: absolute; left: 18%; right: 18%; top: 34%; bottom: 17%;
@@ -2987,6 +3044,13 @@
         </div>
       </div>
     </div>
+    <div class="sky-clouds" aria-hidden="true">
+      <!-- Four distinct silhouettes: puffy, long-flat-wispy, big-lumpy-asymmetric, small-two-puff. -->
+      <span class="sky-cloud sky-cloud-1"><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg"><g fill="#ffffff"><rect x="14" y="28" width="70" height="20" rx="10"/><circle cx="40" cy="23" r="20"/><circle cx="65" cy="30" r="14"/><circle cx="24" cy="32" r="12"/></g></svg></span>
+      <span class="sky-cloud sky-cloud-2"><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg"><g fill="#ffffff"><rect x="8" y="31" width="84" height="14" rx="7"/><circle cx="30" cy="31" r="12"/><circle cx="52" cy="27" r="15"/><circle cx="72" cy="32" r="10"/></g></svg></span>
+      <span class="sky-cloud sky-cloud-3"><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg"><g fill="#ffffff"><rect x="12" y="26" width="76" height="22" rx="11"/><circle cx="34" cy="26" r="17"/><circle cx="57" cy="19" r="16"/><circle cx="77" cy="30" r="13"/><circle cx="20" cy="33" r="11"/></g></svg></span>
+      <span class="sky-cloud sky-cloud-4"><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg"><g fill="#ffffff"><rect x="22" y="30" width="54" height="16" rx="8"/><circle cx="41" cy="26" r="15"/><circle cx="59" cy="31" r="11"/></g></svg></span>
+    </div>
     <div class="welcome-box">
       <div class="welcome-mark">ERMES</div>
       <div class="welcome-tag">Apps to solve real problems</div>
@@ -3045,14 +3109,22 @@
       </svg>
       <div class="welcome-sub">My Own Weekly Exercise Sheet</div>
       <div class="welcome-cloud" id="welcomeCloud">
-        <svg class="welcome-cloud-svg" viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g fill="#ffffff">
-            <rect x="38" y="74" width="224" height="86" rx="43"/>
-            <circle cx="150" cy="74" r="66"/>
-            <circle cx="86"  cy="94" r="48"/>
-            <circle cx="214" cy="94" r="48"/>
-            <circle cx="58"  cy="120" r="34"/>
-            <circle cx="242" cy="120" r="34"/>
+        <svg class="welcome-cloud-svg" viewBox="0 0 300 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <!-- Feather the cloud's outline so its edges fade into the background (no hard cut-out line). -->
+            <filter id="cloudSoft" x="-25%" y="-25%" width="150%" height="150%">
+              <feGaussianBlur stdDeviation="4.5"/>
+            </filter>
+          </defs>
+          <!-- Puffs of different sizes at different heights, not mirror-symmetric — a real cloud. -->
+          <g fill="#ffffff" filter="url(#cloudSoft)">
+            <rect x="40" y="84" width="214" height="70" rx="36"/>
+            <circle cx="120" cy="68" r="58"/>
+            <circle cx="176" cy="56" r="33"/>
+            <circle cx="198" cy="86" r="45"/>
+            <circle cx="72"  cy="92" r="43"/>
+            <circle cx="236" cy="108" r="29"/>
+            <circle cx="50"  cy="126" r="25"/>
           </g>
         </svg>
         <div class="welcome-cloud-text">
@@ -3083,12 +3155,14 @@
       <div class="session-daystrip" id="sessionDayStrip">
         <div class="session-daystrip-row" id="sessionDayRow"></div>
       </div>
-      <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">
-        <span class="sun-rays"></span>
-        <span class="sun-face"><span id="sessionStartLabel">Punch it!</span></span>
-      </button>
-      <button type="button" class="session-flank warmup" id="sessionWarmupBtn" onclick="sessionToggleWarmup()">🤸 Warm-up</button>
-      <button type="button" class="session-flank cooldown" id="sessionCooldownBtn" onclick="sessionToggleCooldown()">🧘 Cool-down</button>
+      <div class="session-sun-wrap">
+        <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">
+          <span class="sun-rays"></span>
+          <span class="sun-face"><span id="sessionStartLabel">Punch it!</span></span>
+        </button>
+        <button type="button" class="session-flank warmup" id="sessionWarmupBtn" onclick="sessionToggleWarmup()">🤸 Warm-up</button>
+        <button type="button" class="session-flank cooldown" id="sessionCooldownBtn" onclick="sessionToggleCooldown()">🧘 Cool-down</button>
+      </div>
       <div id="sessionList"></div>
       <!-- Two square buttons joined by a bar: Settings (tucks the pacing away) + Add a Routine -->
       <div class="session-actions" id="sessionActions">
@@ -3274,6 +3348,11 @@
         <div class="build-tile-text"><div class="build-tile-name">My Weekly Plan</div></div>
         <div class="build-tile-arrow">›</div>
       </button>
+      <button class="build-tile" onclick="openSchedulePage()">
+        <div class="build-tile-icon">⏰</div>
+        <div class="build-tile-text"><div class="build-tile-name">Workout Schedule</div></div>
+        <div class="build-tile-arrow">›</div>
+      </button>
       <div id="buildSupport" class="msupport-compact"></div>
     </div>
   </div>
@@ -3297,6 +3376,19 @@
       <div class="setup-title">🗓️ My Weekly Plan</div>
       <div class="wp-days" id="wpDays"></div>
       <div id="wpBody"></div>
+      <div class="msupport-compact msupport-auto"></div>
+    </div>
+  </div>
+
+  <!-- Workout Schedule: set the time you plan to work out (same every day, or per day) -->
+  <div class="library-overlay" id="scheduleOverlay">
+    <div class="library-inner">
+      <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
+      <div class="setup-title">⏰ Workout Schedule</div>
+      <p class="lib-hint">When do you plan to work out? MOWES uses this to remind you.</p>
+      <div id="scheduleBody"></div>
+      <input type="time" id="schedTimeInput" class="session-time-input" onchange="onSchedTimeChange(this.value)" aria-label="Workout time">
+      <p class="setup-note">🔒 Saved only on your phone.</p>
       <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
@@ -4713,7 +4805,7 @@
     if (setupShownAsPage()) return stops.findIndex(s => s.setup);
     // My Library / My Weekly Plan live inside Build MOWES → keep that chip highlighted.
     const buildIdx = stops.findIndex(s => s.build);
-    if (buildIdx >= 0 && (buildShownAsPage() || libraryShownAsPage() || weekPlanShownAsPage())) return buildIdx;
+    if (buildIdx >= 0 && (buildShownAsPage() || libraryShownAsPage() || weekPlanShownAsPage() || scheduleShownAsPage())) return buildIdx;
     if (libraryShownAsPage()) return stops.findIndex(s => s.library);
     if (weekPlanShownAsPage()) return stops.findIndex(s => s.weekplan);
     if (rulesShownAsPage()) return stops.findIndex(s => s.rules);
@@ -4732,7 +4824,7 @@
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -4744,7 +4836,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -4757,7 +4849,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -4782,7 +4874,7 @@
     if (s.weekplan){ openWeekPlanPage(); return; }
     if (s.rules){ openRulesPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -6919,7 +7011,29 @@
   };
   const DEFAULT_THOUGHTS = ["Small steps every day get you far.",
                             "Just be consistent — that's the secret."];
+  // Today's workout time as a friendly cloud line (self-contained read so it works anywhere).
+  // Honors the Schedule mode (same time every day vs per-day). Empty on rest days / no time.
+  function coverWorkoutTimeMsg(){
+    try {
+      const wd = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+      const tk = wd[(new Date().getDay() + 6) % 7];
+      const sel = JSON.parse(localStorage.getItem("mowes_week_selection_v1") || "{}") || {};
+      if (!((sel[tk] || []).length)) return "";   // rest day or nothing planned
+      const mode = (localStorage.getItem("mowes_time_mode_v1") === "perday") ? "perday" : "same";
+      const raw = (mode === "same")
+        ? (localStorage.getItem("mowes_time_same_v1") || "")
+        : ((JSON.parse(localStorage.getItem("mowes_week_times_v1") || "{}") || {})[tk] || "");
+      if (!raw) return "";
+      const p = String(raw).split(":"); let h = parseInt(p[0], 10); const m = (p[1] || "00").slice(0, 2);
+      if (isNaN(h)) return "";
+      const ap = h >= 12 ? "PM" : "AM"; h = h % 12; if (h === 0) h = 12;
+      return "Today's workout is at " + h + ":" + m + " " + ap + " ⏰";
+    } catch(e){ return ""; }
+  }
   function getCoverMessage(){
+    // If today is a workout day with a set time, the cloud leads with the reminder.
+    const wt = coverWorkoutTimeMsg();
+    if (wt) return wt + "\nReady when you are 💪";
     let s = { streak:0, weekWorkouts:0, weekSetsDone:0, allWorkouts:0, allSetsDone:0 };
     try { s = computeStats(); } catch(e){}
     // ONE message. When there's real progress, celebrate it (personal).
@@ -7419,6 +7533,16 @@
         + '<div class="setup-value' + (empty ? ' empty' : '') + '">' + escapeHtml(display) + '</div>'
         + '<div class="setup-edit-hint">✏️</div></button>';
     });
+    // Bring-the-Cover-back switch: the Cover's own gear vanishes once it's hidden,
+    // so this is the one place a user can turn the welcome page on again.
+    const asleep = coverIsAsleep();
+    html += '<div class="setup-toggle-row">'
+      + '<div><div class="setup-label">Cover page</div>'
+      + '<div class="setup-toggle-sub">Show or hide the welcome page</div></div>'
+      + '<div class="cs-seg" id="setupCoverSeg">'
+      + '<button type="button" class="cs-seg-btn' + (asleep ? '' : ' on') + '" data-v="show" onclick="setCoverShow(true)" aria-label="Show cover">👁️</button>'
+      + '<button type="button" class="cs-seg-btn' + (asleep ? ' on' : '') + '" data-v="hide" onclick="setCoverShow(false)" aria-label="Hide cover">🙈</button>'
+      + '</div></div>';
     body.innerHTML = html;
   }
 
@@ -7539,7 +7663,7 @@
   function openBodyPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
     loadBodyPics();
     renderBody();
     renderBodyPics();
@@ -7652,7 +7776,7 @@
   function openGoalsPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
     renderGoals();
     renderAch();
     document.getElementById("goalsOverlay").classList.add("show");
@@ -7832,7 +7956,7 @@
   function openRulesPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
     renderRules();
     document.getElementById("rulesOverlay").classList.add("show");
     renderPageBar();
@@ -8339,7 +8463,7 @@
   function openWeekPlanPage(day){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveSchedulePage();
     weekPlanDay = (day && days.indexOf(day) >= 0) ? day : todayKey;
     document.getElementById("weekPlanOverlay").classList.add("show");
     renderWeekPlan();
@@ -8406,7 +8530,7 @@
   function openBuildPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveSchedulePage();
     document.getElementById("buildOverlay").classList.add("show");
     renderPageBar();
   }
@@ -8802,6 +8926,117 @@
       const dk = days[(start + off) % days.length];
       if (sessionStepsFor(dk).length) return { day: dk, off: off };
     }
+    return null;
+  }
+  // The time you plan to work out. Two modes: ONE time every day ("same"), or a time PER weekday.
+  const WEEK_TIMES_KEY = "mowes_week_times_v1";   // per-day map: {Mon:"18:00", ...}
+  const TIME_MODE_KEY  = "mowes_time_mode_v1";    // "same" | "perday"
+  const SAME_TIME_KEY  = "mowes_time_same_v1";    // the single time used in "same" mode
+  function loadWeekTimes(){ try { return JSON.parse(localStorage.getItem(WEEK_TIMES_KEY) || "{}") || {}; } catch(e){ return {}; } }
+  function saveWeekTimes(o){ try { localStorage.setItem(WEEK_TIMES_KEY, JSON.stringify(o)); } catch(e){} }
+  function loadTimeMode(){ try { return localStorage.getItem(TIME_MODE_KEY) === "perday" ? "perday" : "same"; } catch(e){ return "same"; } }
+  function saveTimeMode(m){ try { localStorage.setItem(TIME_MODE_KEY, m === "perday" ? "perday" : "same"); } catch(e){} }
+  function getSameTime(){ try { return localStorage.getItem(SAME_TIME_KEY) || ""; } catch(e){ return ""; } }
+  function setSameTime(v){ try { if (v) localStorage.setItem(SAME_TIME_KEY, v); else localStorage.removeItem(SAME_TIME_KEY); } catch(e){} }
+  // The one function the rest of the app asks: "what time is <day>'s workout?" — honors the mode.
+  function getWorkoutTime(day){ return (loadTimeMode() === "same") ? getSameTime() : (loadWeekTimes()[day] || ""); }
+  function setWorkoutTime(day, val){ const o = loadWeekTimes(); if (val) o[day] = val; else delete o[day]; saveWeekTimes(o); }
+  // "18:00" -> "6:00 PM" for a friendly display.
+  function fmtTime(v){
+    if (!v) return "";
+    const p = String(v).split(":"); let h = parseInt(p[0], 10); const m = (p[1] || "00").slice(0, 2);
+    if (isNaN(h)) return v;
+    const ap = h >= 12 ? "PM" : "AM"; h = h % 12; if (h === 0) h = 12;
+    return h + ":" + m + " " + ap;
+  }
+  // ---- Workout Schedule page (Build MOWES → 3rd card): set the time you plan to work out ----
+  let schedPickTarget = "same";   // "same" or a weekday key while the picker is open
+  function renderSchedule(){
+    const body = document.getElementById("scheduleBody");
+    if (!body) return;
+    const mode = loadTimeMode();
+    let html = '<div class="sched-modes">'
+      + '<button type="button" class="sched-mode' + (mode === "same" ? " on" : "") + '" onclick="setTimeMode(\'same\')">Same time every day</button>'
+      + '<button type="button" class="sched-mode' + (mode === "perday" ? " on" : "") + '" onclick="setTimeMode(\'perday\')">Different per day</button>'
+      + '</div>';
+    const chip = (target, t) => t
+      ? '<button type="button" class="wp-time-chip on" onclick="pickSchedTime(\'' + target + '\')">🕐 ' + escapeHtml(fmtTime(t))
+          + '<span class="wp-time-clear" role="button" aria-label="Remove time" onclick="event.stopPropagation();clearSchedTime(\'' + target + '\')">✕</span></button>'
+      : '<button type="button" class="wp-time-chip" onclick="pickSchedTime(\'' + target + '\')">🕐 Set a time</button>';
+    if (mode === "same"){
+      html += '<div class="sched-same">' + chip("same", getSameTime())
+        + '<div class="sched-hint">Used for every workout day.</div></div>';
+    } else {
+      const times = loadWeekTimes();
+      html += '<div class="sched-days">';
+      days.forEach(d => {
+        const rest = isPlannedRestDay(d);
+        html += '<div class="sched-day-row">'
+          + '<div class="sched-day-name">' + escapeHtml(fullNames[d] || d) + (d === todayKey ? ' <span class="wp-todaytag">Today</span>' : '') + '</div>'
+          + (rest ? '<span class="sched-rest">🌴 Rest</span>' : chip(d, times[d] || ""))
+          + '</div>';
+      });
+      html += '</div>';
+    }
+    body.innerHTML = html;
+  }
+  function pickSchedTime(target){
+    schedPickTarget = target;
+    const inp = document.getElementById("schedTimeInput");
+    if (!inp) return;
+    inp.value = (target === "same") ? (getSameTime() || "") : (loadWeekTimes()[target] || "");
+    try { if (typeof inp.showPicker === "function") inp.showPicker(); else inp.click(); }
+    catch(e){ try { inp.click(); } catch(e2){} }
+  }
+  function onSchedTimeChange(val){ if (schedPickTarget === "same") setSameTime(val); else setWorkoutTime(schedPickTarget, val); renderSchedule(); }
+  function clearSchedTime(target){ if (target === "same") setSameTime(""); else setWorkoutTime(target, ""); renderSchedule(); }
+  function setTimeMode(m){ saveTimeMode(m); renderSchedule(); }
+  function openSchedulePage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    document.getElementById("scheduleOverlay").classList.add("show");
+    renderSchedule();
+    renderPageBar();
+  }
+  function leaveSchedulePage(){ const el = document.getElementById("scheduleOverlay"); if (el) el.classList.remove("show"); }
+  function scheduleShownAsPage(){ const el = document.getElementById("scheduleOverlay"); return !!(el && el.classList.contains("show")); }
+  window.openSchedulePage = openSchedulePage; window.pickSchedTime = pickSchedTime;
+  window.onSchedTimeChange = onSchedTimeChange; window.clearSchedTime = clearSchedTime; window.setTimeMode = setTimeMode;
+
+  // Coach greeting for the day you're viewing: names the routine(s), greets a rest day,
+  // or nudges you to set one up. Returns null when there's nothing worth saying.
+  function sessionCoachInfo(day, isToday){
+    const sel = loadWeekSel(), lib = getLibrary();
+    const names = (sel[day] || []).map(id => (lib.find(r => r.id === id) || {}).name).filter(Boolean);
+    const when = isToday ? "Today" : (fullNames[day] || day);
+    const t = getWorkoutTime(day);
+    // Deterministic within a day, but varies day to day so it feels fresh.
+    const pick = arr => arr[(new Date().getDate()) % arr.length];
+    if (names.length){
+      const list = names.join(" + ");
+      if (isToday){
+        const text = t
+          ? list + " at " + fmtTime(t) + " today 💪 — let's get after it."
+          : pick([
+              "Today's your " + list + " 💪 — let's get after it.",
+              "On deck today: " + list + " 🔥 Punch it when you're ready.",
+              list + " today 💪 One session closer to your goal."
+            ]);
+        return { cls:"", text: text, isWorkout: true };
+      }
+      return { cls:"", text: when + ": " + list + " 💪" + (t ? " · " + fmtTime(t) : ""), isWorkout: true };
+    }
+    if (isPlannedRestDay(day)){
+      if (isToday) return { cls:"rest", text: pick([
+        "Today's a Rest Day 😌 — recover well, you've earned it.",
+        "Rest Day today 🌴 Rest is part of the plan — enjoy it.",
+        "Take it easy today 😌 It's a planned Rest Day."
+      ]), isWorkout: false };
+      return { cls:"rest", text: when + " is a Rest Day 😌", isWorkout: false };
+    }
+    // No routines picked for this day (and no library yet, or just an empty day).
+    if (isToday) return { cls:"", text: "Nothing planned for today yet — tap ＋ Routines to set it up.", isWorkout: false };
     return null;
   }
   function renderSession(){
@@ -9593,6 +9828,9 @@
     if (showSeg) showSeg.querySelectorAll(".cs-seg-btn").forEach(b => b.classList.toggle("on", b.dataset.v === (asleep ? "hide" : "show")));
     const startSeg = document.getElementById("csStartSeg");
     if (startSeg) startSeg.querySelectorAll(".cs-seg-btn").forEach(b => b.classList.toggle("on", b.dataset.v === mode));
+    // Keep the My Set-up copy of the show/hide toggle in step with the Cover's own.
+    const setupSeg = document.getElementById("setupCoverSeg");
+    if (setupSeg) setupSeg.querySelectorAll(".cs-seg-btn").forEach(b => b.classList.toggle("on", b.dataset.v === (asleep ? "hide" : "show")));
   }
   function renderCsTopics(){
     const wrap = document.getElementById("csTopics");
