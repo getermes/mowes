@@ -2382,6 +2382,14 @@
   .wp-time-chip:active { transform: scale(0.97); }
   .wp-time-clear { margin-left: 6px; border: none; background: transparent; color: #7a84c8; font-weight: 800;
     cursor: pointer; font-size: 14px; line-height: 1; padding: 2px 4px; }
+  /* Workout Schedule chip: a REAL native time box sits invisibly over the chip so
+     tapping it opens the phone's own clock on every device (no showPicker trick). */
+  .wp-time-chip.sched-chip { position: relative; }
+  .sched-chip-face { position: relative; z-index: 0; pointer-events: none; }
+  .sched-inline-time { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0;
+    border: 0; padding: 0; margin: 0; background: transparent; cursor: pointer; z-index: 1;
+    font-size: 16px; -webkit-appearance: none; appearance: none; }
+  .wp-time-chip.sched-chip .wp-time-clear { position: relative; z-index: 2; }
   /* Workout Schedule page: same/per-day mode toggle + time rows. */
   .sched-modes { display: flex; gap: 8px; margin: 8px 2px 16px; }
   .sched-mode { flex: 1; padding: 11px 8px; border-radius: 12px; border: 2px solid #e5e9f8; background: #fff;
@@ -9158,10 +9166,14 @@
       + '<button type="button" class="sched-mode' + (mode === "same" ? " on" : "") + '" onclick="setTimeMode(\'same\')">Same time every day</button>'
       + '<button type="button" class="sched-mode' + (mode === "perday" ? " on" : "") + '" onclick="setTimeMode(\'perday\')">Different per day</button>'
       + '</div>';
-    const chip = (target, t) => t
-      ? '<button type="button" class="wp-time-chip on" onclick="pickSchedTime(\'' + target + '\')">🕐 ' + escapeHtml(fmtTime(t))
-          + '<span class="wp-time-clear" role="button" aria-label="Remove time" onclick="event.stopPropagation();clearSchedTime(\'' + target + '\')">✕</span></button>'
-      : '<button type="button" class="wp-time-chip" onclick="pickSchedTime(\'' + target + '\')">🕐 Set a time</button>';
+    // Each chip carries a real <input type="time"> laid invisibly over it, so a tap
+    // opens the phone's native clock every time. onchange saves + re-renders.
+    const chip = (target, t) => '<span class="wp-time-chip sched-chip' + (t ? ' on' : '') + '">'
+      + '<span class="sched-chip-face">🕐 ' + (t ? escapeHtml(fmtTime(t)) : 'Set a time') + '</span>'
+      + '<input type="time" class="sched-inline-time" value="' + (t || '') + '" aria-label="Workout time"'
+      + ' onchange="onSchedTimePick(\'' + target + '\', this.value)">'
+      + (t ? '<button type="button" class="wp-time-clear" aria-label="Remove time" onclick="clearSchedTime(\'' + target + '\')">✕</button>' : '')
+      + '</span>';
     if (mode === "same"){
       html += '<div class="sched-same">' + chip("same", getSameTime())
         + '<div class="sched-hint">Used for every workout day.</div></div>';
@@ -9188,6 +9200,8 @@
     catch(e){ try { inp.click(); } catch(e2){} }
   }
   function onSchedTimeChange(val){ if (schedPickTarget === "same") setSameTime(val); else setWorkoutTime(schedPickTarget, val); renderSchedule(); }
+  // Picked straight from the chip's own native time box (reliable on every phone).
+  function onSchedTimePick(target, val){ if (target === "same") setSameTime(val); else setWorkoutTime(target, val); renderSchedule(); }
   function clearSchedTime(target){ if (target === "same") setSameTime(""); else setWorkoutTime(target, ""); renderSchedule(); }
   function setTimeMode(m){ saveTimeMode(m); renderSchedule(); }
   function openSchedulePage(){
@@ -9201,7 +9215,7 @@
   function leaveSchedulePage(){ const el = document.getElementById("scheduleOverlay"); if (el) el.classList.remove("show"); }
   function scheduleShownAsPage(){ const el = document.getElementById("scheduleOverlay"); return !!(el && el.classList.contains("show")); }
   window.openSchedulePage = openSchedulePage; window.pickSchedTime = pickSchedTime;
-  window.onSchedTimeChange = onSchedTimeChange; window.clearSchedTime = clearSchedTime; window.setTimeMode = setTimeMode;
+  window.onSchedTimeChange = onSchedTimeChange; window.onSchedTimePick = onSchedTimePick; window.clearSchedTime = clearSchedTime; window.setTimeMode = setTimeMode;
 
   // Coach greeting for the day you're viewing: names the routine(s), greets a rest day,
   // or nudges you to set one up. Returns null when there's nothing worth saying.
