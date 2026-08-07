@@ -2403,6 +2403,16 @@
     background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
   .sched-day-name { font-weight: 800; color: #3a4066; font-size: 14px; }
   .sched-rest { color: #3a7a4a; font-weight: 700; font-size: 13px; }
+  /* Reminders: add workout days/times to the phone's OWN calendar (private, no server). */
+  .sched-remind { margin: 22px 2px 4px; padding-top: 16px; border-top: 1px solid #e8ebf7; }
+  .sched-remind-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .sched-remind-label { font-weight: 800; color: #3a4066; font-size: 14px; }
+  .sched-remind-select { font-size: 14px; font-weight: 700; color: #5a68d6; background: #eef0ff;
+    border: 1px solid #cfd6ff; border-radius: 10px; padding: 8px 10px; }
+  .sched-remind-btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 15px; font-weight: 800;
+    color: #fff; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 4px 14px rgba(91,108,255,0.28); cursor: pointer; }
+  .sched-remind-btn:active { transform: scale(0.99); }
+  .sched-remind-note { font-size: 12px; color: #8a90a8; font-weight: 600; margin-top: 8px; line-height: 1.45; }
   .wp-picks { display: flex; flex-direction: column; gap: 8px; }
   .wp-pick { display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border: 2px solid #e5e9f8;
     border-radius: 14px; background: #fff; cursor: pointer; }
@@ -3470,6 +3480,24 @@
       <p class="lib-hint">When do you plan to work out? MOWES uses this to remind you.</p>
       <div id="scheduleBody"></div>
       <input type="time" id="schedTimeInput" class="session-time-input" onchange="onSchedTimeChange(this.value)" aria-label="Workout time">
+      <div class="sched-remind">
+        <div class="sched-remind-row">
+          <span class="sched-remind-label">🔔 Remind me</span>
+          <select id="reminderLead" class="sched-remind-select" onchange="saveReminderLead(this.value)">
+            <option value="0">at workout time</option>
+            <option value="5">5 min before</option>
+            <option value="10">10 min before</option>
+            <option value="15">15 min before</option>
+            <option value="30">30 min before</option>
+            <option value="45">45 min before</option>
+            <option value="60">1 hour before</option>
+            <option value="90">1½ hours before</option>
+            <option value="120">2 hours before</option>
+          </select>
+        </div>
+        <button type="button" class="sched-remind-btn" onclick="downloadReminders()">📅 Add to my phone's Calendar</button>
+        <div class="sched-remind-note" id="schedRemindNote">Adds your workout days &amp; times to your phone's own Calendar, with an alert before each. 🔒 Nothing is sent anywhere.</div>
+      </div>
       <p class="setup-note">🔒 Saved only on your phone.</p>
       <div class="msupport-compact msupport-auto"></div>
     </div>
@@ -9154,6 +9182,69 @@
   // The one function the rest of the app asks: "what time is <day>'s workout?" — honors the mode.
   function getWorkoutTime(day){ return (loadTimeMode() === "same") ? getSameTime() : (loadWeekTimes()[day] || ""); }
   function setWorkoutTime(day, val){ const o = loadWeekTimes(); if (val) o[day] = val; else delete o[day]; saveWeekTimes(o); }
+
+  // ---- Reminders: build a calendar file (.ics) the phone adds to its OWN Calendar. ----
+  // No server, no account — the phone handles the alerts. Stays true to the privacy promise.
+  const REMINDER_LEAD_KEY = "mowes_reminder_lead_v1";   // minutes before the workout to alert
+  const ICAL_DAY = { Mon:"MO", Tue:"TU", Wed:"WE", Thu:"TH", Fri:"FR", Sat:"SA", Sun:"SU" };
+  const JS_DOW   = { Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6, Sun:0 };
+  function loadReminderLead(){ try { const v = parseInt(localStorage.getItem(REMINDER_LEAD_KEY), 10); return isNaN(v) ? 15 : v; } catch(e){ return 15; } }
+  function saveReminderLead(v){ try { localStorage.setItem(REMINDER_LEAD_KEY, String(parseInt(v, 10) || 0)); } catch(e){} }
+  // First upcoming date for a given weekday at hh:mm (weekly-recurring anchor).
+  function nextDateForWeekday(dayKey, hh, mm){
+    const now = new Date();
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0, 0);
+    let add = (JS_DOW[dayKey] - d.getDay() + 7) % 7;
+    if (add === 0 && d <= now) add = 7;   // today but the time already passed → next week
+    d.setDate(d.getDate() + add);
+    return d;
+  }
+  function icsStamp(d){
+    const p = n => (n < 10 ? "0" : "") + n;
+    return d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "T" + p(d.getHours()) + p(d.getMinutes()) + "00";
+  }
+  function buildRemindersICS(){
+    const mode = loadTimeMode(), same = getSameTime(), times = loadWeekTimes(), lead = loadReminderLead();
+    const events = [];
+    days.forEach(d => {
+      if (isPlannedRestDay(d)) return;                       // skip rest days
+      const t = (mode === "same") ? same : (times[d] || "");
+      if (!t) return;                                        // skip days with no time set
+      const parts = t.split(":"), hh = parseInt(parts[0], 10), mm = parseInt(parts[1] || "0", 10);
+      if (isNaN(hh)) return;
+      events.push({ day: d, start: nextDateForWeekday(d, hh, mm) });
+    });
+    if (!events.length) return null;
+    let ics = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MOWES//Workout Reminders//EN\r\nCALSCALE:GREGORIAN\r\n";
+    events.forEach((e, i) => {
+      const dt = icsStamp(e.start);
+      ics += "BEGIN:VEVENT\r\n"
+        + "UID:mowes-" + e.day + "-" + dt + "-" + i + "@mowes\r\n"
+        + "DTSTART:" + dt + "\r\n"
+        + "DURATION:PT30M\r\n"
+        + "RRULE:FREQ=WEEKLY;BYDAY=" + ICAL_DAY[e.day] + "\r\n"
+        + "SUMMARY:\u{1F4AA} MOWES workout\r\n"
+        + "DESCRIPTION:Time to work out! Open MOWES: https://getermes.github.io/mowes\r\n"
+        + "BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:MOWES workout reminder\r\nTRIGGER:-PT" + lead + "M\r\nEND:VALARM\r\n"
+        + "END:VEVENT\r\n";
+    });
+    ics += "END:VCALENDAR\r\n";
+    return ics;
+  }
+  function downloadReminders(){
+    const note = document.getElementById("schedRemindNote");
+    const ics = buildRemindersICS();
+    if (!ics){ if (note) note.textContent = "⏰ Set a workout time first, then tap this to add your reminders."; return; }
+    try {
+      const blob = new Blob([ics], { type: "text/calendar" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "MOWES-workout-reminders.ics";
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(url); }, 1200);
+      if (note) note.textContent = "✅ Opening your Calendar — tap Add to save your workout reminders. 🔒";
+    } catch(e){ if (note) note.textContent = "This browser couldn't create the calendar file — try opening MOWES in Safari."; }
+  }
   // "18:00" -> "6:00 PM" for a friendly display.
   function fmtTime(v){
     if (!v) return "";
@@ -9216,12 +9307,14 @@
     leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
     document.getElementById("scheduleOverlay").classList.add("show");
     renderSchedule();
+    const rl = document.getElementById("reminderLead"); if (rl) rl.value = String(loadReminderLead());
     renderPageBar();
   }
   function leaveSchedulePage(){ const el = document.getElementById("scheduleOverlay"); if (el) el.classList.remove("show"); }
   function scheduleShownAsPage(){ const el = document.getElementById("scheduleOverlay"); return !!(el && el.classList.contains("show")); }
   window.openSchedulePage = openSchedulePage; window.pickSchedTime = pickSchedTime;
   window.onSchedTimeChange = onSchedTimeChange; window.onSchedTimePick = onSchedTimePick; window.clearSchedTime = clearSchedTime; window.setTimeMode = setTimeMode;
+  window.saveReminderLead = saveReminderLead; window.downloadReminders = downloadReminders;
 
   // Coach greeting for the day you're viewing: names the routine(s), greets a rest day,
   // or nudges you to set one up. Returns null when there's nothing worth saying.
