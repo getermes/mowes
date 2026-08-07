@@ -2413,6 +2413,26 @@
     color: #fff; background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 4px 14px rgba(91,108,255,0.28); cursor: pointer; }
   .sched-remind-btn:active { transform: scale(0.99); }
   .sched-remind-note { font-size: 12px; color: #8a90a8; font-weight: 600; margin-top: 8px; line-height: 1.45; }
+  /* Trainers & Programs (hidden WIP page). */
+  .th-filters { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 12px; }
+  .th-chip { flex: 0 0 auto; background: #eef0ff; border: 1px solid #cfd6ff; color: #5a68d6; font-weight: 800; font-size: 12.5px; padding: 8px 13px; border-radius: 999px; }
+  .th-chip.on { background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; border-color: transparent; }
+  .th-card { background: #fff; border-radius: 20px; padding: 16px; margin: 12px 0; box-shadow: 0 6px 20px rgba(60,64,102,.08); display: flex; gap: 14px; align-items: flex-start; }
+  .th-ava { flex: 0 0 auto; width: 58px; height: 58px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+  .th-ava.a1 { background: #ffe6d6; } .th-ava.a2 { background: #dcf0ff; } .th-ava.a3 { background: #e6f7e6; } .th-ava.a4 { background: #efe6ff; }
+  .th-info { flex: 1; min-width: 0; }
+  .th-name { font-weight: 900; font-size: 16px; margin: 0; color: #3a4066; }
+  .th-pitch { color: #6a7088; font-size: 13.5px; margin: 3px 0 8px; line-height: 1.4; }
+  .th-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .th-tag { background: #f2f4fe; color: #7a84c8; font-weight: 700; font-size: 11px; padding: 4px 9px; border-radius: 8px; }
+  .th-view { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; background: linear-gradient(135deg, #5b6cff, #7a5bff); color: #fff; font-weight: 800; font-size: 13.5px; padding: 10px 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(91,108,255,.28); }
+  .th-via { font-size: 12px; color: #8a90a8; font-weight: 700; margin-top: 8px; }
+  .th-listcta { text-align: center; background: #fff; border: 2px dashed #cfd6ff; border-radius: 18px; padding: 18px; margin: 18px 0 6px; }
+  .th-listcta b { display: block; font-size: 15px; margin-bottom: 4px; color: #3a4066; }
+  .th-listcta span { color: #8a90a8; font-size: 13px; }
+  .th-listbtn { display: inline-block; margin-top: 12px; text-decoration: none; color: #5b6cff; font-weight: 800; border: 2px solid #cfd6ff; border-radius: 12px; padding: 9px 16px; font-size: 13.5px; }
+  .th-privacy { background: #f4f6ff; border-radius: 16px; padding: 14px 16px; margin: 16px 0; font-size: 12.5px; color: #6a7088; line-height: 1.5; font-weight: 600; }
+  .th-privacy b { color: #3a4066; }
   .wp-picks { display: flex; flex-direction: column; gap: 8px; }
   .wp-pick { display: flex; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border: 2px solid #e5e9f8;
     border-radius: 14px; background: #fff; cursor: pointer; }
@@ -3499,6 +3519,27 @@
         <div class="sched-remind-note" id="schedRemindNote">Adds your workout days &amp; times to your phone's own Calendar, with an alert before each. 🔒 Nothing is sent anywhere.</div>
       </div>
       <p class="setup-note">🔒 Saved only on your phone.</p>
+      <div class="msupport-compact msupport-auto"></div>
+    </div>
+  </div>
+
+  <!-- Trainers & Programs — HIDDEN work-in-progress. Only shows in the ?full preview
+       (PAGES_ON.trainers is false), so it stays off the live app even when we push. -->
+  <div class="library-overlay" id="trainersOverlay">
+    <div class="library-inner">
+      <button class="build-back" onclick="leaveTrainersPage();openSessionPage()">‹ Back</button>
+      <div class="setup-title">🏋️ Trainers &amp; Programs</div>
+      <p class="lib-hint">Real coaches, real programs — pick one that fits you. You join them directly; MOWES just points the way.</p>
+      <div class="th-filters">
+        <span class="th-chip on">All</span><span class="th-chip">Home</span><span class="th-chip">No equipment</span><span class="th-chip">Beginner</span><span class="th-chip">Cardio</span><span class="th-chip">Strength</span>
+      </div>
+      <div id="thList"></div>
+      <div class="th-listcta">
+        <b>Are you a trainer?</b>
+        <span>Get in front of motivated beginners — your program, your membership, you keep it all.</span>
+        <a class="th-listbtn" href="mailto:get.ermes00@gmail.com?subject=MOWES%20%E2%80%94%20list%20my%20program&body=Hi!%20I%27d%20like%20to%20list%20my%20program%20on%20MOWES.%0A%0AName%3A%0AWhat%20I%20offer%3A%0ALink%20(YouTube%2Fsite)%3A%0A">List your program →</a>
+      </div>
+      <div class="th-privacy">🔒 <b>Your privacy stays yours.</b> MOWES only <b>points you</b> to each trainer — you sign up and pay on <b>their</b> platform. No account here, nothing about you is ever sent anywhere.</div>
       <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
@@ -4874,7 +4915,8 @@
     goals: true,    // 🎯 My Goals & Achievement (Achievements is now a section here)
     body:  true,    // 📏 My Body & Pics (measurements + progress-photo gallery)
     shopping: true, // 🛒 My Shopping (the Shopping List book page, id p_ex_shopping)
-    notes: true     // 📝 My Notes (the Note taking book page, id p_ex_notes — text + pics)
+    notes: true,    // 📝 My Notes (the Note taking book page, id p_ex_notes — text + pics)
+    trainers: false // 🏋️ Trainers & Programs — HIDDEN WIP; false = off in the live app. Flip to true to publish. Always visible in the ?full preview.
   };
   function pageBarStops(){
     const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's MOWES", icon:"▶️ " }];
@@ -4882,12 +4924,14 @@
       // Full app (and the ?full preview): Cover, Today's Session, the book pages, then My Goals … My Set-up.
       return base
         .concat(pages.map(p => ({ id:p.id, name:p.name, icon:pageIcon(p.type) })))
-        .concat([{ goals:true, name:"My Goals & Achievement", icon:"🎯 " }, { body:true, name:"My Body & Pics", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Set-up", icon:"⚙️ " }]);
+        .concat([{ goals:true, name:"My Goals & Achievement", icon:"🎯 " }, { body:true, name:"My Body & Pics", icon:"📏 " }, { rules:true, name:"My Rules", icon:"📜 " }, { setup:true, name:"My Set-up", icon:"⚙️ " }])
+        .concat((PAGES_ON.trainers || FULL_PREVIEW) ? [{ trainers:true, name:"Trainers", icon:"🏋️ " }] : []);
     }
     // Lean core (Cover + Today's Session) plus any pages we've switched back on so far.
     const stops = base.slice();
     // Right after Today's MOWES: one "Build MOWES" page holding My Library + My Weekly Plan.
     if (PAGES_ON.build) stops.push({ build:true, name:"Build MOWES", icon:"🛠️ " });
+    if (PAGES_ON.trainers) stops.push({ trainers:true, name:"Trainers", icon:"🏋️ " });
     if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals & Achievement", icon:"🎯 " });
     if (PAGES_ON.body)  stops.push({ body:true, name:"My Body & Pics", icon:"📏 " });
     if (PAGES_ON.shopping){ const sp = pages.find(p => p.id === "p_ex_shopping"); if (sp) stops.push({ id: sp.id, name:"My Shopping", icon:"🛒 " }); }
@@ -4913,6 +4957,7 @@
     if (planShownAsPage()) return 1;
     const stops = pageBarStops();
     if (setupShownAsPage()) return stops.findIndex(s => s.setup);
+    if (trainersShownAsPage()) return stops.findIndex(s => s.trainers);
     // My Library / My Weekly Plan live inside Build MOWES → keep that chip highlighted.
     const buildIdx = stops.findIndex(s => s.build);
     if (buildIdx >= 0 && (buildShownAsPage() || libraryShownAsPage() || weekPlanShownAsPage() || scheduleShownAsPage())) return buildIdx;
@@ -4973,6 +5018,8 @@
     if (!stops.length) return;
     k = Math.max(0, Math.min(stops.length - 1, k));
     const s = stops[k];
+    leaveTrainersPage();
+    if (s.trainers){ openTrainersPage(); return; }
     if (s.cover){ openCoverPage(); return; }
     if (s.plan){ openPlanPage(); return; }
     if (s.session){ openSessionPage(); return; }
@@ -9315,6 +9362,37 @@
   window.openSchedulePage = openSchedulePage; window.pickSchedTime = pickSchedTime;
   window.onSchedTimeChange = onSchedTimeChange; window.onSchedTimePick = onSchedTimePick; window.clearSchedTime = clearSchedTime; window.setTimeMode = setTimeMode;
   window.saveReminderLead = saveReminderLead; window.downloadReminders = downloadReminders;
+
+  // ---- Trainers & Programs (HIDDEN WIP page — only reachable in the ?full preview) ----
+  // Seed list is hand-curated. Each card just LINKS OUT to the trainer's own place.
+  const TRAINERS = [
+    { emoji:"🧘‍♀️", ava:"a1", name:"Coach Bea",     pitch:"Gentle home strength for total beginners — 15 min a day, no gear.", tags:["Home","No equipment","Beginner"], via:"▶ on YouTube",          url:"#" },
+    { emoji:"🏃",     ava:"a2", name:"Marco Runs",    pitch:"5K from zero — a walk-to-run plan that builds you up week by week.",  tags:["Outdoor","Cardio","Beginner"],    via:"▶ YouTube membership",   url:"#" },
+    { emoji:"🌿",     ava:"a3", name:"Yoga with Nia", pitch:"Gentle mobility & stretching to feel loose and strong. All levels.",  tags:["Home","Flexibility","All levels"],via:"▶ on YouTube",          url:"#" },
+    { emoji:"💪",     ava:"a4", name:"Iron Dave",     pitch:"Dumbbell builder — add muscle at home with just a pair of weights.",  tags:["Dumbbells","Strength","Intermediate"], via:"▶ his own site",    url:"#" }
+  ];
+  function renderTrainers(){
+    const el = document.getElementById("thList"); if (!el) return;
+    el.innerHTML = TRAINERS.map(t =>
+      '<div class="th-card"><div class="th-ava ' + t.ava + '">' + t.emoji + '</div>'
+      + '<div class="th-info"><p class="th-name">' + escapeHtml(t.name) + '</p>'
+      + '<p class="th-pitch">' + escapeHtml(t.pitch) + '</p>'
+      + '<div class="th-tags">' + t.tags.map(g => '<span class="th-tag">' + escapeHtml(g) + '</span>').join("") + '</div>'
+      + '<a class="th-view" href="' + t.url + '" target="_blank" rel="noopener">View program →</a>'
+      + '<div class="th-via">' + escapeHtml(t.via) + '</div></div></div>'
+    ).join("");
+  }
+  function openTrainersPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    document.getElementById("trainersOverlay").classList.add("show");
+    renderTrainers();
+    renderPageBar();
+  }
+  function leaveTrainersPage(){ const el = document.getElementById("trainersOverlay"); if (el) el.classList.remove("show"); }
+  function trainersShownAsPage(){ const el = document.getElementById("trainersOverlay"); return !!(el && el.classList.contains("show")); }
+  window.openTrainersPage = openTrainersPage; window.leaveTrainersPage = leaveTrainersPage;
 
   // Coach greeting for the day you're viewing: names the routine(s), greets a rest day,
   // or nudges you to set one up. Returns null when there's nothing worth saying.
