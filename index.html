@@ -9371,6 +9371,13 @@
     { emoji:"🌿",     ava:"a3", name:"Yoga with Nia", pitch:"Gentle mobility & stretching to feel loose and strong. All levels.",  tags:["Home","Flexibility","All levels"],via:"▶ on YouTube",          url:"#" },
     { emoji:"💪",     ava:"a4", name:"Iron Dave",     pitch:"Dumbbell builder — add muscle at home with just a pair of weights.",  tags:["Dumbbells","Strength","Intermediate"], via:"▶ his own site",    url:"#" }
   ];
+  // Tag every outbound trainer link so the trainer can SEE MOWES traffic in THEIR own
+  // analytics (YouTube/site) — this is how we prove value. No data is collected by us.
+  function taggedLink(url){
+    if (!url || url === "#") return url || "#";
+    const sep = url.indexOf("?") >= 0 ? "&" : "?";
+    return url + sep + "utm_source=mowes&utm_medium=trainer_hub";
+  }
   function renderTrainers(){
     const el = document.getElementById("thList"); if (!el) return;
     el.innerHTML = TRAINERS.map(t =>
@@ -9378,7 +9385,7 @@
       + '<div class="th-info"><p class="th-name">' + escapeHtml(t.name) + '</p>'
       + '<p class="th-pitch">' + escapeHtml(t.pitch) + '</p>'
       + '<div class="th-tags">' + t.tags.map(g => '<span class="th-tag">' + escapeHtml(g) + '</span>').join("") + '</div>'
-      + '<a class="th-view" href="' + t.url + '" target="_blank" rel="noopener">View program →</a>'
+      + '<a class="th-view" href="' + escapeHtml(taggedLink(t.url)) + '" target="_blank" rel="noopener">View program →</a>'
       + '<div class="th-via">' + escapeHtml(t.via) + '</div></div></div>'
     ).join("");
   }
