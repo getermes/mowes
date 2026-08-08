@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TOWES — Set up your coaching space</title>
+<style>
+  :root{ --ink:#3a4066; --muted:#6a7088; --soft:#8a90a8; --purple:#5b6cff; --purple2:#7a5bff; --bg:#eef0ff; --card:#fff; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; background:linear-gradient(180deg,#eef0ff,#e6e9ff); color:var(--ink);
+    font-family:-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif; line-height:1.5; }
+  .wrap{ max-width:560px; margin:0 auto; padding:28px 20px 60px; }
+  .brand{ text-align:center; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#a9aede; font-weight:800; }
+  .brand b{ color:var(--purple); }
+  .logo{ text-align:center; font-size:40px; font-weight:900; letter-spacing:-.02em; margin:8px 0 2px; color:var(--purple); }
+  .logo .t{ color:var(--purple2); }
+  .expand{ text-align:center; color:var(--soft); font-size:13.5px; font-weight:700; margin-bottom:4px; }
+  h1{ text-align:center; font-size:27px; line-height:1.15; font-weight:900; margin:14px 0 8px; }
+  h1 .hl{ color:var(--purple); }
+  .lede{ text-align:center; font-size:16px; color:var(--muted); margin:0 auto 22px; }
+  .card{ background:var(--card); border-radius:18px; padding:22px 20px; box-shadow:0 6px 18px rgba(60,64,102,.07); }
+  label{ display:block; font-weight:800; font-size:14.5px; margin:16px 0 6px; }
+  label:first-child{ margin-top:0; }
+  label .req{ color:var(--purple); }
+  label .hint{ display:block; font-weight:600; font-size:12.5px; color:var(--soft); margin-top:2px; }
+  input,textarea{ width:100%; font:inherit; font-size:16px; color:var(--ink); background:#f4f6ff; border:1.5px solid #dfe3fb;
+    border-radius:12px; padding:13px 14px; outline:none; }
+  input:focus,textarea:focus{ border-color:var(--purple); background:#fff; }
+  textarea{ resize:vertical; min-height:74px; }
+  .btn{ width:100%; margin-top:22px; border:0; cursor:pointer; background:linear-gradient(135deg,var(--purple),var(--purple2));
+    color:#fff; font-weight:800; font-size:17px; padding:16px; border-radius:16px; box-shadow:0 8px 22px rgba(91,108,255,.32); }
+  .btn:active{ transform:scale(.98); }
+  .btn:disabled{ opacity:.6; }
+  .privacy{ text-align:center; color:var(--soft); font-size:12.5px; margin:20px auto 0; }
+  .foot{ text-align:center; color:#a9aede; font-size:12.5px; margin-top:28px; }
+  .foot a{ color:#a9aede; }
+  /* Thank-you state */
+  .thanks{ display:none; text-align:center; }
+  .thanks .big{ font-size:44px; }
+  .thanks h2{ font-size:23px; font-weight:900; margin:10px 0 6px; }
+  .thanks p{ color:var(--muted); font-size:15.5px; margin:0 auto; }
+  body.done #formCard{ display:none; }
+  body.done .thanks{ display:block; }
+  @media (max-width:520px){ h1{ font-size:24px; } .logo{ font-size:34px; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand"><b>ERMES</b> · for trainers</div>
+    <div class="logo">T<span class="t">O</span>WES</div>
+    <div class="expand">Trainer's Own Weekly Exercise Sheet</div>
+    <h1>Set up your <span class="hl">coaching space</span></h1>
+    <p class="lede">A few quick things and you're in. No account, no fee to start.</p>
+
+    <div class="card" id="formCard">
+      <!-- Hidden iframe keeps the trainer on THIS page after submit (Google's page loads out of sight). -->
+      <iframe name="gf" style="display:none"></iframe>
+      <form id="signupForm"
+            action="PASTE_FORM_ACTION_URL_HERE"
+            method="POST" target="gf">
+
+        <label>Your name <span class="req">*</span>
+          <input name="entry.NAME_ID" type="text" required autocomplete="name" placeholder="e.g. Coach Sam">
+        </label>
+
+        <label>Your email <span class="req">*</span>
+          <span class="hint">So we can reply and welcome you aboard.</span>
+          <input name="entry.EMAIL_ID" type="email" required autocomplete="email" placeholder="you@example.com">
+        </label>
+
+        <label>Your link <span class="req">*</span>
+          <span class="hint">YouTube, Instagram, TikTok, or your website — so we can see your work.</span>
+          <input name="entry.LINK_ID" type="url" required placeholder="https://…">
+        </label>
+
+        <label>What do you offer? <span class="req">*</span>
+          <span class="hint">A sentence or two about your program or classes.</span>
+          <textarea name="entry.OFFER_ID" required placeholder="e.g. Beginner-friendly full-body workouts, 3 days a week…"></textarea>
+        </label>
+
+        <label>Who is it for?
+          <span class="hint">Beginners? A specific goal? (optional)</span>
+          <input name="entry.WHO_ID" type="text" placeholder="e.g. Total beginners who want to start gently">
+        </label>
+
+        <button class="btn" id="submitBtn" type="submit">Apply for a space in TOWES/MOWES</button>
+      </form>
+      <p class="privacy">🔒 We only track us helping people find you. Your clients are never tracked — their data stays on their phone.</p>
+    </div>
+
+    <div class="thanks">
+      <div class="big">🎉</div>
+      <h2>You're in the queue!</h2>
+      <p>Thanks! We'll take a quick look at your link and get you set up. Keep an eye on your email — we'll say welcome aboard soon.</p>
+    </div>
+
+    <div class="foot">TOWES · MOWES for trainers — an ERMES app. <a href="https://getermes.github.io/mowes/">getermes.github.io/mowes</a></div>
+  </div>
+
+  <script>
+    // When the trainer submits, the form posts to Google in the hidden iframe.
+    // We just flip the page to the thank-you message so they stay on TOWES.
+    var form = document.getElementById('signupForm');
+    form.addEventListener('submit', function(){
+      document.getElementById('submitBtn').disabled = true;
+      // Give the POST a moment to fire, then show thanks.
+      setTimeout(function(){ document.body.classList.add('done'); window.scrollTo(0,0); }, 400);
+    });
+  </script>
+</body>
+</html>

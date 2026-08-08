@@ -70,3 +70,43 @@ Related: income expansion plan, target audience (overwhelmed beginner), the ERME
 - Build page → "📤 Share this program" turns routines + weekly plan into a LINK (or file). Recipient taps it → additive import (never wipes their own). Works on phone, no server. This is the core of "MOWES as the trainers build+deliver tool."
 - TOWES = trainer face of MOWES: towes.html landing (getermes.github.io/mowes/towes.html). Same app, flipped names/links — NOT a separate codebase.
 - Next: name/save multiple programs; trainer profile; make the hub public with real trainers.
+
+## The "Mall" strategy (added 2026-08-08) 🏬
+Taco's crystallized business concept. Companion notes: `trainer-data-and-reach.md`, `trainer-approval-rules.md`, `towes-signup.html` (the sign-up page).
+
+### The picture
+- **MOWES/TOWES = a Mall** (a "trainers' yellow pages" that doesn't exist yet).
+- Each trainer = a **shop** with a storefront window (their card in the hub).
+- Consumers = **shoppers** who window-shop, compare, and choose what/where to "buy."
+
+### Why a mall works (the proven law Taco rediscovered = "agglomeration")
+- **a)** Shoppers go where there's **selection** — nobody visits a one-store street.
+- **b)** Businesses cluster *near* competitors on purpose (car-dealer rows, jewelry districts) — the cluster pulls a bigger crowd than any shop alone, and you catch the shopper who walked out of the store across the hall.
+
+### Why this mall doesn't exist yet (= the opening)
+1. Existing platforms (Trainerize, Playbook…) aren't neutral malls — they're **stores that take a commission and own the customer.** No trainer wants to build the competition a mall.
+2. Trainers are **scattered** across YouTube/IG/TikTok with **no common roof.**
+So the gap: **no neutral, commission-free mall for independent trainers.** MOWES can be it *because* we charge **rent, not commission** — we don't compete with our own shops.
+
+### What's genuinely NEW (the moat + promo hook)
+- **MOWES app = ~50% new** — workout apps exist; the fresh part is the *promise* (free, truly private, daily push, build-it-your-way).
+- **TOWES Mall = the 100%-new part** — not "a directory" (those exist) but *this combination*: (1) rent not commission — keep 100%; (2) trainer keeps their audience + relationship; (3) shoppers browse **fully anonymous/private**; (4) the **twin structure** — one app, a private invisible consumer side fused to an open exposure-hungry trainer side, joined by a privacy-safe turnstile. That fusion is the real invention.
+- Anchor to the mission: it's new **because it solves real pain both sides feel** (trainers hate losing their cut + audience; users hate being tracked) — new *and* useful, not novelty for its own sake.
+
+### The growth flywheel 🔄 (answers "what brings traffic?")
+1. **Recruit anchor trainers** with the mission/fair pitch — free to start, we build your storefront, join the movement.
+2. Each trainer **brings their OWN audience** to their MOWES storefront → shoppers enter the mall. *(This is the key traffic source, easy to underweight — a trainer is a shop that arrives with its own crowd; it solves chicken-and-egg.)*
+3. Shoppers **discover the other trainers too** + love the sticky, private app → **they stay** (front door, not link list).
+4. Real foot traffic **attracts more trainers**, who bring more crowds…
+5. …and now trainers **happily pay rent** → money. 💰
+- Product + own-channel promo (YouTube/TikTok/origin-story/privacy hook) is **not enough alone** — the trainers' audiences + a sticky product are what fill the mall.
+- **Critical mass caution:** the agglomeration magic only switches on after a tipping point. Empty mall = no benefit. So seed a small, curated set of anchor shops + first shoppers to get over the line.
+
+### Seeding the mall (two stages)
+- **Stage 1 — We populate it ourselves** so it's never empty: find popular/trusted/beginner-friendly trainers, add a **curated "Featured" card** linking to their **public** content. Mall looks full from day one.
+- **Stage 2 — Invite them to OWN their space** → *owning = the confirmed relationship.* Outreach: *"We already featured you — come claim & own your storefront, free."* Claiming = their opt-in + triggers the contract/data-sharing + lets them customize + gives them skin in the game (they promote it, bring their crowd).
+- **Two shop states:** *Featured* (we linked public content, clearly labeled as our pick) → *Owned/Claimed* (verified, agreed, customized — the real partner).
+- **Guardrail** ⚠️: ✅ linking public content as a labeled recommendation is fine (curation). 🚩 do NOT imply official partnership/endorsement, use their logo as an endorsement, or copy their content until they claim. Flattery converts: "you're already in our mall, come claim it" beats "please join us."
+
+### Money model in one line
+The mall owner doesn't take a cut of each sale — they charge **rent.** That IS "keep 100% · one small flat fee." Trainers keep their money, their members, and their relationship; we rent them a window in a busy, private mall.
