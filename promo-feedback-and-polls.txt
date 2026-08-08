@@ -1,0 +1,52 @@
+MOWES — FEEDBACK & POLLS
+Ways to hear from users (what works / what doesn't) without breaking the privacy promise.
+Last updated: 2026-08-06
+
+PRIVACY NOTE (important):
+Feedback is ALWAYS opt-in. The app never sends anything on its own. When someone
+taps "Send feedback" it opens THEIR email with a message pre-typed — they choose to
+send it. So you get feedback AND keep the promise. Lead with this when you ask.
+
+=========================================================
+FEEDBACK-INVITING COMMENT  (post + pin on TikTok / YouTube)
+=========================================================
+I built MOWES to fix my *own* problem — starting a workout without overthinking it.
+It sets up in seconds and walks you through step by step. 🔒 No sign-up, no account —
+everything stays on your phone, nothing is ever collected or sent anywhere. But I can't
+make it better without you: tell me what works, what doesn't, what's missing. I read
+every comment, and I build this for you. 💪 getermes.github.io/mowes
+
+=========================================================
+POLL #1 — THE STRUGGLE  (best; feeds the mission)
+=========================================================
+Caption (in Taco's voice): I need your help 🙏 What's the #1 thing that stops you
+from working out? 👇 I'm shaping MOWES around YOUR answers — a free app that guides
+your whole workout, step by step. No sign-up, nothing leaves your phone.
+getermes.github.io/mowes
+Options:
+  1) No time
+  2) Don't know what to do
+  3) No motivation
+  4) Can't get to a gym
+
+How to run it:
+- TikTok: ask people to reply with their number, or add a Poll sticker on a photo post.
+- YouTube: Community tab -> Poll (add the 4 options), or pin it as a comment.
+
+=========================================================
+POLL #2 — ABOUT THE APP  (use later)
+=========================================================
+If you tried MOWES, what would help you most?
+  1) Reminders to work out
+  2) More exercises to choose from
+  3) Seeing my progress
+  4) Even simpler setup
+Caption: Tell me your number — it decides what I build next. 🙏
+
+=========================================================
+IN-APP (already built)
+=========================================================
+- "Send feedback" link sits on every page.
+- The "Done!" celebration now gently asks: "One thing that would make MOWES better?"
+  with the note "Sharing is your choice — the app never collects or sends anything on its own."
+- Best habit: reply to EVERY comment. It doubles engagement and builds trust.

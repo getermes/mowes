@@ -1,0 +1,20 @@
+MOWES — PROMO TRAFFIC LOG
+Track views before/after each promo push so we can see what works.
+
+=========================================================
+BASELINE — before the "we updated it" comment push
+Recorded: 2026-08-06
+=========================================================
+YouTube:  83 views total | 54 views in the last 6 days
+TikTok:   75 views (07/29/26 → 08/04) | 1 share | 1 profile view
+
+Next step: post the update comment on both (see promo-update-message.txt),
+pin your own comment, then check views again in a few days and log them below.
+
+=========================================================
+AFTER PUSH #1 — (fill in when you check again)
+=========================================================
+Date checked:
+YouTube:
+TikTok:
+Notes:

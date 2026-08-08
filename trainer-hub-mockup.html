@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOWES — Trainers & Programs (mockup)</title>
+<style>
+  :root{ --ink:#3a4066; --muted:#8a90a8; --purple:#5b6cff; --purple2:#7a5bff; --card:#ffffff; --bg:#eaecff; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; background:linear-gradient(180deg,#eef0ff,#e6e9ff); font-family:-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif; color:var(--ink); }
+  .phone{ max-width:440px; margin:0 auto; min-height:100vh; padding:22px 18px 96px; }
+  .mock-tag{ text-align:center; font-size:11px; letter-spacing:.14em; color:#a9aede; font-weight:800; text-transform:uppercase; margin-bottom:10px; }
+  h1{ text-align:center; font-size:26px; font-weight:900; margin:2px 0 4px; color:var(--purple); }
+  .sub{ text-align:center; color:var(--muted); font-size:14px; font-weight:600; margin:0 0 16px; line-height:1.4; }
+  .filters{ display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px; }
+  .chip{ flex:0 0 auto; background:#eef0ff; border:1px solid #cfd6ff; color:#5a68d6; font-weight:800; font-size:12.5px; padding:8px 13px; border-radius:999px; }
+  .chip.on{ background:linear-gradient(135deg,var(--purple),var(--purple2)); color:#fff; border-color:transparent; }
+  .card{ background:var(--card); border-radius:20px; padding:16px; margin:12px 0; box-shadow:0 6px 20px rgba(60,64,102,.08); display:flex; gap:14px; align-items:flex-start; }
+  .ava{ flex:0 0 auto; width:58px; height:58px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:30px; }
+  .a1{ background:#ffe6d6; } .a2{ background:#dcf0ff; } .a3{ background:#e6f7e6; } .a4{ background:#efe6ff; }
+  .info{ flex:1; min-width:0; }
+  .name{ font-weight:900; font-size:16px; margin:0; }
+  .pitch{ color:#6a7088; font-size:13.5px; margin:3px 0 8px; line-height:1.4; }
+  .tags{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .tag{ background:#f2f4fe; color:#7a84c8; font-weight:700; font-size:11px; padding:4px 9px; border-radius:8px; }
+  .view{ display:inline-flex; align-items:center; gap:6px; text-decoration:none; background:linear-gradient(135deg,var(--purple),var(--purple2)); color:#fff; font-weight:800; font-size:13.5px; padding:10px 16px; border-radius:12px; box-shadow:0 4px 12px rgba(91,108,255,.28); }
+  .yt{ font-size:12px; color:var(--muted); font-weight:700; margin-top:8px; }
+  .list-cta{ text-align:center; background:#fff; border:2px dashed #cfd6ff; border-radius:18px; padding:18px; margin:18px 0 6px; }
+  .list-cta b{ display:block; font-size:15px; margin-bottom:4px; }
+  .list-cta span{ color:var(--muted); font-size:13px; }
+  .list-btn{ display:inline-block; margin-top:12px; text-decoration:none; color:var(--purple); font-weight:800; border:2px solid #cfd6ff; border-radius:12px; padding:9px 16px; font-size:13.5px; }
+  .privacy{ background:#f4f6ff; border-radius:16px; padding:14px 16px; margin:16px 0; font-size:12.5px; color:#6a7088; line-height:1.5; font-weight:600; }
+  .privacy b{ color:var(--ink); }
+  .bar{ position:fixed; left:0; right:0; bottom:0; display:flex; gap:8px; overflow-x:auto; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:rgba(238,240,255,.92); backdrop-filter:blur(8px); border-top:1px solid #d9ddf5; }
+  .navchip{ flex:0 0 auto; background:#fff; border-radius:12px; padding:9px 13px; font-weight:800; font-size:12.5px; color:#5a68d6; box-shadow:0 2px 6px rgba(60,64,102,.06); white-space:nowrap; }
+  .navchip.on{ background:linear-gradient(135deg,var(--purple),var(--purple2)); color:#fff; }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="mock-tag">Mockup · example trainers</div>
+    <h1>🏋️ Trainers &amp; Programs</h1>
+    <p class="sub">Real coaches, real programs — pick one that fits you. You join them directly; MOWES just points the way.</p>
+
+    <div class="filters">
+      <span class="chip on">All</span>
+      <span class="chip">Home</span>
+      <span class="chip">No equipment</span>
+      <span class="chip">Beginner</span>
+      <span class="chip">Cardio</span>
+      <span class="chip">Strength</span>
+    </div>
+
+    <div class="card">
+      <div class="ava a1">🧘‍♀️</div>
+      <div class="info">
+        <p class="name">Coach Bea</p>
+        <p class="pitch">Gentle home strength for total beginners — 15 min a day, no gear.</p>
+        <div class="tags"><span class="tag">Home</span><span class="tag">No equipment</span><span class="tag">Beginner</span></div>
+        <a class="view" href="#">View program →</a>
+        <div class="yt">▶ on YouTube</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ava a2">🏃</div>
+      <div class="info">
+        <p class="name">Marco Runs</p>
+        <p class="pitch">5K from zero — a walk-to-run plan that builds you up week by week.</p>
+        <div class="tags"><span class="tag">Outdoor</span><span class="tag">Cardio</span><span class="tag">Beginner</span></div>
+        <a class="view" href="#">View program →</a>
+        <div class="yt">▶ YouTube membership</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ava a3">🌿</div>
+      <div class="info">
+        <p class="name">Yoga with Nia</p>
+        <p class="pitch">Gentle mobility &amp; stretching to feel loose and strong. All levels.</p>
+        <div class="tags"><span class="tag">Home</span><span class="tag">Flexibility</span><span class="tag">All levels</span></div>
+        <a class="view" href="#">View program →</a>
+        <div class="yt">▶ on YouTube</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ava a4">💪</div>
+      <div class="info">
+        <p class="name">Iron Dave</p>
+        <p class="pitch">Dumbbell builder — add muscle at home with just a pair of weights.</p>
+        <div class="tags"><span class="tag">Dumbbells</span><span class="tag">Strength</span><span class="tag">Intermediate</span></div>
+        <a class="view" href="#">View program →</a>
+        <div class="yt">▶ his own site</div>
+      </div>
+    </div>
+
+    <div class="list-cta">
+      <b>Are you a trainer?</b>
+      <span>Get in front of motivated beginners — your program, your membership, you keep it all.</span>
+      <a class="list-btn" href="#">List your program →</a>
+    </div>
+
+    <div class="privacy">
+      🔒 <b>Your privacy stays yours.</b> MOWES only <b>points you</b> to each trainer — you sign up and pay on <b>their</b> platform. No account here, nothing about you is ever sent anywhere.
+    </div>
+  </div>
+
+  <div class="bar">
+    <span class="navchip">📖 Cover</span>
+    <span class="navchip">▶️ Today's</span>
+    <span class="navchip">🛠️ Build</span>
+    <span class="navchip on">🏋️ Trainers</span>
+    <span class="navchip">🎯 Goals</span>
+  </div>
+</body>
+</html>

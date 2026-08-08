@@ -1,6 +1,111 @@
 MY OWN WEEKLY EXERCISE SHEET — YOUTUBE VIDEO KIT
 (For recording your demo video. This file stays on your computer.)
 
+*** NOTE: The CURRENT app is the lean version (Cover -> Today's Session ->
+your personal pages). The promo right below matches it. The older sections
+further down describe the PREVIOUS full app (day-bar, add routine, copy-to-
+week) — keep them for reference, but shoot the one below. ***
+
+=========================================================
+30-SECOND CUT — "TAP START, IT GUIDES YOU" (~30 sec)  ⭐ SHOOT THIS
+=========================================================
+Fast and punchy for TikTok/Shorts. Tip: tap Skip to blow through the warm-ups
+so you land on a real exercise quickly. Aim for ~70 spoken words total.
+SAY = read in your own words. SHOW = what's on screen. [CAPTION] = on-screen text.
+
+[0:00 — HOOK]  (~4s)
+SAY: "This is my free workout app — and it walks you through the whole thing."
+SHOW: open the app -> the cover.
+[CAPTION] Free · No sign-up
+
+[QUICK SETUP]  (~6s)
+SAY: "No account, no email. Set it up in seconds — just select a few exercises."
+SHOW: quick tap through the guided start.
+
+[TAP START — THE STAR]  (~12s)
+SAY: "Then tap Start. It guides you step by step — each one counts down for you."
+SHOW: tap "▶ Start" -> the big purple card counting down. Tap Skip to fly past
+     the warm-ups and land on a real exercise counting down.
+[CAPTION] It guides you, step by step
+
+[DONE]  (~4s)
+SAY: "All the way to done."
+SHOW: the "🎉 Done!" celebration.
+[CAPTION] 🎉 Workout complete
+
+[CLOSE]  (~4s)
+SAY: "Free, private, works offline. Link in the description."
+SHOW: end on the app link.
+[CAPTION] getermes.github.io/mowes
+
+=========================================================
+LONGER PROMO — "FROM DOWNLOAD TO DONE" (~60-75 sec)
+=========================================================
+Phone screen recording. Shows the real journey: get the app -> first Start
+-> tick through the whole day -> the 🎉 Done at the end.
+SAY = read in your own words. SHOW = what's on screen. [CAPTION] = on-screen text.
+
+[0:00 — HOOK]
+SAY: "Let me show you my free workout app — from the second you get it, to
+     finishing your whole workout."
+SHOW: your phone home screen, tap to open the browser link.
+[CAPTION] Free · No sign-up
+
+[INSTALL IT LIKE AN APP]
+SAY: "First, add it to your phone like a real app — tap Share, then 'Add to
+     Home Screen.' Done. It even works with no internet."
+SHOW: Share menu -> Add to Home Screen -> the MOWES icon appears.
+[CAPTION] Add to Home Screen
+
+[OPEN IT]
+SAY: "Open it up — no account, no email, nothing to sign up for."
+SHOW: tap the MOWES icon -> the cover -> tap "Pick me UP →".
+
+[QUICK GUIDED START]
+SAY: "Set it up in seconds — just select a few exercises and you're good."
+SHOW: tap through the guided start, select 2-3 exercises.
+[CAPTION] Set it up in seconds
+
+[TODAY'S SESSION IS READY]
+SAY: "And boom — your whole day is ready. Warm-up, your exercises, cool-down —
+     already filled in."
+SHOW: the "Today's MOWES" tab. Up top it shows the day (TODAY · FRIDAY) with
+     Warm-up first / Cool-down after already ticked, then the full step list.
+
+[THE STAR — TAP START]
+SAY: "Now the magic: tap Start, and it walks you through the whole thing."
+SHOW: tap "▶ Start" -> the big purple 'now' card takes over — the step name
+     (e.g. "🔄 Torso twists · Warm-up"), a quick how-to line under it, and a
+     big countdown ticking down.
+
+[THE TICKING + THE TICKER]
+SAY: "Each step counts down for you, with a quick tip on how to do it. Just tap
+     Pause if you need a breather, or Skip to move on."
+SHOW: the purple card counting down (0:26...) with the Skip and Pause buttons.
+[CAPTION] It guides you, step by step
+
+[REST + WHAT'S NEXT]
+SAY: "And while you rest between sets, it tells you what's coming up — so you
+     never lose your place."
+SHOW: the green rest card with the ticker: "Up next → 💪 Push-ups".
+
+[ROLL TO THE END]
+SAY: "Step by step, all the way to your last exercise of the day."
+SHOW: speed through a couple more steps to the final one.
+
+[DONE!]
+SAY: "And… done. That's your whole workout — guided, from start to finish."
+SHOW: the "🎉 Done!" celebration.
+[CAPTION] 🎉 Workout complete
+
+[CLOSE / CALL TO ACTION]
+SAY: "It's free, it's private, and your data stays on your phone. Link's in the
+     description — give it a try, and hit Subscribe."
+SHOW: end on the app link / your channel.
+[CAPTION] getermes.github.io/mowes — Free · No sign-up
+
+END LINE (say it every time): "No sign-up, your data stays on your phone. Free."
+
 =========================================================
 YOUTUBE TITLE (pick one)
 =========================================================

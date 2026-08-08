@@ -1,0 +1,39 @@
+MOWES — Talking With Users
+==========================
+Your simple system: LISTEN -> TRACK -> FOLLOW UP.
+- People reach you by replying in comments, or tapping "💬 Send feedback" in the app (goes to get.ermes00@gmail.com).
+- Copy a ready reply below, tweak the name, post it.
+- Log every bug/idea in the list at the bottom so nothing gets lost.
+- When you fix or add something, go back and tell that person — it turns them into a fan.
+
+
+READY REPLIES (copy, paste, tweak)
+----------------------------------
+
+# Someone reports a bug / something not working
+Thank you so much for telling me 🙏 I really want to fix this. Could you tap "💬 Send feedback" at the bottom of the app and email me what phone you're using and what happened? I'll jump on it.
+
+# Someone asks for a feature or a tweak
+Love this idea 🙌 I'm adding it to my list right now. Keep them coming — MOWES gets better because of people like you.
+
+# Someone says they like it / it helped them
+Thank you, that honestly means a lot 🧡 No sign-up, no ads, your data stays on your phone — I just wanted to help people keep moving. So glad it's helping you!
+
+# Daily "push" — reply to someone posting their progress
+Day 3 already — that's the habit forming 💪 keep showing up, you've got this!
+
+# Daily "push" — another version
+Showing up is the hard part and you did it 🙌 proud of you — see you tomorrow!
+
+# THE MAGIC ONE — when you fixed/added what they asked for
+You asked for this — it's live now! 🎉 Thank you for pushing me to make MOWES better 🙏
+
+# If someone is frustrated / left a rough comment
+You're right, and I'm sorry it let you down. I read every message myself — tell me what happened (💬 Send feedback in the app) and I'll make it right 🙏
+
+
+FEEDBACK LIST (log everything here)
+-----------------------------------
+Format:  [DATE] who / where — what they said — STATUS (new / working on it / done + told them)
+
+- [2026-07-31] (example) @username on YouTube — asked for a rest-day reminder — new
