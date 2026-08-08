@@ -25,6 +25,14 @@
   .tag{ background:#f2f4fe; color:#7a84c8; font-weight:700; font-size:11px; padding:4px 9px; border-radius:8px; }
   .view{ display:inline-flex; align-items:center; gap:6px; text-decoration:none; background:linear-gradient(135deg,var(--purple),var(--purple2)); color:#fff; font-weight:800; font-size:13.5px; padding:10px 16px; border-radius:12px; box-shadow:0 4px 12px rgba(91,108,255,.28); }
   .yt{ font-size:12px; color:var(--muted); font-weight:700; margin-top:8px; }
+  /* Two shop states: Featured (our pick) vs Owned (claimed partner) */
+  .badge{ display:inline-flex; align-items:center; gap:5px; font-weight:800; font-size:10.5px; letter-spacing:.02em; padding:4px 9px; border-radius:999px; margin-bottom:7px; }
+  .badge.feat{ background:#fff4e6; color:#c67a1e; border:1px solid #ffe0b8; }
+  .badge.owned{ background:#e7f7ec; color:#2a9d55; border:1px solid #c4ebd1; }
+  .how{ background:#fff; border:1px solid #e0e4fb; border-radius:16px; padding:13px 15px; margin:2px 0 14px; font-size:12.5px; color:#6a7088; line-height:1.5; font-weight:600; }
+  .how b{ color:var(--ink); }
+  .how .row{ display:flex; gap:8px; align-items:flex-start; margin-top:7px; }
+  .how .dot{ flex:0 0 auto; margin-top:1px; }
   .list-cta{ text-align:center; background:#fff; border:2px dashed #cfd6ff; border-radius:18px; padding:18px; margin:18px 0 6px; }
   .list-cta b{ display:block; font-size:15px; margin-bottom:4px; }
   .list-cta span{ color:var(--muted); font-size:13px; }
@@ -42,6 +50,12 @@
     <h1>🏋️ Trainers &amp; Programs</h1>
     <p class="sub">Real coaches, real programs — pick one that fits you. You join them directly; MOWES just points the way.</p>
 
+    <div class="how">
+      Two kinds of cards here — and we're always honest about which is which:
+      <div class="row"><span class="dot">⭐</span><span><b>Featured</b> — a coach we picked and are pointing you to. It links to their <b>public</b> content. They're not a paid partner (yet) — it's our recommendation.</span></div>
+      <div class="row"><span class="dot">✅</span><span><b>Claimed</b> — this coach has joined and <b>owns</b> their space here. Verified, and set up by them.</span></div>
+    </div>
+
     <div class="filters">
       <span class="chip on">All</span>
       <span class="chip">Home</span>
@@ -54,6 +68,7 @@
     <div class="card">
       <div class="ava a1">🧘‍♀️</div>
       <div class="info">
+        <span class="badge owned">✅ Claimed space</span>
         <p class="name">Coach Bea</p>
         <p class="pitch">Gentle home strength for total beginners — 15 min a day, no gear.</p>
         <div class="tags"><span class="tag">Home</span><span class="tag">No equipment</span><span class="tag">Beginner</span></div>
@@ -65,6 +80,7 @@
     <div class="card">
       <div class="ava a2">🏃</div>
       <div class="info">
+        <span class="badge feat">⭐ Featured · our pick</span>
         <p class="name">Marco Runs</p>
         <p class="pitch">5K from zero — a walk-to-run plan that builds you up week by week.</p>
         <div class="tags"><span class="tag">Outdoor</span><span class="tag">Cardio</span><span class="tag">Beginner</span></div>
@@ -76,6 +92,7 @@
     <div class="card">
       <div class="ava a3">🌿</div>
       <div class="info">
+        <span class="badge feat">⭐ Featured · our pick</span>
         <p class="name">Yoga with Nia</p>
         <p class="pitch">Gentle mobility &amp; stretching to feel loose and strong. All levels.</p>
         <div class="tags"><span class="tag">Home</span><span class="tag">Flexibility</span><span class="tag">All levels</span></div>
@@ -87,6 +104,7 @@
     <div class="card">
       <div class="ava a4">💪</div>
       <div class="info">
+        <span class="badge feat">⭐ Featured · our pick</span>
         <p class="name">Iron Dave</p>
         <p class="pitch">Dumbbell builder — add muscle at home with just a pair of weights.</p>
         <div class="tags"><span class="tag">Dumbbells</span><span class="tag">Strength</span><span class="tag">Intermediate</span></div>
@@ -98,7 +116,7 @@
     <div class="list-cta">
       <b>Are you a trainer?</b>
       <span>Get in front of motivated beginners — your program, your membership, you keep it all.</span>
-      <a class="list-btn" href="#">List your program →</a>
+      <a class="list-btn" href="towes-signup.html">List your program →</a>
     </div>
 
     <div class="privacy">
