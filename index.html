@@ -894,6 +894,8 @@
 
   /* Backup & Restore popup */
   .backup-intro { color: #555; font-size: 14px; line-height: 1.5; margin: 4px 0 16px; }
+  .share-link { width: 100%; box-sizing: border-box; font-size: 12px; padding: 10px 12px; border: 1.5px solid #cfd6ff;
+    border-radius: 10px; background: #f4f6ff; color: #3a4066; margin: 4px 0 10px; }
   .backup-btn {
     width: 100%; border: none; border-radius: 14px; padding: 15px;
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
@@ -3465,6 +3467,11 @@
         <div class="build-tile-text"><div class="build-tile-name">Workout Schedule</div></div>
         <div class="build-tile-arrow">›</div>
       </button>
+      <button class="build-tile" onclick="openShareProgram()">
+        <div class="build-tile-icon">📤</div>
+        <div class="build-tile-text"><div class="build-tile-name">Share this program</div><div class="build-tile-desc">Send your routines to someone as a link</div></div>
+        <div class="build-tile-arrow">›</div>
+      </button>
       <div id="buildSupport" class="msupport-compact"></div>
     </div>
   </div>
@@ -4110,6 +4117,36 @@
         </div>
         <div id="statsBody"></div>
         <div class="stats-privacy">🔒 All figured out right here on your phone from your own workouts — nothing is sent anywhere.</div>
+      </div>
+    </div>
+
+    <!-- Share a program: turn your routines + weekly plan into a link/file to send someone -->
+    <div class="overlay" id="shareProgramOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>📤 Share this program</h2>
+          <button class="close-btn" onclick="closeShareProgram()">&times;</button>
+        </div>
+        <p class="backup-intro">This turns your routines + weekly plan into a link. Send it to anyone — they tap it and it loads into their MOWES, right on their phone. 🔒 Nothing goes through us.</p>
+        <input type="text" id="shareProgramLink" class="share-link" readonly onclick="this.select()">
+        <button class="backup-btn backup-save" id="shareProgramCopyBtn" onclick="copyShareProgram()">🔗 Copy link</button>
+        <p class="backup-sub" id="shareProgramNote"></p>
+        <div class="backup-divider"><span>or</span></div>
+        <button class="backup-btn backup-restore" onclick="saveProgramFile()">📁 Save as a file</button>
+        <div class="backup-privacy">🔒 The link/file holds only the routines — no personal data. Send it your way (message, email, a YouTube description).</div>
+      </div>
+    </div>
+
+    <!-- A trainer/friend shared a program with you: load it (ADDS, never wipes your own) -->
+    <div class="overlay" id="importProgramOverlay">
+      <div class="card">
+        <div class="card-header">
+          <h2>🏋️ A program was shared with you</h2>
+        </div>
+        <p class="backup-intro" id="importProgramText"></p>
+        <button class="backup-btn backup-save" onclick="confirmImportProgram()">✅ Add it to my MOWES</button>
+        <button class="backup-btn backup-restore" onclick="cancelImportProgram()">Not now</button>
+        <div class="backup-privacy">🔒 This only ADDS the new routines — your own routines and plan stay exactly as they are.</div>
       </div>
     </div>
 
@@ -6948,6 +6985,97 @@
   window.openBackup = openBackup; window.closeBackup = closeBackup;
   window.doBackupSave = doBackupSave; window.doBackupRestore = doBackupRestore;
 
+  // ---- Publish / load a PROGRAM (a trainer shares their routines with a client) ----
+  // A program = your Library routines + your Weekly Plan, packed into a link or file.
+  // Loading it ADDS to what's already there — it never wipes the person's own routines.
+  function buildProgramPayload(){
+    return { app:"MOWES", type:"mowes-program", version:1, savedAt:new Date().toISOString(),
+             library: JSON.parse(JSON.stringify(getLibrary())), week: JSON.parse(JSON.stringify(loadWeekSel())) };
+  }
+  function programEncode(obj){
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+    return b64.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");   // URL-safe
+  }
+  function programDecode(str){
+    let b64 = String(str).replace(/-/g,"+").replace(/_/g,"/");
+    while (b64.length % 4) b64 += "=";
+    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+  }
+  function programShareLink(){
+    return location.origin + location.pathname + "#program=" + programEncode(buildProgramPayload());
+  }
+  function openShareProgram(){
+    if (!getLibrary().length){ alert("Build at least one routine in My Library first — then you can share it."); return; }
+    const link = programShareLink();
+    const inp = document.getElementById("shareProgramLink"); if (inp) inp.value = link;
+    const note = document.getElementById("shareProgramNote");
+    if (note) note.textContent = link.length > 8000 ? "⚠️ This program is big — the link may be too long for some apps. Use “Save as a file” instead." : "";
+    document.getElementById("shareProgramOverlay").classList.add("open");
+  }
+  function closeShareProgram(){ document.getElementById("shareProgramOverlay").classList.remove("open"); }
+  function copyShareProgram(){
+    const inp = document.getElementById("shareProgramLink"); if (!inp) return;
+    inp.select(); try { inp.setSelectionRange(0, 99999); } catch(e){}
+    try { navigator.clipboard.writeText(inp.value); } catch(e){ try { document.execCommand("copy"); } catch(e2){} }
+    const b = document.getElementById("shareProgramCopyBtn");
+    if (b){ const t = b.textContent; b.textContent = "✅ Copied!"; setTimeout(() => { b.textContent = t; }, 1600); }
+  }
+  function saveProgramFile(){
+    const blob = new Blob([JSON.stringify(buildProgramPayload())], { type:"application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "mowes-program.json";
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+  }
+  // Additive import: give the shared routines fresh ids, add them, and append their
+  // day-assignments alongside whatever's already on each day. Nothing is removed.
+  function importProgramPayload(payload){
+    if (!(payload && payload.type === "mowes-program" && Array.isArray(payload.library))) return false;
+    loadLibrary();
+    const sel = loadWeekSel(), idMap = {};
+    payload.library.forEach(r => {
+      if (!r) return;
+      const copy = JSON.parse(JSON.stringify(r)), oldId = copy.id;
+      copy.id = genLibId();
+      if (oldId) idMap[oldId] = copy.id;
+      libraryRoutines.push(copy);
+    });
+    const week = payload.week || {};
+    days.forEach(d => {
+      (Array.isArray(week[d]) ? week[d] : []).forEach(oldId => {
+        const nid = idMap[oldId];
+        if (nid && sel[d].indexOf(nid) < 0) sel[d].push(nid);
+      });
+    });
+    saveLibrary(); saveWeekSel(sel);
+    return true;
+  }
+  let _pendingProgram = null;
+  function detectSharedProgram(){
+    let raw = "";
+    try { const m = (location.hash || "").match(/[#&]program=([^&]+)/); if (m) raw = m[1]; } catch(e){}
+    if (!raw) return;
+    let payload = null; try { payload = programDecode(raw); } catch(e){ payload = null; }
+    try { history.replaceState(null, "", location.pathname + location.search); } catch(e){}   // don't re-prompt on reload
+    if (!(payload && payload.type === "mowes-program")) return;
+    const count = (payload.library || []).length;
+    const el = document.getElementById("importProgramText");
+    if (el) el.textContent = "Someone shared a workout program with you (" + count + " routine" + (count === 1 ? "" : "s") + "). Add it to your MOWES? Your own routines stay — this only adds.";
+    _pendingProgram = payload;
+    document.getElementById("importProgramOverlay").classList.add("open");
+  }
+  function confirmImportProgram(){
+    document.getElementById("importProgramOverlay").classList.remove("open");
+    const p = _pendingProgram; _pendingProgram = null;
+    if (!p) return;
+    if (importProgramPayload(p)){ alert("✅ Program added! You'll find the new routines in My Library and on your Weekly Plan."); location.reload(); }
+    else { alert("Sorry — that shared program couldn't be read."); }
+  }
+  function cancelImportProgram(){ document.getElementById("importProgramOverlay").classList.remove("open"); _pendingProgram = null; }
+  window.openShareProgram = openShareProgram; window.closeShareProgram = closeShareProgram;
+  window.copyShareProgram = copyShareProgram; window.saveProgramFile = saveProgramFile;
+  window.confirmImportProgram = confirmImportProgram; window.cancelImportProgram = cancelImportProgram;
+
   // ---- My Progress: motivating stats worked out from your own saved data ----
   // Shift a "YYYY-MM-DD" Monday key back a whole number of weeks (local time).
   function statWeekKeyMinus(weekKey, weeksBack){
@@ -7091,6 +7219,9 @@
 
   // Start the pages system (seeds the first page, restores the last open page)
   initPages();
+
+  // If someone opened a shared-program link (#program=…), offer to load it.
+  try { detectSharedProgram(); } catch(e){}
 
 
   // ---- "Thought of the day" — private, topic-based messages ----

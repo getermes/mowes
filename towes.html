@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TOWES — Trainer's Own Weekly Exercise Sheet</title>
+<style>
+  :root{ --ink:#3a4066; --muted:#6a7088; --soft:#8a90a8; --purple:#5b6cff; --purple2:#7a5bff; --bg:#eef0ff; --card:#fff; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; background:linear-gradient(180deg,#eef0ff,#e6e9ff); color:var(--ink);
+    font-family:-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif; line-height:1.5; }
+  .wrap{ max-width:720px; margin:0 auto; padding:28px 20px 60px; }
+  .brand{ text-align:center; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#a9aede; font-weight:800; }
+  .brand b{ color:var(--purple); }
+  .logo{ text-align:center; font-size:40px; font-weight:900; letter-spacing:-.02em; margin:8px 0 2px; color:var(--purple); }
+  .logo .t{ color:var(--purple2); }
+  .expand{ text-align:center; color:var(--soft); font-size:13.5px; font-weight:700; margin-bottom:4px; }
+  h1{ text-align:center; font-size:31px; line-height:1.15; font-weight:900; margin:14px 0 10px; }
+  h1 .hl{ color:var(--purple); }
+  .lede{ text-align:center; font-size:17px; color:var(--muted); max-width:560px; margin:0 auto 12px; }
+  .isline{ text-align:center; font-size:14px; color:var(--soft); font-weight:700; margin:0 auto 20px; }
+  .cta{ display:inline-block; text-decoration:none; background:linear-gradient(135deg,var(--purple),var(--purple2)); color:#fff;
+    font-weight:800; font-size:17px; padding:15px 30px; border-radius:16px; box-shadow:0 8px 22px rgba(91,108,255,.32); }
+  .cta:active{ transform:scale(.98); }
+  .center{ text-align:center; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:28px 0; }
+  .card{ background:var(--card); border-radius:18px; padding:18px; box-shadow:0 6px 18px rgba(60,64,102,.07); }
+  .card .ic{ font-size:26px; }
+  .card b{ display:block; margin:8px 0 4px; font-size:16px; }
+  .card span{ color:var(--muted); font-size:14px; }
+  h2{ text-align:center; font-size:23px; font-weight:900; margin:34px 0 6px; }
+  .sub{ text-align:center; color:var(--soft); font-size:14px; margin:0 0 18px; }
+  .steps{ counter-reset:s; display:flex; flex-direction:column; gap:12px; }
+  .step{ background:var(--card); border-radius:16px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; box-shadow:0 4px 12px rgba(60,64,102,.06); }
+  .step .n{ counter-increment:s; flex:0 0 auto; width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--purple),var(--purple2));
+    color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; }
+  .step .n::before{ content:counter(s); }
+  .step b{ display:block; font-size:15.5px; }
+  .step span{ color:var(--muted); font-size:14px; }
+  .doors{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .door{ background:#f4f6ff; border:1.5px solid #dfe3fb; border-radius:16px; padding:16px; }
+  .door b{ display:block; font-size:15px; margin-bottom:4px; }
+  .door span{ color:var(--muted); font-size:13.5px; }
+  .door .soon{ display:inline-block; margin-top:8px; font-size:11px; font-weight:800; color:var(--purple); background:#e6e9ff; padding:3px 8px; border-radius:6px; }
+  .compare{ background:var(--card); border-radius:18px; padding:18px 20px; box-shadow:0 6px 18px rgba(60,64,102,.07); }
+  .compare .row{ display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid #eef0f8; font-size:14.5px; }
+  .compare .row:last-child{ border-bottom:0; }
+  .compare .row span:first-child{ color:var(--muted); }
+  .compare .row b{ color:var(--ink); }
+  .compare .mowes b{ color:#2faa6a; }
+  .price{ text-align:center; background:var(--card); border-radius:18px; padding:22px; box-shadow:0 6px 18px rgba(60,64,102,.07); }
+  .price .big{ font-size:19px; font-weight:900; }
+  .price .p{ color:var(--muted); font-size:14.5px; margin-top:6px; }
+  .privacy{ text-align:center; color:var(--soft); font-size:13px; margin:26px auto 0; max-width:560px; }
+  .foot{ text-align:center; color:#a9aede; font-size:12.5px; margin-top:30px; }
+  @media (max-width:520px){ .grid,.doors{ grid-template-columns:1fr; } h1{ font-size:27px; } .logo{ font-size:34px; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand"><b>ERMES</b> · for trainers</div>
+    <div class="logo">T<span class="t">O</span>WES</div>
+    <div class="expand">Trainer's Own Weekly Exercise Sheet</div>
+    <h1>Reach people <span class="hl">just starting out</span>.<br>Keep <span class="hl">100%</span>.</h1>
+    <p class="lede">TOWES is the trainer side of MOWES — the free, no-sign-up workout app for beginners. List your program, get in front of motivated newcomers, and keep every dollar you earn.</p>
+    <p class="isline">TOWES is simply MOWES, for coaches. Same app — your face on it.</p>
+    <div class="center"><a class="cta" href="mailto:get.ermes00@gmail.com?subject=TOWES%20%E2%80%94%20I%20want%20to%20list%20my%20program&body=Hi!%20I%27d%20like%20to%20list%20my%20program%20on%20TOWES%2FMOWES.%0A%0AName%3A%0AWhat%20I%20offer%3A%0ALink%20(YouTube%2Fsite)%3A%0AWho%20it%27s%20for%3A%0A">📩 List your program</a></div>
+
+    <div class="grid">
+      <div class="card"><div class="ic">💰</div><b>Keep 100%</b><span>We never take a cut of your sales. You charge your way; you keep it all.</span></div>
+      <div class="card"><div class="ic">🆓</div><b>Free to start</b><span>List for free. Pay only later, once TOWES is actually bringing you clients.</span></div>
+      <div class="card"><div class="ic">👀</div><b>Real exposure</b><span>Get in front of motivated beginners already inside the app.</span></div>
+      <div class="card"><div class="ic">🔒</div><b>No friction</b><span>No accounts, no download for your clients — they start from a link.</span></div>
+    </div>
+
+    <h2>How it works</h2>
+    <p class="sub">Three steps. No tech skills needed.</p>
+    <div class="steps">
+      <div class="step"><div class="n"></div><div><b>List your program</b><span>Send us your program (or just link your YouTube / site). We keep quality high.</span></div></div>
+      <div class="step"><div class="n"></div><div><b>We feature you</b><span>Your card goes in the app's Trainers hub, matched to the right beginners.</span></div></div>
+      <div class="step"><div class="n"></div><div><b>We send you people</b><span>You'll see the traffic in your own analytics, tagged “from MOWES.” Proof it's working.</span></div></div>
+    </div>
+
+    <h2>Two ways to join</h2>
+    <p class="sub">Whether you have a platform or not.</p>
+    <div class="doors">
+      <div class="door"><b>▶ Already have a channel or site?</b><span>We link your card straight to it and send you people. Done.</span></div>
+      <div class="door"><b>🛠️ No tools of your own?</b><span>Build your program right in the app, then share it as a link — your clients tap it and follow along, guided.</span><span class="soon">Rolling out</span></div>
+    </div>
+
+    <h2>How we compare</h2>
+    <p class="sub">The honest version.</p>
+    <div class="compare">
+      <div class="row"><span>Marketplace apps (Playbook…)</span><b>take ~20%+ of your sales</b></div>
+      <div class="row"><span>Coaching software (Trainerize…)</span><b>$50–130+/mo, more as you grow</b></div>
+      <div class="row mowes"><span>TOWES</span><b>keep 100% · one small flat fee</b></div>
+    </div>
+
+    <h2>Pricing</h2>
+    <p class="sub">Built so it only costs you when it's working.</p>
+    <div class="price">
+      <div class="big">Free while we grow.</div>
+      <div class="p">When TOWES is bringing you clients, keep it for <b>less than one client's payment</b> — a small monthly fee, never a cut of your sales.</div>
+    </div>
+
+    <p class="privacy">🔒 No accounts, and nothing is stored about your clients — their data stays on their phone. You keep your members, your money, and your relationship. We just help people find you.</p>
+
+    <div class="center" style="margin-top:26px"><a class="cta" href="mailto:get.ermes00@gmail.com?subject=TOWES%20%E2%80%94%20I%20want%20to%20list%20my%20program&body=Hi!%20I%27d%20like%20to%20list%20my%20program%20on%20TOWES%2FMOWES.%0A%0AName%3A%0AWhat%20I%20offer%3A%0ALink%20(YouTube%2Fsite)%3A%0AWho%20it%27s%20for%3A%0A">📩 List your program</a></div>
+
+    <div class="foot">TOWES · MOWES for trainers — an ERMES app. getermes.github.io/mowes</div>
+  </div>
+</body>
+</html>
