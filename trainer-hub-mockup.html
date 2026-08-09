@@ -188,6 +188,14 @@
 
   <script>
     (function(){
+      // Proof-of-value link tags: every coach link carries a "from MOWES" mark,
+      // so the trainer sees our traffic in their OWN analytics. No data collected here.
+      Array.prototype.slice.call(document.querySelectorAll('a.view[href]')).forEach(function(a){
+        var href = a.getAttribute('href');
+        if(!href || /utm_source=mowes/.test(href)) return;
+        a.setAttribute('href', href + (href.indexOf('?') === -1 ? '?' : '&') + 'utm_source=mowes&utm_medium=trainer-hub');
+      });
+
       var chips = Array.prototype.slice.call(document.querySelectorAll('.filters .chip'));
       var cards = Array.prototype.slice.call(document.querySelectorAll('.card[data-cats]'));
       var empty = document.getElementById('empty');
