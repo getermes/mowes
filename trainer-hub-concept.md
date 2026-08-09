@@ -110,3 +110,21 @@ So the gap: **no neutral, commission-free mall for independent trainers.** MOWES
 
 ### Money model in one line
 The mall owner doesn't take a cut of each sale — they charge **rent.** That IS "keep 100% · one small flat fee." Trainers keep their money, their members, and their relationship; we rent them a window in a busy, private mall.
+
+## Positioning RIGHT NOW (decided 2026-08-09) 🚩 read this first
+Taco's correction to the "cold-start / no audience" worry. The worry is misframed — because **today we are NOT selling traffic.**
+
+### The one-line offer, today
+> **Right now TOWES is NOT selling traffic, sales, or promotion — that's the FUTURE.**
+> **Right now it sells ONE thing: "Be the FIRST to own a space — for FREE."**
+
+- We are **opening the doors with free rent** to anyone who sees the **future** benefit — NOT today's foot traffic. The value today = **founding position** in a brand-new kind of mall (first in the untapped pond). Scarcity/being-first *is* the value now.
+- This is **honest**: we never promise visitors we don't have. We promise **first spot**, free. Nobody can call that a lie.
+- Traffic, sales, promotion, and **paid rent** all come **later**, once the mall is populated with **claimed** trainers. Sequence: *populate with founders (free) → foot traffic grows → then offer traffic/promo and charge rent.*
+
+### How we seed it now (updates Stage 1 → the guardrail #3 fix)
+- Instead of quietly Featuring real coaches (risk: "why am I on your app without asking?"), we **reach out and OFFER them the free space** — a **founding deal: 1, 2, or 3 years free rent** to be an early shop and help promote the mall.
+- That flips the risk into a gift: we asked, and we gave them something. Flattering, not threatening. Lead with **smaller coaches** most likely to be delighted + actually claim.
+
+### Hard dependency before landing the first trainer ⏳ (urgent)
+- The **anonymous event counter** (proof: "your program was loaded X times / your card was tapped X times") must exist **before** we land the first claimed trainer — so we can *show* them it's real, not just promise it. Moved from "someday" to **near-term / ASAP**. The *how* is still to be discussed & decided.

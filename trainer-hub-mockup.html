@@ -39,6 +39,9 @@
   .list-btn{ display:inline-block; margin-top:12px; text-decoration:none; color:var(--purple); font-weight:800; border:2px solid #cfd6ff; border-radius:12px; padding:9px 16px; font-size:13.5px; }
   .privacy{ background:#f4f6ff; border-radius:16px; padding:14px 16px; margin:16px 0; font-size:12.5px; color:#6a7088; line-height:1.5; font-weight:600; }
   .privacy b{ color:var(--ink); }
+  .empty{ text-align:center; color:var(--muted); font-size:13.5px; font-weight:600; background:#fff; border:2px dashed #cfd6ff; border-radius:18px; padding:22px 16px; margin:12px 0; }
+  .empty b{ color:var(--purple); }
+  .card[hidden]{ display:none; }
   .bar{ position:fixed; left:0; right:0; bottom:0; display:flex; gap:8px; overflow-x:auto; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:rgba(238,240,255,.92); backdrop-filter:blur(8px); border-top:1px solid #d9ddf5; }
   .navchip{ flex:0 0 auto; background:#fff; border-radius:12px; padding:9px 13px; font-weight:800; font-size:12.5px; color:#5a68d6; box-shadow:0 2px 6px rgba(60,64,102,.06); white-space:nowrap; }
   .navchip.on{ background:linear-gradient(135deg,var(--purple),var(--purple2)); color:#fff; }
@@ -66,7 +69,7 @@
       <span class="chip">Strength</span>
     </div>
 
-    <div class="card">
+    <div class="card" data-cats="home,beginner,cardio,strength,no equipment">
       <div class="ava a1">🏋️</div>
       <div class="info">
         <span class="badge feat">⭐ Featured · our pick</span>
@@ -78,7 +81,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cats="home,beginner,no equipment">
       <div class="ava a2">🧘‍♀️</div>
       <div class="info">
         <span class="badge feat">⭐ Featured · our pick</span>
@@ -90,7 +93,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cats="home,beginner,cardio,no equipment">
       <div class="ava a3">💃</div>
       <div class="info">
         <span class="badge feat">⭐ Featured · our pick</span>
@@ -102,7 +105,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cats="home,beginner,cardio,no equipment">
       <div class="ava a4">🚶</div>
       <div class="info">
         <span class="badge feat">⭐ Featured · our pick</span>
@@ -114,7 +117,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cats="home,beginner,no equipment">
       <div class="ava a1">🪑</div>
       <div class="info">
         <span class="badge feat">⭐ Featured · our pick</span>
@@ -126,7 +129,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cats="home,beginner,cardio,strength,no equipment">
       <div class="ava a2">🌸</div>
       <div class="info">
         <span class="badge feat">⭐ Featured · our pick</span>
@@ -138,7 +141,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cats="home,beginner,cardio,no equipment">
       <div class="ava a3">🙌</div>
       <div class="info">
         <span class="badge feat">⭐ Featured · our pick</span>
@@ -150,7 +153,7 @@
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-cats="home,beginner,cardio,strength,no equipment">
       <div class="ava a4">⚡</div>
       <div class="info">
         <span class="badge feat">⭐ Featured · our pick</span>
@@ -161,6 +164,8 @@
         <div class="yt">▶ on YouTube · ~11M</div>
       </div>
     </div>
+
+    <div class="empty" id="empty" hidden>No featured coaches in this group yet — tap <b>All</b> to see everyone.</div>
 
     <div class="list-cta">
       <b>Are you a trainer?</b>
@@ -180,5 +185,30 @@
     <span class="navchip on">🏋️ Trainers</span>
     <span class="navchip">🎯 Goals</span>
   </div>
+
+  <script>
+    (function(){
+      var chips = Array.prototype.slice.call(document.querySelectorAll('.filters .chip'));
+      var cards = Array.prototype.slice.call(document.querySelectorAll('.card[data-cats]'));
+      var empty = document.getElementById('empty');
+      function apply(pick){
+        var shown = 0;
+        cards.forEach(function(card){
+          var cats = card.getAttribute('data-cats') || '';
+          var match = (pick === 'all') || cats.split(',').indexOf(pick) !== -1;
+          card.hidden = !match;
+          if(match) shown++;
+        });
+        empty.hidden = shown !== 0;
+      }
+      chips.forEach(function(chip){
+        chip.addEventListener('click', function(){
+          chips.forEach(function(c){ c.classList.remove('on'); });
+          chip.classList.add('on');
+          apply(chip.textContent.trim().toLowerCase());
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
