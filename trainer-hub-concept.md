@@ -150,6 +150,18 @@ Fill-in shops (equipment/apparel/supply/supplements) are **outbound links** — 
 ### Filed as
 A planned **"MOWES marketplace" fill-in layer**: Coaches/Clinicians (anchors) → then Gear / Apparel / Supply / Fuel (fill-in), switched on once anchors bring the crowd. Money = flat advertising/rent for exposure, links out, no user tracking.
 
+### Pricing loop: count → tier → flat fee (confirmed 2026-08-09, Taco "YES 100%") 🔑
+The anonymous counter (on the Vegas server, see [[project_own_server_vegas]]) turns into fair, private pricing:
+1. **The count** measures traffic — anonymously, events only ("this listing/space got X taps this month").
+2. **The count PROVES the exposure** — real reach, not guesswork or promises.
+3. **The proof sets the TIER** → bigger proven audience = higher tier = higher **flat fee**. Prices on proven reach ("prove it first, then price it"). This is the measured upgrade of the earlier "tiered pricing by size" idea in `trainer-hub-money-plan.md` (tier by real traffic, not self-reported size).
+
+**KEEP THE DISTINCTION SHARP** (the line that keeps it private AND proven):
+- ✅ The count sets the **tier** (a band: "this much traffic = this price level").
+- ✅ The fee stays **flat** within the tier.
+- 🚫 **NEVER bill per-click** — that would require tracking each individual's tap through to the advertiser, which breaks the promise.
+- 🔒 **Sacred line:** count **events** ("a listing was tapped 4,000 times"), **never who** tapped it. Aggregate + anonymous — same rule as the trainer side ([[project_towes_positioning_founding_free_space]]). Advertiser gets proof + a fair flat price; the user is never tracked.
+
 ## Positioning RIGHT NOW (decided 2026-08-09) 🚩 read this first
 Taco's correction to the "cold-start / no audience" worry. The worry is misframed — because **today we are NOT selling traffic.**
 
