@@ -130,6 +130,21 @@ MOWES stays the **delivery tool**, NEVER the medical advice. The clinician owns 
 - Consider widening the hub name from "Trainers" to **"Coaches & Clinicians"** / **"Movement Pros."**
 - Same build→share→import engine already live — no new tech needed to start; it's a positioning + outreach expansion.
 
+## Fill-in layer: gear & supply shops for the MOWES fitness universe (idea 2026-08-09) 🛍️
+Applying the need-universe playbook (see [[project_idea_need_universe_mall]]) back to MOWES itself: **MOWES = the FITNESS universe.** Around the "move" need cluster the related businesses.
+- 🏋️ **Move it** → trainers, PTs, chiros, dance = the **ANCHORS** (need the tool + bring their crowd — already in the hub).
+- 👟 **Gear for it** → sports clothing, shoes, equipment, mats, weights = **FILL-IN**.
+- 🥤 **Fuel for it** → supplements, protein, bottles, recovery = **FILL-IN**.
+
+### The honest sequencing (Taco's own rule)
+Gear/supply are **fill-in = exposure-seekers**, NOT anchors. By the recruiting rule (*anchor = tool-needer, fill-in = crowd-wanter, land anchors first*), they join **after** the trainers pull a crowd. MOWES is still building its audience, so this is a **"fill in once there's foot traffic"** item — not a "build next" item. Don't recruit gear brands to an empty mall.
+
+### Guardrail 🔒 (protect the soul)
+MOWES's promise is *private — no tracking, no selling, no spying.* A shopping side is OK **only** if it stays like the trainer hub already is: a **neutral window that links OUT**, no follow-you ads, no user data sold. Gear is a **calm, optional corner** the user chooses to visit — never shoved at the beginner. Same **rent-not-commission** money model. Break the privacy promise here and we'd trade the moat for pennies.
+
+### Filed as
+A planned **"MOWES marketplace" fill-in layer**: Coaches/Clinicians (anchors) → then Gear / Apparel / Supply / Fuel (fill-in), switched on once anchors bring the crowd.
+
 ## Positioning RIGHT NOW (decided 2026-08-09) 🚩 read this first
 Taco's correction to the "cold-start / no audience" worry. The worry is misframed — because **today we are NOT selling traffic.**
 
