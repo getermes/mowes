@@ -111,6 +111,25 @@ So the gap: **no neutral, commission-free mall for independent trainers.** MOWES
 ### Money model in one line
 The mall owner doesn't take a cut of each sale — they charge **rent.** That IS "keep 100% · one small flat fee." Trainers keep their money, their members, and their relationship; we rent them a window in a busy, private mall.
 
+## Expansion: Clinicians too — chiropractors, physical therapists, rehab/therapy (idea 2026-08-09) 💡
+Taco's insight: the mall isn't only fitness trainers. **Chiropractors, physical therapists, and therapy/rehab practices** send patients home with an exercise plan to do — the exact same engine (build a plan → hand it over by link/QR → patient follows it, guided, with reminders). New shop categories, possibly a *better* segment than influencers.
+
+### Why clinicians may be an even better fit than trainers
+- **They already do this — badly.** Every PT/chiro hands out a "home exercise program," usually on crumpled paper or an ignored app. We solve a problem they hit *every day* → dead-on the mission (find real pain, fix it).
+- **Their patients NEED the push.** The #1 problem in PT is patients not doing home exercises. MOWES's daily coaching + reminders + guided steps aim straight at adherence — for a patient it's not "nice to have," it's healing vs. not.
+- **Privacy matters MORE in health.** "No account, nothing sent anywhere" sidesteps all medical-data worry — the brand promise becomes a real selling point.
+- **Captive, motivated, self-refilling crowd.** A clinic's patients must follow the plan (their body depends on it) — stickier foot traffic than casual browsers, and patients cycle through constantly.
+- **On-brand for Taco personally.** Born from his own back-pain/health story → real credibility talking to these pros.
+- **Real local businesses:** they already pay for tools and care about patient outcomes → likelier to value (and eventually pay rent for) the space.
+
+### Guardrail ⚠️ (important)
+MOWES stays the **delivery tool**, NEVER the medical advice. The clinician owns the plan + clinical judgment; MOWES just carries it home and helps the patient stick to it. Add a gentle **"follow your provider's plan"** line so responsibility (and liability) stays with the professional. Keeps us safe + the pitch clean.
+
+### Plan impact
+- Mall gains shop categories beyond Trainers: **Chiropractors · Physical Therapists · Rehab/Therapy.**
+- Consider widening the hub name from "Trainers" to **"Coaches & Clinicians"** / **"Movement Pros."**
+- Same build→share→import engine already live — no new tech needed to start; it's a positioning + outreach expansion.
+
 ## Positioning RIGHT NOW (decided 2026-08-09) 🚩 read this first
 Taco's correction to the "cold-start / no audience" worry. The worry is misframed — because **today we are NOT selling traffic.**
 
