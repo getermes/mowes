@@ -142,8 +142,13 @@ Gear/supply are **fill-in = exposure-seekers**, NOT anchors. By the recruiting r
 ### Guardrail 🔒 (protect the soul)
 MOWES's promise is *private — no tracking, no selling, no spying.* A shopping side is OK **only** if it stays like the trainer hub already is: a **neutral window that links OUT**, no follow-you ads, no user data sold. Gear is a **calm, optional corner** the user chooses to visit — never shoved at the beginner. Same **rent-not-commission** money model. Break the privacy promise here and we'd trade the moat for pennies.
 
+### How the fill-in makes money 💰 (links-out advertising)
+Fill-in shops (equipment/apparel/supply/supplements) are **outbound links** — same as the Featured coach cards. MOWES profits by **charging these businesses to advertise / be featured** in the MOWES space = **rent for exposure**, NOT a cut of their sales.
+- They **pay a flat listing/featured fee** for the space; MOWES **links out**; MOWES never touches the sale, handles money, or takes a commission.
+- **Privacy line 🔒:** keep it a **flat "advertise here" fee**, NOT pay-per-click/pay-per-sale — that kind would require tracking the user's click through to a purchase and would break the promise. If an advertiser wants proof, use the same **link tag** trick as the coaches (they see "traffic from MOWES" in their OWN analytics). MOWES gets paid for exposure; the user is never tracked.
+
 ### Filed as
-A planned **"MOWES marketplace" fill-in layer**: Coaches/Clinicians (anchors) → then Gear / Apparel / Supply / Fuel (fill-in), switched on once anchors bring the crowd.
+A planned **"MOWES marketplace" fill-in layer**: Coaches/Clinicians (anchors) → then Gear / Apparel / Supply / Fuel (fill-in), switched on once anchors bring the crowd. Money = flat advertising/rent for exposure, links out, no user tracking.
 
 ## Positioning RIGHT NOW (decided 2026-08-09) 🚩 read this first
 Taco's correction to the "cold-start / no audience" worry. The worry is misframed — because **today we are NOT selling traffic.**
