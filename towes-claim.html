@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TOWES — Claim your coaching space</title>
+<style>
+  :root{ --ink:#3a4066; --muted:#6a7088; --soft:#8a90a8; --purple:#5b6cff; --purple2:#7a5bff; --bg:#eef0ff; --card:#fff; --gold:#c67a1e; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{ margin:0; background:linear-gradient(180deg,#eef0ff,#e6e9ff); color:var(--ink);
+    font-family:-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif; line-height:1.5; }
+  .wrap{ max-width:560px; margin:0 auto; padding:28px 20px 60px; }
+  .brand{ text-align:center; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#a9aede; font-weight:800; }
+  .brand b{ color:var(--purple); }
+  .logo{ text-align:center; font-size:40px; font-weight:900; letter-spacing:-.02em; margin:8px 0 2px; color:var(--purple); }
+  .logo .t{ color:var(--purple2); }
+  .expand{ text-align:center; color:var(--soft); font-size:13.5px; font-weight:700; margin-bottom:4px; }
+  h1{ text-align:center; font-size:27px; line-height:1.15; font-weight:900; margin:14px 0 8px; }
+  h1 .hl{ color:var(--purple); }
+  .lede{ text-align:center; font-size:16px; color:var(--muted); margin:0 auto 22px; }
+  .card{ background:var(--card); border-radius:18px; padding:22px 20px; box-shadow:0 6px 18px rgba(60,64,102,.07); }
+  /* The "we already saved this for you" preview */
+  .saved{ background:linear-gradient(135deg,#fff8ee,#fff4e6); border:1.5px solid #ffe0b8; border-radius:16px; padding:16px 16px 18px; margin-bottom:20px; }
+  .saved-tag{ display:inline-flex; align-items:center; gap:6px; font-weight:800; font-size:11px; letter-spacing:.02em; color:var(--gold); background:#fff; border:1px solid #ffe0b8; padding:4px 10px; border-radius:999px; }
+  .saved-name{ font-size:22px; font-weight:900; margin:10px 0 2px; }
+  .saved-lbl{ font-size:12px; font-weight:800; color:var(--soft); text-transform:uppercase; letter-spacing:.04em; margin-top:10px; }
+  .saved-link{ font-size:14.5px; font-weight:700; color:var(--purple); word-break:break-all; }
+  label{ display:block; font-weight:800; font-size:14.5px; margin:16px 0 6px; }
+  label:first-child{ margin-top:0; }
+  label .hint{ display:block; font-weight:600; font-size:12.5px; color:var(--soft); margin-top:2px; }
+  input,textarea{ width:100%; font:inherit; font-size:16px; color:var(--ink); background:#f4f6ff; border:1.5px solid #dfe3fb;
+    border-radius:12px; padding:13px 14px; outline:none; }
+  input:focus,textarea:focus{ border-color:var(--purple); background:#fff; }
+  textarea{ resize:vertical; min-height:66px; }
+  .agree{ display:flex; gap:10px; align-items:flex-start; margin-top:18px; font-size:13.5px; color:var(--muted); font-weight:600; }
+  .agree input{ width:20px; height:20px; margin-top:1px; flex:0 0 auto; accent-color:var(--purple); }
+  .btn{ width:100%; margin-top:22px; border:0; cursor:pointer; background:linear-gradient(135deg,var(--purple),var(--purple2));
+    color:#fff; font-weight:800; font-size:17px; padding:16px; border-radius:16px; box-shadow:0 8px 22px rgba(91,108,255,.32); }
+  .btn:active{ transform:scale(.98); }
+  .btn:disabled{ opacity:.5; }
+  .privacy{ text-align:center; color:var(--soft); font-size:12.5px; margin:20px auto 0; }
+  .foot{ text-align:center; color:#a9aede; font-size:12.5px; margin-top:28px; }
+  .foot a{ color:#a9aede; }
+  /* Fallback when opened without a personal link */
+  .nolink{ display:none; text-align:center; }
+  body.no-coach #claimCard{ display:none; }
+  body.no-coach .nolink{ display:block; }
+  .nolink .big{ font-size:40px; }
+  .nolink a{ color:var(--purple); font-weight:800; }
+  /* Thank-you state */
+  .thanks{ display:none; text-align:center; }
+  .thanks .big{ font-size:44px; }
+  .thanks h2{ font-size:23px; font-weight:900; margin:10px 0 6px; }
+  .thanks p{ color:var(--muted); font-size:15.5px; margin:0 auto; }
+  body.done #claimCard, body.done .nolink{ display:none; }
+  body.done .thanks{ display:block; }
+  @media (max-width:520px){ h1{ font-size:24px; } .logo{ font-size:34px; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand"><b>ERMES</b> · for trainers</div>
+    <div class="logo">T<span class="t">O</span>WES</div>
+    <div class="expand">Trainer's Own Weekly Exercise Sheet</div>
+    <h1>Claim your <span class="hl">free space</span></h1>
+    <p class="lede">We already saved a spot for you in MOWES. This is your invitation to <b>own it</b> — free.</p>
+
+    <div class="card" id="claimCard">
+      <!-- The spot we already saved (filled in from the personal link) -->
+      <div class="saved">
+        <span class="saved-tag">⭐ We saved this for you</span>
+        <div class="saved-name" id="coachName">Coach</div>
+        <div class="saved-lbl">The work we're pointing people to</div>
+        <div class="saved-link" id="coachLink">—</div>
+      </div>
+
+      <form id="claimForm">
+        <label>Is this link right?
+          <span class="hint">This is what we're featuring. If it's changed, fix it here — otherwise leave it.</span>
+          <input id="f_link" type="url" placeholder="https://…">
+        </label>
+
+        <label>Anything you'd like people to know? <span class="hint">Optional — a friendly line about your program (we'll show it on your card).</span>
+          <textarea id="f_note" placeholder="e.g. Beginner-friendly home workouts, no equipment needed."></textarea>
+        </label>
+
+        <label>Best email to reach you <span class="hint">So we can confirm and welcome you aboard.</span>
+          <input id="f_email" type="email" required autocomplete="email" placeholder="you@example.com">
+        </label>
+
+        <label class="agree">
+          <input type="checkbox" id="f_agree" required>
+          <span>Yes, this is me — I'd like my <b>free founding space</b> in MOWES, and I'm happy to share the MOWES-referred results we both need to make it work.</span>
+        </label>
+
+        <button class="btn" id="claimBtn" type="submit">🎉 Claim my free space</button>
+      </form>
+      <p class="privacy">🔒 No account, no fee. Your clients are never tracked — their data stays on their phone.</p>
+    </div>
+
+    <!-- Shown if the page is opened without a personal claim link -->
+    <div class="nolink">
+      <div class="big">👋</div>
+      <h2>Looking to join?</h2>
+      <p>This is a personal "claim your space" link for coaches we've already featured. New here and want a space? <a href="towes-signup.html">Apply for one →</a></p>
+    </div>
+
+    <div class="thanks">
+      <div class="big">🎉</div>
+      <h2>Your space is claimed!</h2>
+      <p>Thanks — welcome aboard! We'll set up your storefront and email you to confirm. You're one of the founding coaches. 🙌</p>
+    </div>
+
+    <div class="foot">TOWES · MOWES for trainers — an ERMES app. <a href="https://getermes.github.io/mowes/">getermes.github.io/mowes</a></div>
+  </div>
+
+  <script>
+    // Read the coach's info from their personal claim link:
+    //   towes-claim.html?name=HASfit&link=https://www.youtube.com/@HASfit
+    // We already have this info — so we SHOW it, we don't ask for it again.
+    (function(){
+      var q = new URLSearchParams(location.search);
+      var name = (q.get('name') || '').trim();
+      var link = (q.get('link') || '').trim();
+      if (!name && !link){ document.body.classList.add('no-coach'); return; }
+      if (name) document.getElementById('coachName').textContent = name;
+      var linkEl = document.getElementById('coachLink');
+      if (link){ linkEl.textContent = link; document.getElementById('f_link').value = link; }
+      else linkEl.textContent = '(no link on file — please add it below)';
+    })();
+
+    // Privacy-first, no-server submit: build a ready-to-send email to the review
+    // desk confirming the claim. Same approach as the sign-up form.
+    var TO = 'get.ermes00@gmail.com';
+    var q = new URLSearchParams(location.search);
+    var form = document.getElementById('claimForm');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();                       // required fields already validated
+      var val = function(id){ return (document.getElementById(id).value || '').trim(); };
+      var name = (q.get('name') || 'Coach').trim();
+      var body =
+        'TOWES CLAIM — a Featured coach is claiming their space:\n\n' +
+        'Name: ' + name + '\n' +
+        'Confirmed/updated link: ' + val('f_link') + '\n' +
+        'Contact email: ' + val('f_email') + '\n' +
+        'Note for their card: ' + val('f_note') + '\n' +
+        'Agreed to founding free space + data-sharing: yes\n';
+      var href = 'mailto:' + TO +
+        '?subject=' + encodeURIComponent('TOWES CLAIM: ' + name + ' is claiming their space') +
+        '&body=' + encodeURIComponent(body);
+      document.getElementById('claimBtn').disabled = true;
+      window.location.href = href;              // opens their email app, pre-filled
+      setTimeout(function(){ document.body.classList.add('done'); window.scrollTo(0,0); }, 400);
+    });
+  </script>
+</body>
+</html>

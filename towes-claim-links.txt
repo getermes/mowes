@@ -1,0 +1,28 @@
+TOWES — Personalized "Claim your space" links for the 8 Featured coaches
+Send each coach THEIR OWN link (drop it into the outreach message). It opens the
+claim page already filled in with their name + the link we feature. Generated 2026-08-10.
+
+HASfit:
+https://getermes.github.io/mowes/towes-claim.html?name=HASfit&link=https%3A%2F%2Fwww.youtube.com%2F%40HASfit
+
+Yoga With Adriene:
+https://getermes.github.io/mowes/towes-claim.html?name=Yoga%20With%20Adriene&link=https%3A%2F%2Fwww.youtube.com%2F%40yogawithadriene
+
+Grow With Jo:
+https://getermes.github.io/mowes/towes-claim.html?name=Grow%20With%20Jo&link=https%3A%2F%2Fwww.youtube.com%2F%40GrowWithJo
+
+Walk at Home (Leslie Sansone):
+https://getermes.github.io/mowes/towes-claim.html?name=Walk%20at%20Home%20(Leslie%20Sansone)&link=https%3A%2F%2Fwww.youtube.com%2F%40LeslieSansonesWalkatHome
+
+Caroline Jordan:
+https://getermes.github.io/mowes/towes-claim.html?name=Caroline%20Jordan&link=https%3A%2F%2Fwww.youtube.com%2F%40CarolineJordan
+
+Pahla B Fitness:
+https://getermes.github.io/mowes/towes-claim.html?name=Pahla%20B%20Fitness&link=https%3A%2F%2Fwww.youtube.com%2Fchannel%2FUCeXAh1l-MSjIbDkvHXa1yyA
+
+Team Body Project:
+https://getermes.github.io/mowes/towes-claim.html?name=Team%20Body%20Project&link=https%3A%2F%2Fwww.youtube.com%2Fchannel%2FUCFjc9H89-RpWuIStDqhO7AQ
+
+MadFit:
+https://getermes.github.io/mowes/towes-claim.html?name=MadFit&link=https%3A%2F%2Fwww.youtube.com%2F%40MadFit
+
