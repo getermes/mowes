@@ -118,10 +118,10 @@
         <!-- LEGS routine: arms static down, legs march up/down -->
         <g id="charLegs" style="display:none">
           <path d="M56 80 L54 101" stroke="#5b64b8" stroke-width="8" stroke-linecap="round" fill="none">
-            <animateTransform attributeName="transform" type="rotate" values="0 56 80; -26 56 80; 0 56 80" keyTimes="0;0.5;1" dur="1s" repeatCount="indefinite"/>
+            <animate attributeName="d" values="M56 80 L54 101; M56 80 L55 89; M56 80 L54 101" keyTimes="0;0.5;1" dur="0.9s" repeatCount="indefinite"/>
           </path>
           <path d="M64 80 L66 101" stroke="#6b74c9" stroke-width="8" stroke-linecap="round" fill="none">
-            <animateTransform attributeName="transform" type="rotate" values="0 64 80; 26 64 80; 0 64 80" keyTimes="0;0.5;1" dur="1s" begin="-0.5s" repeatCount="indefinite"/>
+            <animate attributeName="d" values="M64 80 L66 101; M64 80 L65 89; M64 80 L66 101" keyTimes="0;0.5;1" dur="0.9s" begin="-0.45s" repeatCount="indefinite"/>
           </path>
           <path d="M50 81 q-3 -22 10 -24 q13 2 10 24z" fill="#ff9d3d"/>
           <circle cx="60" cy="49" r="11" fill="#f0c39a"/>
