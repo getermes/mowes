@@ -15,58 +15,43 @@
   .scene.on{ opacity:1; }
   .kick{ font-size:12px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#9aa4ff; margin-bottom:14px; }
   h2{ color:#fff; font-size:27px; font-weight:900; line-height:1.18; }
-  h2 .p{ color:#8f9bff; }
-  h2 .o{ color:#ff9d3d; }
+  h2 .p{ color:#8f9bff; } h2 .o{ color:#ff9d3d; }
   .big{ font-size:44px; font-weight:900; }
-  /* Scene 1 hook */
   #s1{ background:radial-gradient(120% 90% at 50% 20%,#1b2256,#0b0e24); }
-  #s1 .emoji{ font-size:48px; margin-bottom:18px; }
-  /* Scene 2 problem */
   #s2 .rowx{ display:flex; gap:12px; margin-top:22px; }
   #s2 .chip{ background:#1e2560; color:#c9cffd; font-weight:800; font-size:14px; padding:12px 14px; border-radius:14px; border:1px solid #333c86; }
-  /* Scene 3 reveal — phone mockup + real-life photo */
-  #s3{ justify-content:flex-start; padding-top:34px; }
-  .photo{ width:150px; height:104px; border-radius:16px; object-fit:cover; box-shadow:0 8px 22px rgba(0,0,0,.4); margin-bottom:-26px; z-index:1; }
-  .phone{ width:150px; border-radius:22px; background:linear-gradient(180deg,#6d7bff,#8a5bff); padding:14px 12px 16px;
+  /* Scene 3 reveal */
+  #s3{ justify-content:flex-start; padding-top:32px; }
+  .workout{ position:relative; z-index:1; margin-bottom:-16px; }
+  .phone{ width:154px; border-radius:22px; background:linear-gradient(180deg,#6d7bff,#8a5bff); padding:14px 12px 16px;
     box-shadow:0 16px 40px rgba(90,60,255,.5); z-index:2; }
   .phone .date{ color:#e9ecff; font-size:9px; font-weight:800; opacity:.9; }
-  .phone .sun{ display:block; width:66px; height:66px; margin:4px auto 8px; filter: drop-shadow(0 0 11px rgba(255,157,61,.55)); }
-  .phone .movecard{ background:#fff; border-radius:12px; padding:9px; text-align:left; }
+  .phone .sun{ display:block; width:66px; height:66px; margin:4px auto 8px; filter: drop-shadow(0 0 11px rgba(255,157,61,.55)); transition:filter .4s; }
+  .phone .movecard{ background:#fff; border-radius:12px; padding:9px; text-align:left; min-height:52px; }
   .phone .movecard b{ display:block; color:#2f3350; font-size:12px; font-weight:900; }
-  .phone .movecard span{ display:block; color:#7a84c8; font-size:10px; font-weight:700; }
+  .phone .movecard .sub{ display:block; color:#7a84c8; font-size:10px; font-weight:700; }
   .phone .movecard .demo{ display:inline-block; margin-top:5px; background:#eef0ff; color:#5b6cff; font-size:8.5px; font-weight:900; padding:3px 7px; border-radius:6px; }
-  .phone .go{ margin-top:8px; background:#fff; color:#5b6cff; font-weight:900; font-size:11px; text-align:center; padding:7px; border-radius:10px; }
-  #s3 h2{ font-size:22px; margin-top:26px; }
+  .phone .movecard.done b{ color:#2a9d55; } .phone .movecard.pause b{ color:#2aa77b; }
+  #s3 h2{ font-size:22px; margin-top:24px; }
   #s3 .tap{ margin-top:12px; color:#ffcf8f; font-weight:800; font-size:16px; }
   /* Scene 4 promises */
-  #s4 .promise{ position:absolute; opacity:0; transition:opacity .25s, transform .25s; transform:scale(.9);
-    color:#fff; font-size:34px; font-weight:900; }
+  #s4 .promise{ position:absolute; opacity:0; transition:opacity .25s, transform .25s; transform:scale(.9); color:#fff; font-size:34px; font-weight:900; }
   #s4 .promise.show{ opacity:1; transform:scale(1); }
-  #s4 .promise em{ font-style:normal; color:#8f9bff; }
-  #s4 .promise .o{ color:#ff9d3d; }
-  /* Scene 5 founder */
+  #s4 .promise em{ font-style:normal; color:#8f9bff; } #s4 .promise .o{ color:#ff9d3d; }
   #s5{ background:radial-gradient(120% 90% at 50% 30%,#241a4a,#0b0e24); }
   #s5 .q{ font-size:26px; color:#fff; font-weight:800; font-style:italic; line-height:1.3; }
   #s5 .who{ margin-top:18px; color:#9aa4ff; font-weight:800; font-size:14px; letter-spacing:.06em; }
-  /* Scene 6 CTA */
   #s6{ background:linear-gradient(160deg,#5b6cff,#7a5bff); }
-  #s6 .big{ color:#fff; }
-  #s6 .url{ margin-top:20px; color:#fff; font-weight:800; font-size:15px; }
-  #s6 .tt{ margin-top:6px; color:#ffe1bd; font-weight:800; font-size:13px; }
-  /* progress + controls */
+  #s6 .big{ color:#fff; } #s6 .url{ margin-top:20px; color:#fff; font-weight:800; font-size:15px; } #s6 .tt{ margin-top:6px; color:#ffe1bd; font-weight:800; font-size:13px; }
   .bar{ position:absolute; left:0; bottom:0; height:4px; width:0%; background:linear-gradient(90deg,#8f9bff,#ff9d3d); z-index:5; }
-  .mocktag{ position:absolute; top:12px; right:12px; background:rgba(0,0,0,.4); color:#fff; font-size:9px; font-weight:800;
-    letter-spacing:.1em; padding:4px 8px; border-radius:999px; z-index:5; }
-  .controls{ display:flex; gap:10px; }
-  .btn{ background:#5b6cff; color:#fff; border:0; font-weight:800; font-size:14px; padding:11px 20px; border-radius:12px; cursor:pointer;
-    font-family:inherit; }
-  .btn.ghost{ background:#1e2560; color:#c9cffd; }
+  .mocktag{ position:absolute; top:12px; right:12px; background:rgba(0,0,0,.4); color:#fff; font-size:9px; font-weight:800; letter-spacing:.1em; padding:4px 8px; border-radius:999px; z-index:5; }
+  .btn{ background:#5b6cff; color:#fff; border:0; font-weight:800; font-size:14px; padding:11px 20px; border-radius:12px; cursor:pointer; font-family:inherit; }
   .cap{ color:#6a72a8; font-size:12px; text-align:center; max-width:360px; line-height:1.5; }
 </style>
 </head>
 <body>
   <div class="stage" id="stage">
-    <div class="mocktag">MOCK · ~30s</div>
+    <div class="mocktag">MOCK · ~33s</div>
 
     <div class="scene" id="s1">
       <svg width="104" height="104" viewBox="0 0 100 100" style="margin-bottom:16px" aria-hidden="true">
@@ -90,59 +75,81 @@
     </div>
 
     <div class="scene" id="s3">
-      <svg class="workout" width="152" height="152" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:-16px;position:relative;z-index:1" aria-label="working out — arms up and down">
+      <svg class="workout" width="150" height="150" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <defs>
-          <linearGradient id="bgw" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#fff4e6"/><stop offset="1" stop-color="#eef0ff"/>
-          </linearGradient>
+          <linearGradient id="bgw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff4e6"/><stop offset="1" stop-color="#eef0ff"/></linearGradient>
         </defs>
         <rect x="8" y="2" width="104" height="112" rx="20" fill="url(#bgw)"/>
-        <!-- window -->
         <rect x="16" y="12" width="24" height="32" rx="3" fill="#dbe6ff"/>
         <line x1="28" y1="12" x2="28" y2="44" stroke="#c3d2ff" stroke-width="1.6"/>
         <line x1="16" y1="28" x2="40" y2="28" stroke="#c3d2ff" stroke-width="1.6"/>
-        <!-- plant -->
         <rect x="90" y="38" width="10" height="12" rx="2" fill="#e6c9a8"/>
         <path d="M95 38 q-6 -11 -1.5 -18 q5 7 1.5 18z" fill="#7bc47f"/>
-        <!-- mat -->
         <ellipse cx="60" cy="103" rx="32" ry="6" fill="#66d0e0" opacity="0.5"/>
-        <!-- legs -->
-        <path d="M53 101 q-2 -12 0 -22 l7 0 q1 10 -1 22z" fill="#5b64b8"/>
-        <path d="M61 101 q2 -12 1 -22 l6 0 q2 10 1 22z" fill="#6b74c9"/>
-        <!-- body -->
-        <path d="M50 81 q-3 -22 10 -24 q13 2 10 24z" fill="#ff9d3d"/>
-        <!-- head -->
-        <circle cx="60" cy="49" r="11" fill="#f0c39a"/>
-        <path d="M49 48 q0 -14 11 -14 q11 0 11 14 q-4 -6 -11 -6 q-7 0 -11 6z" fill="#4d4038"/>
-        <path d="M55 52 q5 4 10 0" stroke="#8a6a50" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-        <!-- ANIMATED arms: up ... down ... up ... down -->
-        <path d="M52 65 L51 90" stroke="#ffb15e" stroke-width="7" stroke-linecap="round" fill="none">
-          <animateTransform attributeName="transform" type="rotate" values="0 52 65; 176 52 65; 176 52 65; 0 52 65; 0 52 65" keyTimes="0;0.4;0.5;0.9;1" dur="1.9s" repeatCount="indefinite"/>
-        </path>
-        <path d="M68 65 L69 90" stroke="#ffb15e" stroke-width="7" stroke-linecap="round" fill="none">
-          <animateTransform attributeName="transform" type="rotate" values="0 68 65; -176 68 65; -176 68 65; 0 68 65; 0 68 65" keyTimes="0;0.4;0.5;0.9;1" dur="1.9s" repeatCount="indefinite"/>
-        </path>
+
+        <!-- ARMS routine: legs static, arms do jumping jacks -->
+        <g id="charArms">
+          <path d="M56 80 L54 101" stroke="#5b64b8" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <path d="M64 80 L66 101" stroke="#6b74c9" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <path d="M50 81 q-3 -22 10 -24 q13 2 10 24z" fill="#ff9d3d"/>
+          <circle cx="60" cy="49" r="11" fill="#f0c39a"/>
+          <path d="M49 48 q0 -14 11 -14 q11 0 11 14 q-4 -6 -11 -6 q-7 0 -11 6z" fill="#4d4038"/>
+          <path d="M55 52 q5 4 10 0" stroke="#8a6a50" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M52 65 L51 90" stroke="#ffb15e" stroke-width="7" stroke-linecap="round" fill="none">
+            <animateTransform attributeName="transform" type="rotate" values="0 52 65; 176 52 65; 176 52 65; 0 52 65; 0 52 65" keyTimes="0;0.4;0.5;0.9;1" dur="1.9s" repeatCount="indefinite"/>
+          </path>
+          <path d="M68 65 L69 90" stroke="#ffb15e" stroke-width="7" stroke-linecap="round" fill="none">
+            <animateTransform attributeName="transform" type="rotate" values="0 68 65; -176 68 65; -176 68 65; 0 68 65; 0 68 65" keyTimes="0;0.4;0.5;0.9;1" dur="1.9s" repeatCount="indefinite"/>
+          </path>
+        </g>
+
+        <!-- REST (done / paused): standing still, content -->
+        <g id="charRest" style="display:none">
+          <path d="M56 80 L54 101" stroke="#5b64b8" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <path d="M64 80 L66 101" stroke="#6b74c9" stroke-width="8" stroke-linecap="round" fill="none"/>
+          <path d="M50 81 q-3 -22 10 -24 q13 2 10 24z" fill="#ff9d3d"/>
+          <circle cx="60" cy="49" r="11" fill="#f0c39a"/>
+          <path d="M49 48 q0 -14 11 -14 q11 0 11 14 q-4 -6 -11 -6 q-7 0 -11 6z" fill="#4d4038"/>
+          <path d="M55 52 q5 4 10 0" stroke="#8a6a50" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path d="M52 64 L50 86" stroke="#ffb15e" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <path d="M68 64 L70 86" stroke="#ffb15e" stroke-width="7" stroke-linecap="round" fill="none"/>
+        </g>
+
+        <!-- LEGS routine: arms static down, legs march up/down -->
+        <g id="charLegs" style="display:none">
+          <path d="M56 80 L54 101" stroke="#5b64b8" stroke-width="8" stroke-linecap="round" fill="none">
+            <animateTransform attributeName="transform" type="rotate" values="0 56 80; -26 56 80; 0 56 80" keyTimes="0;0.5;1" dur="1s" repeatCount="indefinite"/>
+          </path>
+          <path d="M64 80 L66 101" stroke="#6b74c9" stroke-width="8" stroke-linecap="round" fill="none">
+            <animateTransform attributeName="transform" type="rotate" values="0 64 80; 26 64 80; 0 64 80" keyTimes="0;0.5;1" dur="1s" begin="-0.5s" repeatCount="indefinite"/>
+          </path>
+          <path d="M50 81 q-3 -22 10 -24 q13 2 10 24z" fill="#ff9d3d"/>
+          <circle cx="60" cy="49" r="11" fill="#f0c39a"/>
+          <path d="M49 48 q0 -14 11 -14 q11 0 11 14 q-4 -6 -11 -6 q-7 0 -11 6z" fill="#4d4038"/>
+          <path d="M55 52 q5 4 10 0" stroke="#8a6a50" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M52 64 L50 86" stroke="#ffb15e" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <path d="M68 64 L70 86" stroke="#ffb15e" stroke-width="7" stroke-linecap="round" fill="none"/>
+        </g>
       </svg>
+
       <div class="phone">
         <div class="date">TODAY · Day 1</div>
-        <svg class="sun" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg class="sun" id="sun" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="color:#FF9E33" aria-hidden="true">
           <defs>
-            <radialGradient id="rayg" cx="50%" cy="50%" r="50%">
-              <stop offset="0.66" stop-color="#FF9E33"/><stop offset="1" stop-color="#FFCF3E"/>
-            </radialGradient>
-            <radialGradient id="faceg" cx="36%" cy="30%" r="72%">
-              <stop offset="0" stop-color="#FFF2C4"/><stop offset="0.7" stop-color="#FFD972"/><stop offset="1" stop-color="#F8CB4A"/>
-            </radialGradient>
+            <radialGradient id="rayg" cx="50%" cy="50%" r="50%"><stop offset="0.66" stop-color="currentColor"/><stop offset="1" stop-color="#FFCF3E"/></radialGradient>
           </defs>
           <polygon fill="url(#rayg)" points="50.00,0.00 56.08,15.53 67.10,3.02 67.50,19.69 82.14,11.70 76.81,27.50 93.30,25.00 82.89,38.03 99.24,41.32 85.00,50.00 99.24,58.68 82.89,61.97 93.30,75.00 76.81,72.50 82.14,88.30 67.50,80.31 67.10,96.98 56.08,84.47 50.00,100.00 43.92,84.47 32.90,96.98 32.50,80.31 17.86,88.30 23.19,72.50 6.70,75.00 17.11,61.97 0.76,58.68 15.00,50.00 0.76,41.32 17.11,38.03 6.70,25.00 23.19,27.50 17.86,11.70 32.50,19.69 32.90,3.02 43.92,15.53">
             <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="20s" repeatCount="indefinite"/>
           </polygon>
-          <circle cx="50" cy="50" r="27" fill="url(#faceg)"/>
+          <circle id="sunFace" cx="50" cy="50" r="27" fill="#FFD972"/>
+          <ellipse cx="42" cy="40" rx="9" ry="6" fill="#ffffff" opacity="0.35"/>
         </svg>
-        <div class="movecard"><b>Arms overhead</b><span>Move 1 · 10 reps</span><span class="demo">▶ watch how</span></div>
+        <div class="movecard" id="movecard">
+          <b id="mcTitle">Arms overhead</b><span class="sub" id="mcSub">Move 1 · 10 reps</span><span class="demo" id="mcDemo">▶ demo</span>
+        </div>
       </div>
       <h2>this is <span class="p">MOWES</span> —<br>it walks you through it</h2>
-      <div class="tap">one move at a time 👆</div>
+      <div class="tap" id="s3tap">one move at a time 👆</div>
     </div>
 
     <div class="scene" id="s4">
@@ -155,7 +162,7 @@
 
     <div class="scene" id="s5">
       <div class="q">“I built MOWES<br>because I needed<br>it myself.”</div>
-      <div class="who">— TACO, founder</div>
+      <div class="who">— the founder</div>
     </div>
 
     <div class="scene" id="s6">
@@ -178,47 +185,56 @@
     <div class="bar" id="bar"></div>
   </div>
 
-  <div class="controls">
-    <button class="btn" id="replay">▶ Replay</button>
-  </div>
-  <div class="cap">Mock preview of the younger-cut video — all original graphics (no stock photos). The real one gets filmed on your phone.</div>
+  <div><button class="btn" id="replay">▶ Replay</button></div>
+  <div class="cap">Mock of the younger-cut video — all original graphics. Scene 3 plays the real app flow: a move runs, finishes (gold), pauses (green), next move starts.</div>
 
 <script>
-  var T = 30000;
+  var T = 33000;
   var scenes = [
     { el:'s1', a:0,     b:3000 },
     { el:'s2', a:3000,  b:6000 },
-    { el:'s3', a:6000,  b:13000 },
-    { el:'s4', a:13000, b:22000 },
-    { el:'s5', a:22000, b:27000 },
-    { el:'s6', a:27000, b:30000 }
+    { el:'s3', a:6000,  b:16000 },
+    { el:'s4', a:16000, b:25000 },
+    { el:'s5', a:25000, b:29000 },
+    { el:'s6', a:29000, b:33000 }
   ];
   var promises = document.querySelectorAll('#s4 .promise');
   var bar = document.getElementById('bar');
+  var sun = document.getElementById('sun'), sunFace = document.getElementById('sunFace');
+  var mc = document.getElementById('movecard'), mcT = document.getElementById('mcTitle'), mcS = document.getElementById('mcSub'), mcD = document.getElementById('mcDemo'), s3tap = document.getElementById('s3tap');
+  var chars = { arms:document.getElementById('charArms'), rest:document.getElementById('charRest'), legs:document.getElementById('charLegs') };
+  var SUN = { run:{ray:'#FF9E33',face:'#FFD972'}, done:{ray:'#F5B60F',face:'#F2B310'}, pause:{ray:'#4FC79A',face:'#37B98A'} };
+  var lastPhase = null;
+  function demo(name, title, sub, showDemo, sunState, who, tap, mcClass){
+    if (lastPhase === name) return; lastPhase = name;
+    sun.style.color = SUN[sunState].ray; sunFace.setAttribute('fill', SUN[sunState].face);
+    mcT.textContent = title; mcS.textContent = sub;
+    mcD.style.display = showDemo ? 'inline-block' : 'none';
+    mc.className = 'movecard' + (mcClass ? ' ' + mcClass : '');
+    for (var k in chars) chars[k].style.display = (k === who) ? '' : 'none';
+    s3tap.textContent = tap;
+  }
+  function applyS3(st){
+    if (st < 3200)      demo('arms','Arms overhead','Move 1 · 10 reps', true,  'run',  'arms', 'one move at a time 👆', '');
+    else if (st < 4800) demo('done','Move 1 done! ✓','great — nice work',   false, 'done', 'rest', 'it counts your reps ✓',  'done');
+    else if (st < 6400) demo('pause','Paused','catch your breath',          false, 'pause','rest', 'pause anytime ⏸',        'pause');
+    else                demo('legs','Legs up & down','Move 2 · 10 reps',    true,  'run',  'legs', 'on to the next move 👆',  '');
+  }
   var start = null, raf = null;
   function frame(ts){
     if (start === null) start = ts;
-    var t = ts - start;
-    if (t > T) t = T;
+    var t = ts - start; if (t > T) t = T;
     bar.style.width = (t / T * 100) + '%';
     scenes.forEach(function(s){
       var on = (t >= s.a && t < s.b) || (s.el === 's6' && t >= s.a);
       document.getElementById(s.el).classList.toggle('on', on);
     });
-    // promise flashes inside s4
-    if (t >= 13000 && t < 22000){
-      var idx = Math.floor((t - 13000) / 1800); // 5 promises * 1.8s = 9s
-      promises.forEach(function(p, i){ p.classList.toggle('show', i === idx); });
-    } else {
-      promises.forEach(function(p){ p.classList.remove('show'); });
-    }
+    if (t >= 6000 && t < 16000){ applyS3(t - 6000); } else { lastPhase = null; }
+    if (t >= 16000 && t < 25000){ var idx = Math.floor((t - 16000) / 1800); promises.forEach(function(p,i){ p.classList.toggle('show', i === idx); }); }
+    else { promises.forEach(function(p){ p.classList.remove('show'); }); }
     if (t < T){ raf = requestAnimationFrame(frame); }
   }
-  function play(){
-    if (raf) cancelAnimationFrame(raf);
-    start = null;
-    raf = requestAnimationFrame(frame);
-  }
+  function play(){ if (raf) cancelAnimationFrame(raf); start = null; lastPhase = null; raf = requestAnimationFrame(frame); }
   document.getElementById('replay').addEventListener('click', play);
   play();
 </script>
