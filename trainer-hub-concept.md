@@ -111,6 +111,17 @@ So the gap: **no neutral, commission-free mall for independent trainers.** MOWES
 ### Money model in one line
 The mall owner doesn't take a cut of each sale — they charge **rent.** That IS "keep 100% · one small flat fee." Trainers keep their money, their members, and their relationship; we rent them a window in a busy, private mall.
 
+## Truth & Legality guardrails (Taco's north star, 2026-08-10) ⚖️
+Taco's explicit rule: **always stay on the legal AND truthful side.** The whole featuring/claiming approach is built around this — keep it that way. (Not legal advice — for big moves, check a real lawyer.)
+
+**What keeps it TRUTHFUL:** everything we say is actually true — we *did* feature them (the card exists), the space *is* free, it *is* new, and we **never promise traffic we don't have** (the honest "be first, free" pitch). Cards are labeled *"⭐ our pick — not a paid partner (yet)."* The claim flow is us **asking** ("come claim it"), never pretending they already agreed.
+
+**What keeps it LEGAL (general):** linking to public content + naming a coach to refer to them is standard (Yelp/Google/"as featured" lists work this way). We link OUT to their own platform — we don't copy their content, host their stuff, or take their customers.
+
+**Lines to NEVER cross 🚫:** (1) don't use their logo/photos as if they *endorse* MOWES; (2) don't claim they're a partner before they claim; (3) don't copy their content; (4) never say anything untrue in outreach (no fake numbers).
+
+**Start-small sequencing (decided 2026-08-10):** approach **SMALL coaches first** — they're *flattered* to be featured, not threatened, and far likelier to actually claim. Win the little ones, build real foot traffic, THEN approach the **bigger fish** (who have brand teams / lawyers) — and get a lawyer's peace-of-mind check before going big. Little ones first → bigger fish later.
+
 ## Expansion: Clinicians too — chiropractors, physical therapists, rehab/therapy (idea 2026-08-09) 💡
 Taco's insight: the mall isn't only fitness trainers. **Chiropractors, physical therapists, and therapy/rehab practices** send patients home with an exercise plan to do — the exact same engine (build a plan → hand it over by link/QR → patient follows it, guided, with reminders). New shop categories, possibly a *better* segment than influencers.
 
