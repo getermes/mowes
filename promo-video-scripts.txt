@@ -70,3 +70,10 @@ tap -> tap -> you're working out. Proves "if you can tap a phone, you can start.
 Build this into the OLDER cut as its hero beat (a finger tapping, the app
 instantly guiding a move). Pair with the animated figure doing one move at a time.
 ######################################################################
+
+######################################################################
+CONCEPT TO ADD — "a video demo for every exercise" (Eugenio, 2026-08-10)
+Emphasize that each move has a short DEMO/guide ("how do I do this?") so a
+beginner is never lost on form. Shown in the mock as a "watch how" tag on the
+move card. Ties to the Exercise Videos page. Good for beginners + low-tech.
+######################################################################
