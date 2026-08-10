@@ -8,7 +8,7 @@
 ## Revenue streams (all keep MOWES backend-free)
 1. **"Pro Trainer" plan** — small **monthly fee** to use the build/publish tools + be listed. (Recurring — the main income.)
 2. **Featured spots** — pay to be **spotlighted** (top of the hub, a badge).
-3. **Sponsored promotion** — feature a trainer inside MOWES or in Taco's own social posts, for a fee.
+3. **Sponsored promotion** — feature a trainer inside MOWES or in Eugenio's own social posts, for a fee.
 4. **"Support MOWES" (while free)** — a voluntary support/tip link shown to trainers during the free phase (like the user-side coffee tips). No obligation, no data.
 5. *(Later, optional)* — for trainers who WANT MOWES to handle checkout, an **opt-in** payment link where MOWES takes a cut — only for those who choose it, no accounts forced on anyone.
 
@@ -35,7 +35,7 @@ The bigger they are, the more they pay **total**, but a **lower rate per client*
 
 ## Proof of value (how the trainer/we see it's working) — privacy-safe
 - **Link tags** (free, zero data collected by us): add a hidden `?source=mowes` to each trainer's link → the **trainer sees "traffic from MOWES"** in their **own** YouTube/site analytics. The proof lives in *their* dashboard.
-- **Optional anonymous click-counter** (only if Taco wants his own numbers): counts taps per trainer — **no names, no user data, never touches workout data.** A small server piece; small trade-off, promise stays intact for users.
+- **Optional anonymous click-counter** (only if Eugenio wants his own numbers): counts taps per trainer — **no names, no user data, never touches workout data.** A small server piece; small trade-off, promise stays intact for users.
 
 ## What we CAN'T see (and shouldn't)
 - A trainer's **subscriber count** or **earnings** — that's their private data on their own platforms. (Only their public YouTube sub number is visible to anyone.)

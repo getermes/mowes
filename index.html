@@ -7261,7 +7261,7 @@
 
 
   // ---- "Thought of the day" — private, topic-based messages ----
-  // Taco: to add/change messages, just edit this list and publish.
+  // Eugenio: to add/change messages, just edit this list and publish.
   // Every user gets the latest version next time they open the app online.
   // Each user's topic choices are saved ONLY on their phone — nothing is sent anywhere.
   const THOUGHT_TOPICS = [
@@ -8002,7 +8002,7 @@
   // ---- My Goals: number-based targets with a timeframe + progress tracking ----
   const GOAL_UNITS = ["lbs", "kg", "in", "mi", "km", "reps", "min"];
   const GOAL_TIMES = [{ m:1, l:"1 month" }, { m:3, l:"3 months" }, { m:6, l:"6 months" }, { m:12, l:"1 year" }];
-  // Sample goals (Taco's) shown as inspiration when the list is empty.
+  // Sample goals (Eugenio's) shown as inspiration when the list is empty.
   const GOAL_EXAMPLES = [
     { name:"Dumbbell weight", start:5, target:10, unit:"lbs", when:"in 1 year" },
     { name:"Barbell lift", start:20, target:40, unit:"lbs", when:"in 1 year" },
@@ -8632,7 +8632,7 @@
     libraryRoutines.push(nr);
     saveLibrary();
     renderLibrary();
-    // Focus the new routine's name box so Taco can start typing right away.
+    // Focus the new routine's name box so Eugenio can start typing right away.
     const cards = document.querySelectorAll("#libraryList .routine-card");
     const last = cards[cards.length - 1];
     if (last){ const nm = last.querySelector(".routine-input"); if (nm) nm.focus(); last.scrollIntoView({ block:"center", behavior:"smooth" }); }

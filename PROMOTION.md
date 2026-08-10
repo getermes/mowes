@@ -54,7 +54,7 @@ session can pick up instantly. Last updated: 2026-06-09.
 - Maybe a simple way to ask happy users to share/subscribe.
 
 ## Notes / open questions
-- Taco wants real public likes/subscribers. YouTube can't auto-receive app
+- Eugenio wants real public likes/subscribers. YouTube can't auto-receive app
   "likes" — growth comes from posting videos + sharing the link.
-- Taco also wants (future) to offer app-building services, using the ERMES
+- Eugenio also wants (future) to offer app-building services, using the ERMES
   site + MOWES/MEDS as the portfolio/proof.

@@ -8,7 +8,7 @@ MOWES becomes a **hub** that showcases trainers and their programs, and points u
 ## The problem it solves
 - **For users:** one trusted place to discover real trainers and structured programs — instead of random searching.
 - **For trainers:** a warm, growing audience of motivated beginners already inside MOWES, with zero setup — free exposure, they keep 100% of what they earn on their own platform.
-- **For Taco/ERMES:** a new income lane (featured spots / small referral / eventual revenue share) once there's traffic — without becoming a payment company.
+- **For Eugenio/ERMES:** a new income lane (featured spots / small referral / eventual revenue share) once there's traffic — without becoming a payment company.
 
 ## How it works (the privacy-safe model) 🔒
 MOWES is a **directory / window**, NOT a store:
@@ -19,12 +19,12 @@ MOWES is a **directory / window**, NOT a store:
 ## YouTube's role
 - Trainers can run their programs as **YouTube playlists** or offer **YouTube channel memberships** — MOWES just links to them.
 - MOWES doesn't depend on YouTube; each trainer links to whatever they use.
-- Taco's own channel (@ermesapps / 121·ERMES) promotes the **hub itself**.
+- Eugenio's own channel (@ermesapps / 121·ERMES) promotes the **hub itself**.
 
 ## The trainer flow (first version = manual & curated)
-1. Trainer reaches out (a "List your program" link → an email to Taco).
-2. Taco reviews (keeps quality high — the ERMES trust bar).
-3. Taco adds their card to the hub page (hand-added at first — no sign-up system needed).
+1. Trainer reaches out (a "List your program" link → an email to Eugenio).
+2. Eugenio reviews (keeps quality high — the ERMES trust bar).
+3. Eugenio adds their card to the hub page (hand-added at first — no sign-up system needed).
 4. Later, if it grows: a simple submission form.
 
 ## The user flow
@@ -64,7 +64,7 @@ Related: income expansion plan, target audience (overwhelmed beginner), the ERME
 - **Do NOT** build a full coaching-suite clone (Trainerize/TrueCoach/etc.) — crowded feature war, off-brand, loses focus.
 - **DO** let trainers who have their own tools just use MOWES for **exposure** (hub + tagged links — nearly built).
 - **DO** offer a **light, privacy-native** "build a program → share a link → client imports it (no accounts)" for trainers who have nothing — reuses the Backup/Restore engine; the one thing account-heavy competitors can't match. Keep it simple; never bloat into a coaching suite.
-- North star: [[project_taco_vision_untapped_pond]] — the untapped pond, innovate not copy. #1 focus stays the overwhelmed beginner.
+- North star: [[project_eugenio_vision_untapped_pond]] — the untapped pond, innovate not copy. #1 focus stays the overwhelmed beginner.
 
 ## Status update (2026-08-07): publish/share pipeline v1 is LIVE
 - Build page → "📤 Share this program" turns routines + weekly plan into a LINK (or file). Recipient taps it → additive import (never wipes their own). Works on phone, no server. This is the core of "MOWES as the trainers build+deliver tool."
@@ -72,14 +72,14 @@ Related: income expansion plan, target audience (overwhelmed beginner), the ERME
 - Next: name/save multiple programs; trainer profile; make the hub public with real trainers.
 
 ## The "Mall" strategy (added 2026-08-08) 🏬
-Taco's crystallized business concept. Companion notes: `trainer-data-and-reach.md`, `trainer-approval-rules.md`, `towes-signup.html` (the sign-up page).
+Eugenio's crystallized business concept. Companion notes: `trainer-data-and-reach.md`, `trainer-approval-rules.md`, `towes-signup.html` (the sign-up page).
 
 ### The picture
 - **MOWES/TOWES = a Mall** (a "trainers' yellow pages" that doesn't exist yet).
 - Each trainer = a **shop** with a storefront window (their card in the hub).
 - Consumers = **shoppers** who window-shop, compare, and choose what/where to "buy."
 
-### Why a mall works (the proven law Taco rediscovered = "agglomeration")
+### Why a mall works (the proven law Eugenio rediscovered = "agglomeration")
 - **a)** Shoppers go where there's **selection** — nobody visits a one-store street.
 - **b)** Businesses cluster *near* competitors on purpose (car-dealer rows, jewelry districts) — the cluster pulls a bigger crowd than any shop alone, and you catch the shopper who walked out of the store across the hall.
 
@@ -111,8 +111,8 @@ So the gap: **no neutral, commission-free mall for independent trainers.** MOWES
 ### Money model in one line
 The mall owner doesn't take a cut of each sale — they charge **rent.** That IS "keep 100% · one small flat fee." Trainers keep their money, their members, and their relationship; we rent them a window in a busy, private mall.
 
-## Truth & Legality guardrails (Taco's north star, 2026-08-10) ⚖️
-Taco's explicit rule: **always stay on the legal AND truthful side.** The whole featuring/claiming approach is built around this — keep it that way. (Not legal advice — for big moves, check a real lawyer.)
+## Truth & Legality guardrails (Eugenio's north star, 2026-08-10) ⚖️
+Eugenio's explicit rule: **always stay on the legal AND truthful side.** The whole featuring/claiming approach is built around this — keep it that way. (Not legal advice — for big moves, check a real lawyer.)
 
 **What keeps it TRUTHFUL:** everything we say is actually true — we *did* feature them (the card exists), the space *is* free, it *is* new, and we **never promise traffic we don't have** (the honest "be first, free" pitch). Cards are labeled *"⭐ our pick — not a paid partner (yet)."* The claim flow is us **asking** ("come claim it"), never pretending they already agreed.
 
@@ -123,14 +123,14 @@ Taco's explicit rule: **always stay on the legal AND truthful side.** The whole 
 **Start-small sequencing (decided 2026-08-10):** approach **SMALL coaches first** — they're *flattered* to be featured, not threatened, and far likelier to actually claim. Win the little ones, build real foot traffic, THEN approach the **bigger fish** (who have brand teams / lawyers) — and get a lawyer's peace-of-mind check before going big. Little ones first → bigger fish later.
 
 ## Expansion: Clinicians too — chiropractors, physical therapists, rehab/therapy (idea 2026-08-09) 💡
-Taco's insight: the mall isn't only fitness trainers. **Chiropractors, physical therapists, and therapy/rehab practices** send patients home with an exercise plan to do — the exact same engine (build a plan → hand it over by link/QR → patient follows it, guided, with reminders). New shop categories, possibly a *better* segment than influencers.
+Eugenio's insight: the mall isn't only fitness trainers. **Chiropractors, physical therapists, and therapy/rehab practices** send patients home with an exercise plan to do — the exact same engine (build a plan → hand it over by link/QR → patient follows it, guided, with reminders). New shop categories, possibly a *better* segment than influencers.
 
 ### Why clinicians may be an even better fit than trainers
 - **They already do this — badly.** Every PT/chiro hands out a "home exercise program," usually on crumpled paper or an ignored app. We solve a problem they hit *every day* → dead-on the mission (find real pain, fix it).
 - **Their patients NEED the push.** The #1 problem in PT is patients not doing home exercises. MOWES's daily coaching + reminders + guided steps aim straight at adherence — for a patient it's not "nice to have," it's healing vs. not.
 - **Privacy matters MORE in health.** "No account, nothing sent anywhere" sidesteps all medical-data worry — the brand promise becomes a real selling point.
 - **Captive, motivated, self-refilling crowd.** A clinic's patients must follow the plan (their body depends on it) — stickier foot traffic than casual browsers, and patients cycle through constantly.
-- **On-brand for Taco personally.** Born from his own back-pain/health story → real credibility talking to these pros.
+- **On-brand for Eugenio personally.** Born from his own back-pain/health story → real credibility talking to these pros.
 - **Real local businesses:** they already pay for tools and care about patient outcomes → likelier to value (and eventually pay rent for) the space.
 
 ### Guardrail ⚠️ (important)
@@ -147,7 +147,7 @@ Applying the need-universe playbook (see [[project_idea_need_universe_mall]]) ba
 - 👟 **Gear for it** → sports clothing, shoes, equipment, mats, weights = **FILL-IN**.
 - 🥤 **Fuel for it** → supplements, protein, bottles, recovery = **FILL-IN**.
 
-### The honest sequencing (Taco's own rule)
+### The honest sequencing (Eugenio's own rule)
 Gear/supply are **fill-in = exposure-seekers**, NOT anchors. By the recruiting rule (*anchor = tool-needer, fill-in = crowd-wanter, land anchors first*), they join **after** the trainers pull a crowd. MOWES is still building its audience, so this is a **"fill in once there's foot traffic"** item — not a "build next" item. Don't recruit gear brands to an empty mall.
 
 ### Guardrail 🔒 (protect the soul)
@@ -161,7 +161,7 @@ Fill-in shops (equipment/apparel/supply/supplements) are **outbound links** — 
 ### Filed as
 A planned **"MOWES marketplace" fill-in layer**: Coaches/Clinicians (anchors) → then Gear / Apparel / Supply / Fuel (fill-in), switched on once anchors bring the crowd. Money = flat advertising/rent for exposure, links out, no user tracking.
 
-### Pricing loop: count → tier → flat fee (confirmed 2026-08-09, Taco "YES 100%") 🔑
+### Pricing loop: count → tier → flat fee (confirmed 2026-08-09, Eugenio "YES 100%") 🔑
 The anonymous counter (on the Vegas server, see [[project_own_server_vegas]]) turns into fair, private pricing:
 1. **The count** measures traffic — anonymously, events only ("this listing/space got X taps this month").
 2. **The count PROVES the exposure** — real reach, not guesswork or promises.
@@ -174,7 +174,7 @@ The anonymous counter (on the Vegas server, see [[project_own_server_vegas]]) tu
 - 🔒 **Sacred line:** count **events** ("a listing was tapped 4,000 times"), **never who** tapped it. Aggregate + anonymous — same rule as the trainer side ([[project_towes_positioning_founding_free_space]]). Advertiser gets proof + a fair flat price; the user is never tracked.
 
 ## Positioning RIGHT NOW (decided 2026-08-09) 🚩 read this first
-Taco's correction to the "cold-start / no audience" worry. The worry is misframed — because **today we are NOT selling traffic.**
+Eugenio's correction to the "cold-start / no audience" worry. The worry is misframed — because **today we are NOT selling traffic.**
 
 ### The one-line offer, today
 > **Right now TOWES is NOT selling traffic, sales, or promotion — that's the FUTURE.**

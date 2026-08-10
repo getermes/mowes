@@ -2,7 +2,7 @@
 
 The checklist for deciding which trainers get a card in the MOWES/TOWES Trainers hub.
 Used by the "review desk" flow: sign-ups come in → each is checked against these rules →
-a YES/NO recommendation is given → Taco gives the final approval → welcome reply sent + card added.
+a YES/NO recommendation is given → Eugenio gives the final approval → welcome reply sent + card added.
 
 ## The one question that matters most
 **"Would I hand this coach to my mom if she were a nervous beginner?"**
@@ -32,4 +32,4 @@ When adding a trainer, reply "welcome aboard." The relationship is worth a lot e
 
 ---
 _Future goal: fully-automatic 24/7 review + approval (needs a server + AI key). For now the
-review happens through a Claude session ("review desk") — auto-review, Taco's final approval._
+review happens through a Claude session ("review desk") — auto-review, Eugenio's final approval._
