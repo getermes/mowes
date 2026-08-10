@@ -1,0 +1,64 @@
+MOWES — Promo Video Scripts (two cuts from the core message)
+Built from promo-core-message.txt. Saved 2026-08-10. Film on the REAL phone, real finger.
+
+######################################################################
+YOUNGER CUT  ·  ~30s vertical  ·  TikTok / Reels / YouTube Shorts
+Fast, punchy, privacy-forward.
+######################################################################
+
+0–3s   | Hand picks up phone, hesitates
+       | TEXT: "wanna start working out but… where do you even begin?"
+       | VO: "Starting is the hardest part."
+3–6s   | Quick flashes: gym $$, an app asking for email/login
+       | TEXT: "gyms = money  ·  apps = tracking you"
+       | VO: "Gyms cost money. Apps track everything."
+6–13s  | Open MOWES, finger taps START, guided move appears
+       | TEXT: "just… start 👆"
+       | VO: "This is MOWES. It walks you through it — one move at a time."
+13–22s | Fast cuts, each promise flashes big
+       | TEXT: FREE → NO SIGN-UP → NO TRACKING → STAYS ON YOUR PHONE → ANY SIZE, ANY AGE
+       | VO: "Free. No sign-up. No tracking. Your data never leaves your phone."
+22–27s | You (or text), honest look
+       | TEXT: "I built it 'cause I needed it."
+       | VO: "I built MOWES because I needed it myself."
+27–30s | MOWES on the phone, tap to move
+       | TEXT: "Free. On your phone. Start today."
+       | VO: "Start today."
+
+END CARD: getermes.github.io/mowes  ·  @mowesworkout
+CAPTION: No gym. No sign-up. No one tracking you. Just a free workout that walks you
+through it — start from zero, any age, any size. #beginnerworkout #homeworkout
+#freefitness #nogym #startfromzero
+
+
+######################################################################
+OLDER CUT  ·  ~40s  ·  Facebook / YouTube
+Calm, reassuring, hand-holding. Slower and bigger.
+######################################################################
+
+0–5s   | Warm shot: person glancing at phone, a little unsure
+       | TEXT: "Been meaning to get moving again?"
+       | VO: "Maybe you've been wanting to get moving again — but starting feels hard."
+5–12s  | Reassure. Open MOWES to its friendly cover
+       | TEXT: "No gym. No complicated setup."
+       | VO: "No gym. No complicated setup. Just your phone."
+12–22s | THE KEY: show how simple. Finger taps; a clear guided move appears
+       | TEXT: "One move at a time 👆"
+       | VO: "MOWES shows you exactly what to do — one move at a time, at your own pace.
+              If you can tap your phone, you can do this."
+22–30s | Calm promise beats
+       | TEXT: FREE · PRIVATE · SIMPLE
+       | VO: "It's free. It's private — nothing about you ever leaves your phone.
+              No sign-up, no fuss."
+30–36s | Warm founder moment (Taco on camera or text)
+       | TEXT: "I built it because I needed it."
+       | VO: "I built MOWES because I needed it myself — to start gently, and keep going."
+36–42s | CTA, unhurried
+       | TEXT: "Start today, right on your phone."
+       | VO: "Start today, right on your phone."
+
+END CARD: getermes.github.io/mowes
+CAPTION: Getting started is the hardest part — so MOWES walks you through it, one move
+at a time, right on your phone. It's free, it's private (nothing leaves your phone),
+and there's no sign-up. Whatever your age or shape, if you can tap a phone, you can
+start today. 💙
