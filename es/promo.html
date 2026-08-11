@@ -25,7 +25,8 @@
   .phone{ width:154px; border-radius:22px; background:linear-gradient(180deg,#6d7bff,#8a5bff); padding:14px 12px 16px; box-shadow:0 16px 40px rgba(90,60,255,.5); z-index:2; }
   .phone .date{ color:#e9ecff; font-size:9px; font-weight:800; opacity:.9; }
   .phone .sun{ display:block; width:70px; height:70px; margin:4px auto 8px; filter: drop-shadow(0 0 11px rgba(255,157,61,.55)); transition: transform .18s ease, filter .18s ease; }
-  .phone .movecard{ background:#fff; border-radius:12px; padding:9px; text-align:left; min-height:52px; }
+  .phone .movecard{ background:#fff; border-radius:12px; padding:9px; text-align:left; min-height:52px; transition: opacity .22s ease, transform .3s cubic-bezier(.34,1.56,.64,1); }
+  .phone .movecard.hide{ opacity:0; transform:scale(.55); pointer-events:none; }
   .phone .movecard b{ display:block; color:#2f3350; font-size:12px; font-weight:900; }
   .phone .movecard .sub{ display:block; color:#7a84c8; font-size:10px; font-weight:700; }
   .phone .movecard .demo{ display:inline-block; margin-top:5px; background:#eef0ff; color:#5b6cff; font-size:8.5px; font-weight:900; padding:3px 7px; border-radius:6px; }
@@ -203,22 +204,21 @@
   function setSun(state, label){ sun.style.color = SUN[state].ray; sunFace.setAttribute('fill', SUN[state].face); sunLabel.setAttribute('fill', SUN[state].txt); sunLabel.textContent = label; }
   function setCard(title, sub, showDemo, cls){ mcT.textContent = title; mcS.textContent = sub; mcD.style.display = showDemo ? 'inline-block' : 'none'; mc.className = 'movecard' + (cls ? ' ' + cls : ''); }
   function setChar(which){ for (var k in chars) chars[k].style.display = (k === which) ? '' : 'none'; }
+  function showCard(show){ mc.classList.toggle('hide', !show); }
   function applyS3(st){
     // "punch" pop on the sun right as each routine starts
-    var pop = ((st > 1000 && st < 1300) || (st > 7500 && st < 7800)) ? 1.2 : 1;
-    sun.style.transform = 'scale(' + pop + ')';
-    if (st < 1000){ // PREP — red "ready" sun, character set
-      setSun('ready','•'); setCard('Brazos arriba','prepárate…', true, ''); setChar('rest'); s3tap.textContent='';
-    } else if (st < 5000){ // ARMS — punch to bright yellow, count 5..8 (1s per rep)
+    if (st < 1000){ // PREP — BIG red sun, no card
+      setSun('ready','•'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; s3tap.textContent='';
+    } else if (st < 5000){ // ARMS — yellow sun, card pops: Brazos / Rutina 1
       var r = Math.min(8, 5 + Math.floor((st-1000)/1000));
-      setSun('run', String(r)); setCard('Brazos arriba','Rutina 1 de 2', true, ''); setChar('arms'); s3tap.textContent='';
-    } else if (st < 7500){ // PAUSE — a real breather; green sun, sign reads "Pausa"
-      setSun('pause','‖'); setCard('Pausa','descanso · respira', false, 'pause'); setChar('rest'); s3tap.textContent='';
-    } else if (st < 12300){ // LEGS — bright yellow, count 1..8 (~0.6s per rep)
+      setSun('run', String(r)); setCard('Brazos','Rutina 1', false, ''); setChar('arms'); showCard(true); sun.style.transform='scale(1)'; s3tap.textContent='';
+    } else if (st < 7500){ // PAUSE — BIG green sun, no card (real breather)
+      setSun('pause','‖'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; s3tap.textContent='';
+    } else if (st < 12300){ // LEGS — yellow sun, card pops: Piernas / Rutina 2
       var r2 = Math.min(8, 1 + Math.floor((st-7500)/600));
-      setSun('run', String(r2)); setCard('Piernas arriba y abajo','Rutina 2 de 2', true, ''); setChar('legs'); s3tap.textContent='';
-    } else { // DONE — Semana completa payoff
-      setSun('done','✓'); setCard('Rutina 2 ✓','¡lo diste todo!', false, 'done'); setChar('rest'); s3tap.textContent='¡Semana completa!';
+      setSun('run', String(r2)); setCard('Piernas','Rutina 2', false, ''); setChar('legs'); showCard(true); sun.style.transform='scale(1)'; s3tap.textContent='';
+    } else { // DONE — BIG gold sun, no card; Semana completa payoff
+      setSun('done','✓'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; s3tap.textContent='¡Semana completa!';
     }
   }
   var start = null, raf = null;
