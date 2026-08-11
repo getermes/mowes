@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opening MOWES…</title>
+<meta name="robots" content="noindex">
+<style>
+  html,body{ margin:0; height:100%; }
+  body{ display:flex; align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg,#eef0ff,#e6e9ff);
+    font-family:-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif; color:#5b6cff; }
+  .msg{ font-size:20px; font-weight:800; }
+  .msg .e{ font-size:34px; display:block; margin-bottom:8px; }
+</style>
+</head>
+<body>
+  <div class="msg"><span class="e">💪</span>Opening MOWES…</div>
+<script>
+  // A tiny bio-link counter: counts a click, then sends you to MOWES.
+  // ONLY runs on this promo link — the app itself has NO tracking. Just an
+  // anonymous tally ("someone tapped the link"), never who.
+  (function(){
+    var APP = "https://getermes.github.io/mowes/es/";
+    var HIT = "https://abacus.jasoncameron.dev/hit/pipes-es-9k4z/biolink";
+    var done = false;
+    function go(){ if (done) return; done = true; location.replace(APP); }
+    try { fetch(HIT, { keepalive:true, mode:"no-cors" }).then(go).catch(go); } catch(e){ go(); }
+    setTimeout(go, 900); // safety: never leave anyone stuck
+  })();
+</script>
+</body>
+</html>
