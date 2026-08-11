@@ -1,6 +1,6 @@
 {
-  "name": "PEPEP",
-  "short_name": "PEPEP",
+  "name": "PIPES",
+  "short_name": "PIPES",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
