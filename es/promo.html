@@ -208,7 +208,7 @@
   function setChar(which){ for (var k in chars) chars[k].style.display = (k === which) ? '' : 'none'; }
   function showCard(show){ mc.classList.toggle('hide', !show); }
   var s3sub = document.getElementById('s3sub'), lastSub = '';
-  function setSub(txt){ if (txt === lastSub) return; lastSub = txt; s3sub.textContent = txt; s3sub.style.animation = 'none'; void s3sub.offsetWidth; s3sub.style.animation = 'subpop .35s ease'; }
+  function setSub(txt){ if (txt === lastSub) return; lastSub = txt; s3sub.textContent = txt; s3sub.style.color = (txt === 'cada momento') ? '#4FC79A' : '#ff9d3d'; s3sub.style.animation = 'none'; void s3sub.offsetWidth; s3sub.style.animation = 'subpop .35s ease'; }
   function applyS3(st){
     // "punch" pop on the sun right as each routine starts
     if (st < 1000){ // PREP — BIG red sun, no card
