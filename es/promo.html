@@ -32,7 +32,7 @@
   .phone .movecard .demo{ display:inline-block; margin-top:5px; background:#eef0ff; color:#5b6cff; font-size:8.5px; font-weight:900; padding:3px 7px; border-radius:6px; }
   .phone .movecard.done b{ color:#2a9d55; } .phone .movecard.pause b{ color:#2aa77b; }
   #s3 h2{ font-size:22px; margin-top:22px; }
-  #s3sub{ display:inline-block; }
+  #s3l1, #s3l2{ display:block; }
   @keyframes subpop{ 0%{ transform:scale(.6); opacity:0; } 60%{ transform:scale(1.12); } 100%{ transform:scale(1); opacity:1; } }
   #s3 .tap{ margin-top:10px; color:#ffcf8f; font-weight:800; font-size:15px; }
   /* Scene 3b congrats */
@@ -142,7 +142,7 @@
         </svg>
         <div class="movecard" id="movecard"><b id="mcTitle">Arms overhead</b><span class="sub" id="mcSub">Move 1 of 2</span><span class="demo" id="mcDemo">▶ demo</span></div>
       </div>
-      <h2><span id="s3title"><span class="p">PIPES</span> en acción!<br></span><span class="o" id="s3sub">contando cada repetición</span></h2>
+      <h2><span id="s3l1"><span class="p">PIPES</span> en acción!</span><span id="s3l2" class="o">contando cada repetición</span></h2>
       <div class="tap" id="s3tap">sigue el ritmo 👆</div>
     </div>
 
@@ -235,24 +235,40 @@
   function setCard(title, sub, showDemo, cls){ mcT.textContent = title; mcS.textContent = sub; mcD.style.display = showDemo ? 'inline-block' : 'none'; mc.className = 'movecard' + (cls ? ' ' + cls : ''); }
   function setChar(which){ for (var k in chars) chars[k].style.display = (k === which) ? '' : 'none'; }
   function showCard(show){ mc.classList.toggle('hide', !show); }
-  var s3sub = document.getElementById('s3sub'), lastSub = '';
-  var s3title = document.getElementById('s3title');
-  function showTitle(b){ s3title.style.display = b ? '' : 'none'; }
-  function setSub(txt){ if (txt === lastSub) return; lastSub = txt; s3sub.textContent = txt; s3sub.style.color = (txt === 'cada momento') ? '#4FC79A' : '#ff9d3d'; s3sub.style.animation = 'none'; void s3sub.offsetWidth; s3sub.style.animation = 'subpop .35s ease'; }
+  var s3l1 = document.getElementById('s3l1'), s3l2 = document.getElementById('s3l2');
+  function line(el, html, color, show, pop){
+    el.style.display = show ? 'block' : 'none';
+    if (!show) return;
+    el.style.color = color;
+    if (el.getAttribute('data-h') !== html){
+      el.setAttribute('data-h', html); el.innerHTML = html;
+      if (pop){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'subpop .35s ease'; }
+    }
+  }
   function applyS3(st){
     // "punch" pop on the sun right as each routine starts
     if (st < 1000){ // PREP — BIG red sun, no card
-      setSun('ready','•'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; showTitle(true); setSub('contando cada repetición'); s3tap.textContent='';
+      setSun('ready','•'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
+      line(s3l1, '<span class="p">PIPES</span> en acción!', '#ffffff', true, false);
+      line(s3l2, 'contando cada repetición', '#ff9d3d', true, false); s3tap.textContent='';
     } else if (st < 5000){ // ARMS — yellow sun, card pops: Brazos / Rutina 1
       var r = Math.min(8, 5 + Math.floor((st-1000)/1000));
-      setSun('run', String(r)); setCard('Brazos','Rutina 1', false, ''); setChar('arms'); showCard(true); sun.style.transform='scale(1)'; showTitle(true); setSub('contando cada repetición'); s3tap.textContent='';
-    } else if (st < 7500){ // PAUSE — BIG green sun, no card, only "cada momento"
-      setSun('pause','‖'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; showTitle(false); setSub('cada momento'); s3tap.textContent='';
-    } else if (st < 12300){ // LEGS — yellow sun, card pops: Piernas / Rutina 2, only "hasta terminar…"
+      setSun('run', String(r)); setCard('Brazos','Rutina 1', false, ''); setChar('arms'); showCard(true); sun.style.transform='scale(1)';
+      line(s3l1, '<span class="p">PIPES</span> en acción!', '#ffffff', true, false);
+      line(s3l2, 'contando cada repetición', '#ff9d3d', true, false); s3tap.textContent='';
+    } else if (st < 7500){ // PAUSE — Tú descansas (green) / PIPES sigue
+      setSun('pause','‖'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
+      line(s3l1, 'Tú descansas', '#4FC79A', true, true);
+      line(s3l2, '<span class="p">PIPES</span> sigue', '#4FC79A', true, true); s3tap.textContent='';
+    } else if (st < 12300){ // LEGS — yellow sun, card pops: Piernas / Rutina 2, only "¡hasta el final!"
       var r2 = Math.min(8, 1 + Math.floor((st-7500)/600));
-      setSun('run', String(r2)); setCard('Piernas','Rutina 2', false, ''); setChar('legs'); showCard(true); sun.style.transform='scale(1)'; showTitle(false); setSub(st < 8100 ? 'cada momento' : 'hasta terminar…'); s3tap.textContent='';
+      setSun('run', String(r2)); setCard('Piernas','Rutina 2', false, ''); setChar('legs'); showCard(true); sun.style.transform='scale(1)';
+      line(s3l1, '', '#ffffff', false, false);
+      line(s3l2, '¡hasta el final!', '#ff9d3d', true, true); s3tap.textContent='';
     } else { // DONE — BIG gold sun, no card; Semana completa payoff
-      setSun('done','✓'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; showTitle(false); setSub('hasta terminar…'); s3tap.textContent='¡Semana completa!';
+      setSun('done','✓'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
+      line(s3l1, '', '#ffffff', false, false);
+      line(s3l2, '¡hasta el final!', '#ff9d3d', true, false); s3tap.textContent='¡Semana completa!';
     }
   }
   var start = null, raf = null;
