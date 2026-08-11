@@ -66,7 +66,7 @@
 </head>
 <body>
   <div class="stage" id="stage">
-    <div class="mocktag">MOCK · ~18s</div>
+    <div class="mocktag">MOCK · ~22s</div>
 
     <div class="scene" id="s1">
       <h2 style="font-size:38px; line-height:1.18"><span class="p">Gratis.</span><br>Sin registro.<br><span class="o">Nadie te rastrea.</span></h2>
@@ -172,12 +172,12 @@
 <script>
   var CLEAN = /[?&]clean/.test(location.search);
   if (CLEAN){ try { document.body.classList.add('clean'); } catch(e){} }
-  var T = 18500;
+  var T = 21900;
   var scenes = [
     { el:'s1', a:0, b:2800 },
-    { el:'s3', a:2800, b:11000 },
-    { el:'s3b', a:11000, b:14500 },
-    { el:'s6', a:14500, b:18500 }
+    { el:'s3', a:2800, b:14400 },
+    { el:'s3b', a:14400, b:17900 },
+    { el:'s6', a:17900, b:21900 }
   ];
   var promises = document.querySelectorAll('#s4 .promise');
   var bar = document.getElementById('bar');
@@ -189,13 +189,13 @@
   function setCard(title, sub, showDemo, cls){ mcT.textContent = title; mcS.textContent = sub; mcD.style.display = showDemo ? 'inline-block' : 'none'; mc.className = 'movecard' + (cls ? ' ' + cls : ''); }
   function setChar(which){ for (var k in chars) chars[k].style.display = (k === which) ? '' : 'none'; }
   function applyS3(st){
-    if (st < 3200){ // ARMS, count 7..10
-      var r = Math.min(10, 7 + Math.floor(st/800));
+    if (st < 4000){ // ARMS, count 7..10 (1s per rep, holds so the eye catches it)
+      var r = Math.min(10, 7 + Math.floor(st/1000));
       setSun('run', String(r)); setCard('Brazos arriba','Ejercicio 1 de 2', true, ''); setChar('arms'); s3tap.textContent='cuenta tus reps 👆';
-    } else if (st < 4200){ // DONE 1
+    } else if (st < 5800){ // DONE 1 (longer hold so the checkmark reads)
       setSun('done','✓'); setCard('¡Ejercicio 1 listo!','bien hecho', false, 'done'); setChar('rest'); s3tap.textContent='ejercicio completo ✓';
-    } else if (st < 7400){ // LEGS, count 1..5
-      var r2 = Math.min(5, 1 + Math.floor((st-4200)/640));
+    } else if (st < 9800){ // LEGS, count 1..5 (~0.8s per rep)
+      var r2 = Math.min(5, 1 + Math.floor((st-5800)/800));
       setSun('run', String(r2)); setCard('Piernas arriba y abajo','Ejercicio 2 de 2', true, ''); setChar('legs'); s3tap.textContent='y el siguiente 👆';
     } else { // DONE 2
       setSun('done','✓'); setCard('¡Ejercicio 2 listo!','lo diste todo', false, 'done'); setChar('rest'); s3tap.textContent='¡entrenamiento completo!';
@@ -207,7 +207,7 @@
     var t = ts - start; if (t > T) t = T;
     bar.style.width = (t / T * 100) + '%';
     scenes.forEach(function(s){ var on = (t >= s.a && t < s.b) || (s.el === 's6' && t >= s.a); document.getElementById(s.el).classList.toggle('on', on); });
-    if (t >= 2800 && t < 11000){ applyS3(t - 2800); }
+    if (t >= 2800 && t < 14400){ applyS3(t - 2800); }
     if (t < T){ raf = requestAnimationFrame(frame); }
     else if (CLEAN){ start = null; raf = requestAnimationFrame(frame); }  // loop for recording
   }
