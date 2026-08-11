@@ -132,7 +132,7 @@
         </svg>
         <div class="movecard" id="movecard"><b id="mcTitle">Arms overhead</b><span class="sub" id="mcSub">Move 1 of 2</span><span class="demo" id="mcDemo">▶ demo</span></div>
       </div>
-      <h2><span class="p">PIPES</span> en acción!<br><span class="o" id="s3sub">contando cada repetición</span></h2>
+      <h2><span id="s3title"><span class="p">PIPES</span> en acción!<br></span><span class="o" id="s3sub">contando cada repetición</span></h2>
       <div class="tap" id="s3tap">sigue el ritmo 👆</div>
     </div>
 
@@ -206,21 +206,23 @@
   function setChar(which){ for (var k in chars) chars[k].style.display = (k === which) ? '' : 'none'; }
   function showCard(show){ mc.classList.toggle('hide', !show); }
   var s3sub = document.getElementById('s3sub'), lastSub = '';
+  var s3title = document.getElementById('s3title');
+  function showTitle(b){ s3title.style.display = b ? '' : 'none'; }
   function setSub(txt){ if (txt === lastSub) return; lastSub = txt; s3sub.textContent = txt; s3sub.style.color = (txt === 'cada momento') ? '#4FC79A' : '#ff9d3d'; s3sub.style.animation = 'none'; void s3sub.offsetWidth; s3sub.style.animation = 'subpop .35s ease'; }
   function applyS3(st){
     // "punch" pop on the sun right as each routine starts
     if (st < 1000){ // PREP — BIG red sun, no card
-      setSun('ready','•'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; setSub('contando cada repetición'); s3tap.textContent='';
+      setSun('ready','•'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; showTitle(true); setSub('contando cada repetición'); s3tap.textContent='';
     } else if (st < 5000){ // ARMS — yellow sun, card pops: Brazos / Rutina 1
       var r = Math.min(8, 5 + Math.floor((st-1000)/1000));
-      setSun('run', String(r)); setCard('Brazos','Rutina 1', false, ''); setChar('arms'); showCard(true); sun.style.transform='scale(1)'; setSub('contando cada repetición'); s3tap.textContent='';
-    } else if (st < 7500){ // PAUSE — BIG green sun, no card (real breather)
-      setSun('pause','‖'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; setSub('cada momento'); s3tap.textContent='';
-    } else if (st < 12300){ // LEGS — yellow sun, card pops: Piernas / Rutina 2
+      setSun('run', String(r)); setCard('Brazos','Rutina 1', false, ''); setChar('arms'); showCard(true); sun.style.transform='scale(1)'; showTitle(true); setSub('contando cada repetición'); s3tap.textContent='';
+    } else if (st < 7500){ // PAUSE — BIG green sun, no card, only "cada momento"
+      setSun('pause','‖'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; showTitle(false); setSub('cada momento'); s3tap.textContent='';
+    } else if (st < 12300){ // LEGS — yellow sun, card pops: Piernas / Rutina 2, only "hasta terminar…"
       var r2 = Math.min(8, 1 + Math.floor((st-7500)/600));
-      setSun('run', String(r2)); setCard('Piernas','Rutina 2', false, ''); setChar('legs'); showCard(true); sun.style.transform='scale(1)'; setSub(st < 8100 ? 'cada momento' : 'hasta terminar…'); s3tap.textContent='';
+      setSun('run', String(r2)); setCard('Piernas','Rutina 2', false, ''); setChar('legs'); showCard(true); sun.style.transform='scale(1)'; showTitle(false); setSub(st < 8100 ? 'cada momento' : 'hasta terminar…'); s3tap.textContent='';
     } else { // DONE — BIG gold sun, no card; Semana completa payoff
-      setSun('done','✓'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; setSub('hasta terminar…'); s3tap.textContent='¡Semana completa!';
+      setSun('done','✓'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)'; showTitle(false); setSub('hasta terminar…'); s3tap.textContent='¡Semana completa!';
     }
   }
   var start = null, raf = null;
