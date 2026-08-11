@@ -31,11 +31,12 @@
   </div>
 <script>
   var GET = "https://abacus.jasoncameron.dev/get/ermes-mowes-x7q2/biolink";
+  var BASELINE = 1; // ignore the 1 stray test hit from setup, so real clicks start at 0
   function load(){
     var n = document.getElementById("n"); n.textContent = "…";
     fetch(GET + "?_=" + Date.now())
       .then(function(r){ return r.json(); })
-      .then(function(d){ n.textContent = (d && typeof d.value === "number") ? d.value : "0"; })
+      .then(function(d){ var v = (d && typeof d.value === "number") ? d.value : BASELINE; n.textContent = Math.max(0, v - BASELINE); })
       .catch(function(){ n.textContent = "0"; });
   }
   document.getElementById("refresh").addEventListener("click", load);
