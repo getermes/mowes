@@ -77,7 +77,7 @@
 </head>
 <body>
   <div class="stage" id="stage">
-    <div class="mocktag">MOCK · ~24s</div>
+    <div class="mocktag">MOCK · ~25s</div>
 
     <div class="scene" id="s1">
       <h2 style="font-size:38px; line-height:1.18"><span class="p">Gratis.</span><br>Sin registro.<br><span class="o">Nadie te rastrea.</span></h2>
@@ -187,12 +187,12 @@
 <script>
   var CLEAN = /[?&]clean/.test(location.search);
   if (CLEAN){ try { document.body.classList.add('clean'); } catch(e){} }
-  var T = 24400;
+  var T = 25100;
   var scenes = [
     { el:'s1', a:0, b:2800 },
-    { el:'s3', a:2800, b:15900 },
-    { el:'s3b', a:15900, b:20400 },
-    { el:'s6', a:20400, b:24400 }
+    { el:'s3', a:2800, b:16600 },
+    { el:'s3b', a:16600, b:21100 },
+    { el:'s6', a:21100, b:25100 }
   ];
   var promises = document.querySelectorAll('#s4 .promise');
   var bar = document.getElementById('bar');
@@ -205,17 +205,17 @@
   function setChar(which){ for (var k in chars) chars[k].style.display = (k === which) ? '' : 'none'; }
   function applyS3(st){
     // "punch" pop on the sun right as each routine starts
-    var pop = ((st > 1000 && st < 1300) || (st > 6800 && st < 7100)) ? 1.2 : 1;
+    var pop = ((st > 1000 && st < 1300) || (st > 7500 && st < 7800)) ? 1.2 : 1;
     sun.style.transform = 'scale(' + pop + ')';
     if (st < 1000){ // PREP — red "ready" sun, character set
       setSun('ready','•'); setCard('Brazos arriba','prepárate…', true, ''); setChar('rest'); s3tap.textContent='';
     } else if (st < 5000){ // ARMS — punch to bright yellow, count 5..8 (1s per rep)
       var r = Math.min(8, 5 + Math.floor((st-1000)/1000));
       setSun('run', String(r)); setCard('Brazos arriba','Rutina 1 de 2', true, ''); setChar('arms'); s3tap.textContent='';
-    } else if (st < 6800){ // PAUSE — green rest sun, Rutina 1 done
-      setSun('pause','‖'); setCard('Rutina 1 ✓','descanso · respira', false, 'pause'); setChar('rest'); s3tap.textContent='';
-    } else if (st < 11600){ // LEGS — bright yellow, count 1..8 (~0.6s per rep)
-      var r2 = Math.min(8, 1 + Math.floor((st-6800)/600));
+    } else if (st < 7500){ // PAUSE — a real breather; green sun, sign reads "Pausa"
+      setSun('pause','‖'); setCard('Pausa','descanso · respira', false, 'pause'); setChar('rest'); s3tap.textContent='';
+    } else if (st < 12300){ // LEGS — bright yellow, count 1..8 (~0.6s per rep)
+      var r2 = Math.min(8, 1 + Math.floor((st-7500)/600));
       setSun('run', String(r2)); setCard('Piernas arriba y abajo','Rutina 2 de 2', true, ''); setChar('legs'); s3tap.textContent='';
     } else { // DONE — Semana completa payoff
       setSun('done','✓'); setCard('Rutina 2 ✓','¡lo diste todo!', false, 'done'); setChar('rest'); s3tap.textContent='¡Semana completa!';
@@ -227,7 +227,7 @@
     var t = ts - start; if (t > T) t = T;
     bar.style.width = (t / T * 100) + '%';
     scenes.forEach(function(s){ var on = (t >= s.a && t < s.b) || (s.el === 's6' && t >= s.a); document.getElementById(s.el).classList.toggle('on', on); });
-    if (t >= 2800 && t < 15900){ applyS3(t - 2800); }
+    if (t >= 2800 && t < 16600){ applyS3(t - 2800); }
     if (t < T){ raf = requestAnimationFrame(frame); }
     else if (CLEAN){ start = null; raf = requestAnimationFrame(frame); }  // loop for recording
   }
