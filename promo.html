@@ -257,18 +257,19 @@
       line(s3l1, '<span class="p">MOWES</span> in action!', '#ffffff', true, false);
       line(s3l2, 'counting every rep', '#ff9d3d', true, false); s3tap.textContent='';
     } else if (st < 7500){ // PAUSE — You rest (green) / MOWES sigue
-      setSun('pause','‖'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
+      var cd = Math.max(1, 3 - Math.floor((st-5000)/833));
+      setSun('pause', String(cd)); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
       line(s3l1, 'You rest', '#4FC79A', true, true);
       line(s3l2, '<span class="p">MOWES</span> keeps going', '#4FC79A', true, true); s3tap.textContent='';
     } else if (st < 12300){ // LEGS — yellow sun, card pops: Legs / Routine 2, only "to the finish!"
       var r2 = Math.min(8, 1 + Math.floor((st-7500)/600));
       setSun('run', String(r2)); setCard('Legs','Routine 2', false, ''); setChar('legs'); showCard(true); sun.style.transform='scale(1)';
-      line(s3l1, 'Until you', '#ff9d3d', true, true);
-      line(s3l2, 'finish!!!', '#ff9d3d', true, true); s3tap.textContent='';
+      line(s3l1, '', '#ffffff', false, false);
+      line(s3l2, (st < 11100 ? 'All the way...' : 'to the end'), '#ff9d3d', true, true); s3tap.textContent='';
     } else { // DONE — BIG gold sun, no card; Week complete payoff
       setSun('done','✓'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
-      line(s3l1, 'Until you', '#ff9d3d', true, false);
-      line(s3l2, 'finish!!!', '#ff9d3d', true, false); s3tap.textContent='Week complete!';
+      line(s3l1, '', '#ffffff', false, false);
+      line(s3l2, 'to the end', '#ff9d3d', true, false); s3tap.textContent='Week complete!';
     }
   }
   var start = null, raf = null;

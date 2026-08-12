@@ -303,19 +303,20 @@
       setSun('run', String(r)); setCard('Brazos','Rutina 1', false, ''); setChar('arms'); showCard(true); sun.style.transform='scale(1)';
       line(s3l1, '<span class="p">PIPES</span> en acción!', '#ffffff', true, false);
       line(s3l2, 'contando cada repetición', '#ff9d3d', true, false); s3tap.textContent='';
-    } else if (st < 7500){ // PAUSE — Tú descansas (green) / PIPES sigue
-      setSun('pause','‖'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
+    } else if (st < 7500){ // PAUSE — 3-2-1 countdown in the sun; Tú descansas / PIPES sigue
+      var cd = Math.max(1, 3 - Math.floor((st-5000)/833));
+      setSun('pause', String(cd)); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
       line(s3l1, 'Tú descansas', '#4FC79A', true, true);
       line(s3l2, '<span class="p">PIPES</span> sigue', '#4FC79A', true, true); s3tap.textContent='';
-    } else if (st < 12300){ // LEGS — yellow sun, card pops: Piernas / Rutina 2, only "¡hasta el final!"
+    } else if (st < 12300){ // LEGS — starts "¡Con todo...!", ends "¡hasta el final!"
       var r2 = Math.min(8, 1 + Math.floor((st-7500)/600));
       setSun('run', String(r2)); setCard('Piernas','Rutina 2', false, ''); setChar('legs'); showCard(true); sun.style.transform='scale(1)';
-      line(s3l1, 'Hasta que tú', '#ff9d3d', true, true);
-      line(s3l2, 'terminas!!!', '#ff9d3d', true, true); s3tap.textContent='';
+      line(s3l1, '', '#ffffff', false, false);
+      line(s3l2, (st < 11100 ? '¡Con todo...!' : '¡hasta el final!'), '#ff9d3d', true, true); s3tap.textContent='';
     } else { // DONE — BIG gold sun, no card; Semana completa payoff
       setSun('done','✓'); setChar('rest'); showCard(false); sun.style.transform='scale(1.32)';
-      line(s3l1, 'Hasta que tú', '#ff9d3d', true, false);
-      line(s3l2, 'terminas!!!', '#ff9d3d', true, false); s3tap.textContent='¡Semana completa!';
+      line(s3l1, '', '#ffffff', false, false);
+      line(s3l2, '¡hasta el final!', '#ff9d3d', true, false); s3tap.textContent='¡Semana completa!';
     }
   }
   var start = null, raf = null;
