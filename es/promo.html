@@ -283,15 +283,28 @@
 <script>
   var CLEAN = /[?&]clean/.test(location.search);
   if (CLEAN){ try { document.body.classList.add('clean'); } catch(e){} }
-  var T = 37300;
-  var scenes = [
-    { el:'s1', a:0, b:2800 },
-    { el:'sL', a:2800, b:7600 },
-    { el:'sO', a:7600, b:15000 },
-    { el:'s3', a:15000, b:28800 },
-    { el:'s3b', a:28800, b:33300 },
-    { el:'s6', a:33300, b:37300 }
-  ];
+  var SHORT = /[?&]short/.test(location.search);
+  var T, scenes;
+  if (SHORT){
+    T = 20500;
+    scenes = [
+      { el:'s1', a:0, b:2000 },
+      { el:'sO', a:2000, b:6500 },
+      { el:'s3', a:6500, b:14500 },
+      { el:'s3b', a:14500, b:17000 },
+      { el:'s6', a:17000, b:20500 }
+    ];
+  } else {
+    T = 37300;
+    scenes = [
+      { el:'s1', a:0, b:2800 },
+      { el:'sL', a:2800, b:7600 },
+      { el:'sO', a:7600, b:15000 },
+      { el:'s3', a:15000, b:28800 },
+      { el:'s3b', a:28800, b:33300 },
+      { el:'s6', a:33300, b:37300 }
+    ];
+  }
   var promises = document.querySelectorAll('#s4 .promise');
   var bar = document.getElementById('bar');
   var sun = document.getElementById('sun'), sunFace = document.getElementById('sunFace'), sunLabel = document.getElementById('sunLabel');
@@ -312,18 +325,12 @@
   var oq = document.getElementById('oq'), opill = document.getElementById('opill'), lastPill = '';
   function setPill(txt){ if (txt === lastPill) return; lastPill = txt; opill.textContent = txt; opill.style.animation='none'; void opill.offsetWidth; opill.style.animation='subpop .4s ease'; }
   function showOView(id){ document.getElementById('oOnb').style.display = (id==='oOnb')?'flex':'none'; document.getElementById('oSet').style.display = (id==='oSet')?'flex':'none'; }
-  function applyOnb(to){
-    if (to < 6000){
-      showOView('oOnb');
-      var q, a;
-      if (to < 1000){ q='Abre y empieza'; a='MOWES ▶'; }
-      else if (to < 2000){ q='¿Tu nivel?'; a='Principiante ✓'; }
-      else if (to < 3000){ q='¿Tu meta?'; a='Bajar de peso ✓'; }
-      else if (to < 4000){ q='¿Dónde?'; a='Al aire libre ✓'; }
-      else if (to < 5000){ q='¿Actividad?'; a='Correr / Caminar ✓'; }
-      else { q='¿Cuántos días?'; a='5 días / semana ✓'; }
-      oq.textContent = q; setPill(a);
-    } else { showOView('oSet'); }
+  var ONB = [['Abre y empieza','MOWES ▶'],['¿Tu nivel?','Principiante ✓'],['¿Tu meta?','Bajar de peso ✓'],['¿Dónde?','Al aire libre ✓'],['¿Actividad?','Correr / Caminar ✓'],['¿Cuántos días?','5 días / semana ✓']];
+  function applyOnb(to, step){
+    step = step || 1000;
+    var i = Math.floor(to / step);
+    if (i < 6){ showOView('oOnb'); oq.textContent = ONB[i][0]; setPill(ONB[i][1]); }
+    else { showOView('oSet'); }
   }
   var s3l1 = document.getElementById('s3l1'), s3l2 = document.getElementById('s3l2');
   function line(el, html, color, show, pop){
@@ -368,9 +375,14 @@
     var t = ts - start; if (t > T) t = T;
     bar.style.width = (t / T * 100) + '%';
     scenes.forEach(function(s){ var on = (t >= s.a && t < s.b) || (s.el === 's6' && t >= s.a); document.getElementById(s.el).classList.toggle('on', on); });
-    if (t >= 2800 && t < 7600){ applyLink(t - 2800); }
-    if (t >= 7600 && t < 15000){ applyOnb(t - 7600); }
-    if (t >= 15000 && t < 28800){ applyS3(t - 15000); }
+    if (SHORT){
+      if (t >= 2000 && t < 6500){ applyOnb(t - 2000, 600); }
+      if (t >= 6500 && t < 14500){ applyS3((t - 6500) * 1.66); }
+    } else {
+      if (t >= 2800 && t < 7600){ applyLink(t - 2800); }
+      if (t >= 7600 && t < 15000){ applyOnb(t - 7600, 1000); }
+      if (t >= 15000 && t < 28800){ applyS3(t - 15000); }
+    }
     if (t < T){ raf = requestAnimationFrame(frame); }
     else if (CLEAN){ start = null; raf = requestAnimationFrame(frame); }  // loop for recording
   }
