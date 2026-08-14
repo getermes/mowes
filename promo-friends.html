@@ -94,14 +94,18 @@
   .vtext .free{ display:inline-block; margin-top:3px; background:#e7f7ee; color:#2a9d55; font-size:9px; font-weight:900; padding:2px 6px; border-radius:5px; }
 
   /* Scene 5 — moving together */
-  #s5{ background:linear-gradient(160deg,#3a2f6e,#0b0e24); justify-content:flex-start; padding-top:40px; }
-  #s5 .crew{ display:flex; align-items:flex-end; justify-content:center; gap:1px; margin-bottom:16px; flex-wrap:wrap; }
-  #s5 .crew .char{ width:72px; height:72px; }
-  #s5 .crew .char:nth-child(1){ animation: groove    1.7s ease-in-out infinite; }  /* big friend grooves */
-  #s5 .crew .char:nth-child(2){ animation: march     0.9s ease-in-out infinite; }  /* MOWES marches */
-  #s5 .crew .char:nth-child(3){ animation: gentlenod 2.3s ease-in-out infinite; }  /* older friend, gentle */
-  #s5 .crew .char:nth-child(4){ animation: hop       1.2s ease-in-out infinite; }  /* TOWES happy hop */
-  #s5 .crew .char:nth-child(5){ animation: squat     1.0s ease-in-out infinite; }  /* active friend squats */
+  #s5{ background:linear-gradient(160deg,#3a2f6e,#0b0e24); justify-content:flex-start; padding-top:34px; }
+  /* a room with depth: back row set farther in (smaller, higher), front row closer (bigger, lower) */
+  #s5 .room{ position:relative; display:flex; flex-direction:column; align-items:center; margin-bottom:14px; }
+  #s5 .back{ display:flex; align-items:flex-end; justify-content:center; gap:14px; }
+  #s5 .back .char{ width:54px; height:54px; opacity:.9; }
+  #s5 .front{ display:flex; align-items:flex-end; justify-content:center; gap:40px; margin-top:-2px; }
+  #s5 .front .char{ width:98px; height:98px; filter:drop-shadow(0 9px 10px rgba(0,0,0,.38)); }
+  #s5 .back .char:nth-child(1){ animation: groove    1.7s ease-in-out infinite; }  /* big friend (back) */
+  #s5 .back .char:nth-child(2){ animation: gentlenod 2.3s ease-in-out infinite; }  /* elder — chair workout (back) */
+  #s5 .back .char:nth-child(3){ animation: hop       1.2s ease-in-out infinite; }  /* TOWES — lifting (back) */
+  #s5 .front .char:nth-child(1){ animation: march     0.9s ease-in-out infinite; } /* MOWES — jumps (front) */
+  #s5 .front .char:nth-child(2){ animation: squat     1.0s ease-in-out infinite; } /* active — pushups (front) */
   #s5 h2{ font-size:24px; } #s5 .sub{ margin-top:10px; color:#ffcf8f; font-weight:800; font-size:14px; }
 
   /* Scene 6 — CTA */
@@ -273,12 +277,16 @@
 
     <!-- Scene 5: moving together -->
     <div class="scene" id="s5">
-      <div class="crew">
-        <svg class="char" viewBox="0 0 100 100"><use href="#fBig"/></svg>
-        <svg class="char" viewBox="0 0 100 100"><use href="#mowes"/></svg>
-        <svg class="char" viewBox="0 0 100 100"><use href="#fOld"/></svg>
-        <svg class="char" viewBox="0 0 100 100"><use href="#towes"/></svg>
-        <svg class="char" viewBox="0 0 100 100"><use href="#fReg"/></svg>
+      <div class="room">
+        <div class="back">
+          <svg class="char" viewBox="0 0 100 100"><use href="#fBig"/></svg>
+          <svg class="char" viewBox="0 0 100 100"><use href="#fOld"/></svg>
+          <svg class="char" viewBox="0 0 100 100"><use href="#towes"/></svg>
+        </div>
+        <div class="front">
+          <svg class="char" viewBox="0 0 100 100"><use href="#mowes"/></svg>
+          <svg class="char" viewBox="0 0 100 100"><use href="#fReg"/></svg>
+        </div>
       </div>
       <h2><span class="o">Together.</span></h2>
       <div class="sub">nobody left behind 🤍</div>
