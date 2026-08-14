@@ -276,14 +276,15 @@
   var CLEAN = /[?&]clean/.test(location.search);
   if (CLEAN){ try { document.body.classList.add('clean'); } catch(e){} }
 
-  var T = 32700;
+  // Scene durations scale with how much there is to read — more text, more seconds.
+  var T = 33100;
   var scenes = [
-    { el:'s1', a:0,     b:6800  },
-    { el:'s2', a:6800,  b:13600 },
-    { el:'s3', a:13600, b:16200 },
-    { el:'s4', a:16200, b:23700 },
-    { el:'s5', a:23700, b:28700 },
-    { el:'s6', a:28700, b:32700 }
+    { el:'s1', a:0,     b:6000  },   // two lines (~13 words)
+    { el:'s2', a:6000,  b:13200 },   // most dialogue text — longest
+    { el:'s3', a:13200, b:16600 },   // short quip — shortest
+    { el:'s4', a:16600, b:23600 },   // header + 3 video cards animate in
+    { el:'s5', a:23600, b:27600 },   // short celebration line
+    { el:'s6', a:27600, b:33100 }    // CTA + link — needs read time
   ];
   var bar = document.getElementById('bar');
 
@@ -291,12 +292,12 @@
   function talk(id, on){ var e=document.getElementById(id); if(e) e.classList.toggle('talking', on); }
 
   function applyS1(t){
-    var a = t < 3400;
+    var a = t < 3100;
     show('b1a', a); show('b1b', !a);
     talk('c1m', true); talk('c1t', false);   // MOWES is speaking
   }
   function applyS2(t){
-    var a = t < 3400;
+    var a = t < 4300;
     show('b2a', a); show('b2b', !a);
     talk('c2t', true); talk('c2m', false);    // TOWES is speaking
   }
@@ -310,8 +311,8 @@
       var on = (t >= s.a && t < s.b) || (s.el === 's6' && t >= s.a);
       document.getElementById(s.el).classList.toggle('on', on);
     });
-    if (t >= 0 && t < 6800){ applyS1(t); }
-    if (t >= 6800 && t < 13600){ applyS2(t - 6800); }
+    if (t >= 0 && t < 6000){ applyS1(t); }
+    if (t >= 6000 && t < 13200){ applyS2(t - 6000); }
     if (t < T){ raf = requestAnimationFrame(frame); }
     else if (CLEAN){ start = null; raf = requestAnimationFrame(frame); }  // loop for recording
   }
