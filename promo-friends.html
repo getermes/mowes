@@ -38,6 +38,23 @@
   /* present/point at the phone — a leaning gesture, no jump */
   @keyframes presentR{ 0%,100%{ transform:translateX(-6px) rotate(-6deg); } 50%{ transform:translateX(-11px) rotate(-12deg); } }
 
+  /* ---- rigged puppets: real movable arms / legs / head for actual exercises ---- */
+  .puppet{ overflow:visible; }
+  .puppet .arm, .puppet .leg{ transform-box:fill-box; transform-origin:50% 6%; }
+  .puppet .body{ transform-box:fill-box; transform-origin:50% 100%; }
+  .puppet .head{ transform-box:fill-box; transform-origin:50% 96%; }
+  /* jumping jacks: arms sweep overhead + legs spread, with a hop */
+  .jack .body{ animation: jjBody .54s ease-in-out infinite; }
+  .jack .armL{ animation: jjArmL .54s ease-in-out infinite; }
+  .jack .armR{ animation: jjArmR .54s ease-in-out infinite; }
+  .jack .legL{ animation: jjLegL .54s ease-in-out infinite; }
+  .jack .legR{ animation: jjLegR .54s ease-in-out infinite; }
+  @keyframes jjBody{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+  @keyframes jjArmL{ 0%,100%{ transform:rotate(12deg); } 50%{ transform:rotate(150deg); } }
+  @keyframes jjArmR{ 0%,100%{ transform:rotate(-12deg); } 50%{ transform:rotate(-150deg); } }
+  @keyframes jjLegL{ 0%,100%{ transform:rotate(3deg); } 50%{ transform:rotate(19deg); } }
+  @keyframes jjLegR{ 0%,100%{ transform:rotate(-3deg); } 50%{ transform:rotate(-19deg); } }
+
   /* Speech bubble */
   .bubble{ position:absolute; top:42px; left:50%; transform:translateX(-50%) scale(.9); width:84%;
     background:#fff; border-radius:18px; padding:16px 17px; box-shadow:0 12px 30px rgba(0,0,0,.4);
@@ -104,7 +121,7 @@
   #s5 .back .char:nth-child(1){ animation: groove    1.7s ease-in-out infinite; }  /* big friend (back) */
   #s5 .back .char:nth-child(2){ animation: gentlenod 2.3s ease-in-out infinite; }  /* elder — chair workout (back) */
   #s5 .back .char:nth-child(3){ animation: hop       1.2s ease-in-out infinite; }  /* TOWES — lifting (back) */
-  #s5 .front .char:nth-child(1){ animation: march     0.9s ease-in-out infinite; } /* MOWES — jumps (front) */
+  #s5 .front .char.puppet{ animation:none; }                                       /* rigged puppets move their own limbs */
   #s5 .front .char:nth-child(2){ animation: squat     1.0s ease-in-out infinite; } /* active — pushups (front) */
   #s5 h2{ font-size:24px; } #s5 .sub{ margin-top:10px; color:#ffcf8f; font-weight:800; font-size:14px; }
 
@@ -284,7 +301,22 @@
           <svg class="char" viewBox="0 0 100 100"><use href="#towes"/></svg>
         </div>
         <div class="front">
-          <svg class="char" viewBox="0 0 100 100"><use href="#mowes"/></svg>
+          <svg class="char puppet jack" viewBox="0 0 100 100">
+            <ellipse class="shadow" cx="50" cy="95" rx="17" ry="3.2" fill="#000" opacity=".16"/>
+            <g class="body">
+              <rect class="leg legL" x="44.5" y="61" width="7" height="30" rx="3.5" fill="#5b64b8"/>
+              <rect class="leg legR" x="48.5" y="61" width="7" height="30" rx="3.5" fill="#6b74c9"/>
+              <rect class="torso" x="40" y="44" width="20" height="25" rx="9" fill="#ff9d3d"/>
+              <rect class="arm armL" x="35.5" y="46" width="6.5" height="25" rx="3.2" fill="#ffb15e"/>
+              <rect class="arm armR" x="58" y="46" width="6.5" height="25" rx="3.2" fill="#ffb15e"/>
+              <g class="head">
+                <circle cx="50" cy="34" r="10.5" fill="#f0c39a"/>
+                <path d="M39.5 33 q0 -13 10.5 -13 q10.5 0 10.5 13 q-4 -6 -10.5 -6 q-6.5 0 -10.5 6z" fill="#4d4038"/>
+                <circle cx="46.7" cy="34" r="1.5" fill="#3a2f28"/><circle cx="53.3" cy="34" r="1.5" fill="#3a2f28"/>
+                <path d="M46.2 38 q3.8 3.6 7.6 0" stroke="#8a6a50" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              </g>
+            </g>
+          </svg>
           <svg class="char" viewBox="0 0 100 100"><use href="#fReg"/></svg>
         </div>
       </div>
