@@ -43,17 +43,48 @@
   .puppet .arm, .puppet .leg{ transform-box:fill-box; transform-origin:50% 6%; }
   .puppet .body{ transform-box:fill-box; transform-origin:50% 100%; }
   .puppet .head{ transform-box:fill-box; transform-origin:50% 96%; }
-  /* jumping jacks: arms sweep overhead + legs spread, with a hop */
-  .jack .body{ animation: jjBody .54s ease-in-out infinite; }
-  .jack .armL{ animation: jjArmL .54s ease-in-out infinite; }
-  .jack .armR{ animation: jjArmR .54s ease-in-out infinite; }
-  .jack .legL{ animation: jjLegL .54s ease-in-out infinite; }
-  .jack .legR{ animation: jjLegR .54s ease-in-out infinite; }
-  @keyframes jjBody{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
-  @keyframes jjArmL{ 0%,100%{ transform:rotate(12deg); } 50%{ transform:rotate(150deg); } }
-  @keyframes jjArmR{ 0%,100%{ transform:rotate(-12deg); } 50%{ transform:rotate(-150deg); } }
-  @keyframes jjLegL{ 0%,100%{ transform:rotate(3deg); } 50%{ transform:rotate(19deg); } }
-  @keyframes jjLegR{ 0%,100%{ transform:rotate(-3deg); } 50%{ transform:rotate(-19deg); } }
+  /* ===== MOTION KIT — snap a move onto any .puppet by adding these classes ===== */
+  /* ARMS */
+  .arm-jack  .armL{ animation: armJackL .54s ease-in-out infinite; }
+  .arm-jack  .armR{ animation: armJackR .54s ease-in-out infinite; }
+  .arm-curl  .armL{ animation: armCurlL .72s ease-in-out infinite; }
+  .arm-curl  .armR{ animation: armCurlR .72s ease-in-out infinite; }
+  .arm-raise .armL{ animation: armRaiseL 1.0s ease-in-out infinite; }
+  .arm-raise .armR{ animation: armRaiseR 1.0s ease-in-out infinite; }
+  .arm-push  .armL{ transform:rotate(3deg); }
+  .arm-push  .armR{ transform:rotate(-3deg); }
+  @keyframes armJackL{ 0%,100%{ transform:rotate(14deg);} 50%{ transform:rotate(150deg);} }
+  @keyframes armJackR{ 0%,100%{ transform:rotate(-14deg);} 50%{ transform:rotate(-150deg);} }
+  @keyframes armCurlL{ 0%,100%{ transform:rotate(6deg);} 50%{ transform:rotate(122deg);} }
+  @keyframes armCurlR{ 0%,100%{ transform:rotate(-6deg);} 50%{ transform:rotate(-122deg);} }
+  @keyframes armRaiseL{ 0%,100%{ transform:rotate(10deg);} 50%{ transform:rotate(166deg);} }
+  @keyframes armRaiseR{ 0%,100%{ transform:rotate(-10deg);} 50%{ transform:rotate(-166deg);} }
+  /* LEGS */
+  .leg-spread .legL{ animation: legSpreadL .54s ease-in-out infinite; }
+  .leg-spread .legR{ animation: legSpreadR .54s ease-in-out infinite; }
+  .leg-squat  .legL{ animation: legSquatL .72s ease-in-out infinite; }
+  .leg-squat  .legR{ animation: legSquatR .72s ease-in-out infinite; }
+  .leg-seated .legL{ transform:rotate(66deg); }
+  .leg-seated .legR{ transform:rotate(-66deg); }
+  @keyframes legSpreadL{ 0%,100%{ transform:rotate(3deg);} 50%{ transform:rotate(19deg);} }
+  @keyframes legSpreadR{ 0%,100%{ transform:rotate(-3deg);} 50%{ transform:rotate(-19deg);} }
+  @keyframes legSquatL{ 0%,100%{ transform:rotate(4deg);} 50%{ transform:rotate(10deg);} }
+  @keyframes legSquatR{ 0%,100%{ transform:rotate(-4deg);} 50%{ transform:rotate(-10deg);} }
+  /* HEAD */
+  .head-bob .head{ animation: headBob .58s ease-in-out infinite; }
+  .head-nod .head{ animation: headNod 1.0s ease-in-out infinite; }
+  @keyframes headBob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-2px);} }
+  @keyframes headNod{ 0%,100%{ transform:rotate(-5deg);} 50%{ transform:rotate(5deg);} }
+  /* BODY */
+  .body-hop     .body{ animation: bodyHop .54s ease-in-out infinite; }
+  .body-liftbob .body{ animation: bodyLift .72s ease-in-out infinite; }
+  .body-squat   .body{ animation: bodySquat .72s ease-in-out infinite; }
+  @keyframes bodyHop{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-8px);} }
+  @keyframes bodyLift{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(2px);} }
+  @keyframes bodySquat{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(7px);} }
+  /* PUSHUP: figure tips forward onto its hands, lying along the floor, chest pumping up/down */
+  .pushup .body{ transform-origin:50% 100%; animation: pushBody .95s ease-in-out infinite; }
+  @keyframes pushBody{ 0%,100%{ transform:translateY(10px) rotate(-56deg);} 50%{ transform:translateY(10px) rotate(-46deg);} }
 
   /* Speech bubble */
   .bubble{ position:absolute; top:42px; left:50%; transform:translateX(-50%) scale(.9); width:84%;
@@ -121,7 +152,7 @@
   #s5 .back .char:nth-child(1){ animation: groove    1.7s ease-in-out infinite; }  /* big friend (back) */
   #s5 .back .char:nth-child(2){ animation: gentlenod 2.3s ease-in-out infinite; }  /* elder — chair workout (back) */
   #s5 .back .char:nth-child(3){ animation: hop       1.2s ease-in-out infinite; }  /* TOWES — lifting (back) */
-  #s5 .front .char.puppet{ animation:none; }                                       /* rigged puppets move their own limbs */
+  #s5 .char.puppet{ animation:none !important; }                                   /* rigged puppets move their own limbs, not the whole body */
   #s5 .front .char:nth-child(2){ animation: squat     1.0s ease-in-out infinite; } /* active — pushups (front) */
   #s5 h2{ font-size:24px; } #s5 .sub{ margin-top:10px; color:#ffcf8f; font-weight:800; font-size:14px; }
 
@@ -297,11 +328,45 @@
       <div class="room">
         <div class="back">
           <svg class="char" viewBox="0 0 100 100"><use href="#fBig"/></svg>
-          <svg class="char" viewBox="0 0 100 100"><use href="#fOld"/></svg>
-          <svg class="char" viewBox="0 0 100 100"><use href="#towes"/></svg>
+          <svg class="char puppet arm-raise leg-seated head-nod" viewBox="0 0 100 100">
+            <ellipse class="shadow" cx="50" cy="95" rx="16" ry="3" fill="#000" opacity=".16"/>
+            <g class="body">
+              <rect class="stool" x="41" y="70" width="18" height="6" rx="2" fill="#6b4f3a"/>
+              <rect class="leg legL" x="45" y="61" width="7" height="24" rx="3.5" fill="#6b7280"/>
+              <rect class="leg legR" x="48" y="61" width="7" height="24" rx="3.5" fill="#7b8290"/>
+              <rect class="torso" x="40.5" y="45" width="19" height="24" rx="9" fill="#8a94a6"/>
+              <rect class="arm armL" x="36" y="47" width="6" height="24" rx="3" fill="#9aa3b3"/>
+              <rect class="arm armR" x="58" y="47" width="6" height="24" rx="3" fill="#9aa3b3"/>
+              <g class="head">
+                <circle cx="50" cy="35" r="10" fill="#f0c39a"/>
+                <path d="M40 34 q0 -12 10 -12 q10 0 10 12 q-4 -6 -10 -6 q-6 0 -10 6z" fill="#cfcfcf"/>
+                <circle cx="46.5" cy="35.5" r="2.6" fill="none" stroke="#3a2f28" stroke-width="1.1"/>
+                <circle cx="53.5" cy="35.5" r="2.6" fill="none" stroke="#3a2f28" stroke-width="1.1"/>
+                <path d="M49.1 35.5 h1.8" stroke="#3a2f28" stroke-width="1.1"/>
+                <path d="M45.5 39.5 q4.5 3 9 0" stroke="#8a6a50" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              </g>
+            </g>
+          </svg>
+          <svg class="char puppet arm-curl leg-squat body-liftbob" viewBox="0 0 100 100">
+            <ellipse class="shadow" cx="50" cy="95" rx="16" ry="3" fill="#000" opacity=".16"/>
+            <g class="body">
+              <rect class="leg legL" x="45" y="61" width="7" height="28" rx="3.5" fill="#5b64b8"/>
+              <rect class="leg legR" x="48" y="61" width="7" height="28" rx="3.5" fill="#6b74c9"/>
+              <rect class="torso" x="40.5" y="45" width="19" height="24" rx="9" fill="#ff6fa5"/>
+              <g class="arm armL"><rect x="36.5" y="47" width="6" height="20" rx="3" fill="#eeb98f"/><rect x="32" y="64.5" width="15" height="5" rx="2.5" fill="#333"/></g>
+              <g class="arm armR"><rect x="57.5" y="47" width="6" height="20" rx="3" fill="#eeb98f"/><rect x="53" y="64.5" width="15" height="5" rx="2.5" fill="#333"/></g>
+              <g class="head">
+                <circle cx="50" cy="35" r="10" fill="#f3c9a2"/>
+                <path d="M40 34 q-1 -13 10 -13 q11 0 10 13 q-3 -6 -10 -6 q-7 0 -10 6z" fill="#6b4f3a"/>
+                <ellipse cx="50" cy="18.5" rx="5.5" ry="4.5" fill="#6b4f3a"/>
+                <circle cx="46.7" cy="35.5" r="1.5" fill="#3a2f28"/><circle cx="53.3" cy="35.5" r="1.5" fill="#3a2f28"/>
+                <path d="M46.2 39.5 q3.8 3.4 7.6 0" stroke="#a86a50" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              </g>
+            </g>
+          </svg>
         </div>
         <div class="front">
-          <svg class="char puppet jack" viewBox="0 0 100 100">
+          <svg class="char puppet arm-jack leg-spread body-hop head-bob" viewBox="0 0 100 100">
             <ellipse class="shadow" cx="50" cy="95" rx="17" ry="3.2" fill="#000" opacity=".16"/>
             <g class="body">
               <rect class="leg legL" x="44.5" y="61" width="7" height="30" rx="3.5" fill="#5b64b8"/>
@@ -317,7 +382,23 @@
               </g>
             </g>
           </svg>
-          <svg class="char" viewBox="0 0 100 100"><use href="#fReg"/></svg>
+          <svg class="char puppet pushup arm-push" viewBox="0 0 100 100">
+            <ellipse class="shadow" cx="50" cy="95" rx="17" ry="3.2" fill="#000" opacity=".16"/>
+            <g class="body">
+              <rect class="leg legL" x="44.5" y="61" width="7" height="30" rx="3.5" fill="#4b5563"/>
+              <rect class="leg legR" x="48.5" y="61" width="7" height="30" rx="3.5" fill="#5b6472"/>
+              <rect class="torso" x="40" y="44" width="20" height="25" rx="9" fill="#c0392b"/>
+              <rect class="arm armL" x="35.5" y="46" width="6.5" height="25" rx="3.2" fill="#e05545"/>
+              <rect class="arm armR" x="58" y="46" width="6.5" height="25" rx="3.2" fill="#e05545"/>
+              <g class="head">
+                <circle cx="50" cy="34" r="10.5" fill="#f0c39a"/>
+                <path d="M39.5 33 q0 -12 10.5 -12 q10.5 0 10.5 12 q-4 -6 -10.5 -6 q-6.5 0 -10.5 6z" fill="#3a2f28"/>
+                <rect x="38.5" y="27.5" width="23" height="4.6" rx="2.3" fill="#e03b2f"/>
+                <circle cx="46.7" cy="35" r="1.5" fill="#3a2f28"/><circle cx="53.3" cy="35" r="1.5" fill="#3a2f28"/>
+                <path d="M46.2 39 q3.8 3.4 7.6 0" stroke="#8a6a50" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              </g>
+            </g>
+          </svg>
         </div>
       </div>
       <h2><span class="o">Together.</span></h2>
@@ -327,7 +408,7 @@
     <!-- Scene 6: CTA -->
     <div class="scene" id="s6">
       <svg class="char" viewBox="0 0 100 100"><use href="#mowes"/></svg>
-      <div class="big">MOWES is for<br>every body.</div>
+      <div class="big">MOWES is for<br>everyone!</div>
       <div style="margin-top:14px; color:#ffe1bd; font-weight:800; font-size:13px">Free · Private · On your phone</div>
       <div class="url">getermes.github.io/mowes</div>
       <div class="tt">@mowesworkout</div>
