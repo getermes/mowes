@@ -24,6 +24,12 @@
   @keyframes talkbob{ 0%,100%{ transform:translateY(0) scale(1); } 50%{ transform:translateY(-6px) scale(1.05); } }
   @keyframes excited{ 0%,100%{ transform:translateY(0) rotate(0); } 25%{ transform:translateY(-11px) rotate(-4deg); } 75%{ transform:translateY(-6px) rotate(4deg); } }
   @keyframes workbob{ 0%,100%{ transform:translateY(0) rotate(-3deg); } 50%{ transform:translateY(-11px) rotate(3deg); } }
+  /* distinct, natural moves so each character does their own thing */
+  @keyframes groove{ 0%,100%{ transform:translateX(-5px) rotate(-6deg); } 50%{ transform:translateX(5px) rotate(6deg); } }
+  @keyframes march{ 0%,100%{ transform:translateY(0) rotate(-2deg); } 25%{ transform:translateY(-9px) rotate(0); } 50%{ transform:translateY(0) rotate(2deg); } 75%{ transform:translateY(-9px) rotate(0); } }
+  @keyframes gentlenod{ 0%,100%{ transform:translateY(0) rotate(-1.4deg); } 50%{ transform:translateY(-3px) rotate(1.4deg); } }
+  @keyframes hop{ 0%,100%{ transform:translateY(0) scale(1,1); } 28%{ transform:translateY(0) scale(1.07,.9); } 55%{ transform:translateY(-15px) scale(.95,1.06); } 82%{ transform:translateY(0) scale(1.05,.95); } }
+  @keyframes squat{ 0%,100%{ transform:translateY(0) scaleY(1); } 45%{ transform:translateY(7px) scaleY(.8); } }
 
   /* Speech bubble */
   .bubble{ position:absolute; top:42px; left:50%; transform:translateX(-50%) scale(.9); width:84%;
@@ -61,8 +67,10 @@
   #s4.on .frow{ animation: frowin .5s ease forwards; }
   #s4.on .frow.r1{ animation-delay:.2s; } #s4.on .frow.r2{ animation-delay:1.4s; } #s4.on .frow.r3{ animation-delay:2.6s; }
   @keyframes frowin{ to{ opacity:1; transform:translateY(0); } }
-  .frow .char{ width:74px; height:74px; flex:0 0 auto; animation:idle 3s ease-in-out infinite; }
-  .frow.r2 .char{ animation-delay:.5s; } .frow.r3 .char{ animation-delay:1s; }
+  .frow .char{ width:74px; height:74px; flex:0 0 auto; }
+  .frow.r1 .char{ animation: gentlenod 2.6s ease-in-out infinite; }  /* Gentle & seated */
+  .frow.r2 .char{ animation: march     1.5s ease-in-out infinite; }  /* Easy walk */
+  .frow.r3 .char{ animation: squat     1.1s ease-in-out infinite; }  /* Full workout */
   .frow .arrow{ color:#8f9bff; font-size:20px; font-weight:900; flex:0 0 auto; }
   .vcard{ flex:1; background:#fff; border-radius:13px; padding:10px 11px; display:flex; align-items:center; gap:9px; box-shadow:0 8px 22px rgba(0,0,0,.3); }
   .vthumb{ width:36px; height:28px; border-radius:6px; background:#ff3b30; color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
@@ -72,9 +80,12 @@
   /* Scene 5 — moving together */
   #s5{ background:linear-gradient(160deg,#3a2f6e,#0b0e24); justify-content:flex-start; padding-top:40px; }
   #s5 .crew{ display:flex; align-items:flex-end; justify-content:center; gap:1px; margin-bottom:16px; flex-wrap:wrap; }
-  #s5 .crew .char{ width:72px; height:72px; animation: workbob 1s ease-in-out infinite; }
-  #s5 .crew .char:nth-child(2){ animation-delay:.2s; } #s5 .crew .char:nth-child(3){ animation-delay:.4s; }
-  #s5 .crew .char:nth-child(4){ animation-delay:.6s; } #s5 .crew .char:nth-child(5){ animation-delay:.8s; }
+  #s5 .crew .char{ width:72px; height:72px; }
+  #s5 .crew .char:nth-child(1){ animation: groove    1.7s ease-in-out infinite; }  /* big friend grooves */
+  #s5 .crew .char:nth-child(2){ animation: march     0.9s ease-in-out infinite; }  /* MOWES marches */
+  #s5 .crew .char:nth-child(3){ animation: gentlenod 2.3s ease-in-out infinite; }  /* older friend, gentle */
+  #s5 .crew .char:nth-child(4){ animation: hop       1.2s ease-in-out infinite; }  /* TOWES happy hop */
+  #s5 .crew .char:nth-child(5){ animation: squat     1.0s ease-in-out infinite; }  /* active friend squats */
   #s5 h2{ font-size:24px; } #s5 .sub{ margin-top:10px; color:#ffcf8f; font-weight:800; font-size:14px; }
 
   /* Scene 6 — CTA */
