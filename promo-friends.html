@@ -30,6 +30,11 @@
   @keyframes gentlenod{ 0%,100%{ transform:translateY(0) rotate(-1.4deg); } 50%{ transform:translateY(-3px) rotate(1.4deg); } }
   @keyframes hop{ 0%,100%{ transform:translateY(0) scale(1,1); } 28%{ transform:translateY(0) scale(1.07,.9); } 55%{ transform:translateY(-15px) scale(.95,1.06); } 82%{ transform:translateY(0) scale(1.05,.95); } }
   @keyframes squat{ 0%,100%{ transform:translateY(0) scaleY(1); } 45%{ transform:translateY(7px) scaleY(.8); } }
+  /* the couple turn toward each other during the chat */
+  @keyframes leanInL{ 0%,100%{ transform:translateX(6px) rotate(7deg); } 50%{ transform:translateX(8px) rotate(9deg) translateY(-2px); } }
+  @keyframes leanInR{ 0%,100%{ transform:translateX(-6px) rotate(-7deg); } 50%{ transform:translateX(-8px) rotate(-9deg) translateY(-2px); } }
+  @keyframes talkLeanL{ 0%,100%{ transform:translateX(6px) rotate(6deg) scale(1); } 50%{ transform:translateX(8px) rotate(7deg) translateY(-5px) scale(1.04); } }
+  @keyframes talkLeanR{ 0%,100%{ transform:translateX(-6px) rotate(-6deg) scale(1); } 50%{ transform:translateX(-8px) rotate(-7deg) translateY(-5px) scale(1.04); } }
 
   /* Speech bubble */
   .bubble{ position:absolute; top:42px; left:50%; transform:translateX(-50%) scale(.9); width:84%;
@@ -49,6 +54,11 @@
   .duo .char{ width:124px; height:124px; animation:idle 3.2s ease-in-out infinite; }
   .duo .char.talking{ animation:talkbob .62s ease-in-out infinite; }
   #s3 .duo .char{ animation:excited 1s ease-in-out infinite; }
+  /* scenes 1-2: couple face each other — talker leans in & bobs, listener turns toward them */
+  #c1m{ animation: talkLeanL .8s ease-in-out infinite; }   /* MOWES speaking → turned to TOWES */
+  #c1t{ animation: leanInR   3s  ease-in-out infinite; }   /* TOWES listening → turned to MOWES */
+  #c2m{ animation: leanInL   3s  ease-in-out infinite; }   /* MOWES listening → turned to TOWES */
+  #c2t{ animation: talkLeanR .8s ease-in-out infinite; }   /* TOWES speaking → turned to MOWES */
   .lightbulb{ position:absolute; font-size:34px; opacity:0; }
   .scene.on .lightbulb.pop{ animation: bulbpop .5s ease .1s both; }
   @keyframes bulbpop{ 0%{ transform:scale(0) translateY(6px); opacity:0; } 60%{ transform:scale(1.3); opacity:1; } 100%{ transform:scale(1); opacity:1; } }
