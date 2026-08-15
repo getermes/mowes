@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MOWES — Promo v2 (Slide 1)</title>
+<title>MOWES — Promo v2 (Slides 1–3)</title>
 <style>
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0; }
   body{ background:#0b0e24; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -11,34 +11,33 @@
   .stage{ position:relative; width:min(92vw,360px); aspect-ratio:9/16; border-radius:26px; overflow:hidden;
     background:radial-gradient(120% 90% at 50% 26%,#1a2350,#0b0e24); box-shadow:0 20px 60px rgba(0,0,0,.5); }
 
-  /* speech bubbles — one at a time, near the top */
-  .bubble{ position:absolute; top:40px; left:50%; transform:translateX(-50%) scale(.92); width:84%;
-    background:#fff; border-radius:18px; padding:15px 17px; box-shadow:0 12px 30px rgba(0,0,0,.4);
-    opacity:0; transition:opacity .3s ease, transform .3s cubic-bezier(.34,1.56,.64,1); pointer-events:none; }
-  .bubble.show{ opacity:1; transform:translateX(-50%) scale(1); }
-  .bubble:after{ content:""; position:absolute; bottom:-11px; left:var(--tail,50%); transform:translateX(-50%);
+  /* each slide is its own screen; the speaker + their line show up together */
+  .scene{ position:absolute; inset:0; opacity:0; transition:opacity .45s ease; pointer-events:none; }
+  .scene.on{ opacity:1; }
+
+  .bubble{ position:absolute; top:44px; left:50%; transform:translateX(-50%) scale(.9);
+    width:84%; background:#fff; border-radius:18px; padding:15px 17px; box-shadow:0 12px 30px rgba(0,0,0,.4);
+    opacity:0; transition:opacity .35s ease .12s, transform .35s cubic-bezier(.34,1.56,.64,1) .12s; }
+  .scene.on .bubble{ opacity:1; transform:translateX(-50%) scale(1); }
+  .bubble:after{ content:""; position:absolute; bottom:-11px; left:50%; transform:translateX(-50%);
     border-left:12px solid transparent; border-right:12px solid transparent; border-top:12px solid #fff; }
-  .bubble .say{ color:#2f3350; font-size:18px; font-weight:800; line-height:1.32; }
+  .bubble .say{ color:#2f3350; font-size:19px; font-weight:800; line-height:1.34; }
   .bubble .who{ display:inline-block; font-size:11px; font-weight:900; letter-spacing:.08em; text-transform:uppercase;
     margin-bottom:8px; padding:3px 9px; border-radius:999px; }
   .who.mowes{ background:#fff0e0; color:#e8862a; } .who.towes{ background:#f1ecff; color:#7a5bff; }
 
-  /* characters row — sits in the upper area, empty space kept at the bottom for platform text */
-  .cast{ position:absolute; top:44%; left:0; right:0; display:flex; align-items:flex-end; justify-content:center; gap:6px; }
-  .char{ width:118px; height:118px; transform-origin:center bottom; }
-  @keyframes idleL{ 0%,100%{ transform:rotate(3deg); } 50%{ transform:rotate(5deg) translateY(-2px); } }
-  @keyframes idleR{ 0%,100%{ transform:rotate(-3deg); } 50%{ transform:rotate(-5deg) translateY(-2px); } }
-  @keyframes talkL{ 0%,100%{ transform:rotate(4deg) translateY(0) scale(1); } 50%{ transform:rotate(5deg) translateY(-5px) scale(1.04); } }
-  @keyframes talkR{ 0%,100%{ transform:rotate(-4deg) translateY(0) scale(1); } 50%{ transform:rotate(-5deg) translateY(-5px) scale(1.04); } }
-  #cm{ animation: idleL 3s ease-in-out infinite; }
-  #ct{ animation: idleR 3s ease-in-out infinite; }
-  #cm.talking{ animation: talkL .62s ease-in-out infinite; }
-  #ct.talking{ animation: talkR .62s ease-in-out infinite; }
+  /* speaker sits in the upper area; empty space stays at the bottom for platform text */
+  .who-row{ position:absolute; top:40%; left:0; right:0; display:flex; align-items:flex-end; justify-content:center; gap:8px; }
+  .char{ width:184px; height:184px; transform-origin:center bottom; }
+  .scene.on .char{ animation: popin .5s cubic-bezier(.34,1.56,.64,1) both, bob .8s ease-in-out .5s infinite; }
+  @keyframes popin{ 0%{ opacity:0; transform:translateY(18px) scale(.82);} 100%{ opacity:1; transform:translateY(0) scale(1);} }
+  @keyframes bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
 
-  /* the phone MOWES is showing */
-  .phone{ width:40px; height:62px; border-radius:9px; background:#11142e; border:2px solid #3a3f6b;
-    align-self:center; margin-bottom:26px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-    box-shadow:0 8px 20px rgba(0,0,0,.45); }
+  /* the phone MOWES is showing on slide 1 */
+  .phone{ width:42px; height:64px; border-radius:9px; background:#11142e; border:2px solid #3a3f6b;
+    align-self:center; margin-bottom:34px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    box-shadow:0 8px 20px rgba(0,0,0,.45); opacity:0; }
+  .scene.on .phone{ animation: popin .5s cubic-bezier(.34,1.56,.64,1) .15s both; }
   .phone .scr{ width:30px; height:8px; border-radius:3px; background:#5b6cff; }
   .phone .scr.b{ background:#ff9d3d; width:22px; } .phone .scr.c{ background:#2a9d55; width:26px; }
 
@@ -95,33 +94,48 @@
   </svg>
 
   <div class="stage" id="stage">
-    <div class="mocktag">MOCK · SLIDE 1</div>
+    <div class="mocktag">MOCK · SLIDES 1–3</div>
 
-    <div class="bubble" id="b1" style="--tail:32%"><span class="who mowes">MOWES</span><div class="say">Hey Towes, look at this app — you can re-create your whole weekly exercise routine. Me? I'd rather follow this free YouTube exercise video for seniors.</div></div>
-    <div class="bubble" id="b2" style="--tail:68%"><span class="who towes">TOWES</span><div class="say">Nice, Mowes! We can help our friends too.</div></div>
-    <div class="bubble" id="b3" style="--tail:32%"><span class="who mowes">MOWES</span><div class="say">Yes — my coworkers tried the app and they <span style="color:#e8862a">LOVE it!</span></div></div>
+    <!-- Slide 1: MOWES shows up + his line -->
+    <div class="scene" id="s1">
+      <div class="bubble"><span class="who mowes">MOWES</span><div class="say">Hey Towes, look at this app — you can re-create your whole weekly exercise routine. Me? I'd rather follow this free YouTube exercise video for seniors.</div></div>
+      <div class="who-row">
+        <svg class="char" viewBox="0 0 100 100"><use href="#mowes"/></svg>
+        <div class="phone"><div class="scr"></div><div class="scr b"></div><div class="scr c"></div></div>
+      </div>
+    </div>
 
-    <div class="cast">
-      <svg class="char" id="cm" viewBox="0 0 100 100"><use href="#mowes"/></svg>
-      <div class="phone"><div class="scr"></div><div class="scr b"></div><div class="scr c"></div></div>
-      <svg class="char" id="ct" viewBox="0 0 100 100"><use href="#towes"/></svg>
+    <!-- Slide 2: TOWES shows up + her line -->
+    <div class="scene" id="s2">
+      <div class="bubble"><span class="who towes">TOWES</span><div class="say">Nice, Mowes! We can help our friends too.</div></div>
+      <div class="who-row">
+        <svg class="char" viewBox="0 0 100 100"><use href="#towes"/></svg>
+      </div>
+    </div>
+
+    <!-- Slide 3: MOWES shows up + his line -->
+    <div class="scene" id="s3">
+      <div class="bubble"><span class="who mowes">MOWES</span><div class="say">Yes — my coworkers tried the app and they <span style="color:#e8862a">LOVE it!</span></div></div>
+      <div class="who-row">
+        <svg class="char" viewBox="0 0 100 100"><use href="#mowes"/></svg>
+      </div>
     </div>
 
     <div class="bar" id="bar"></div>
   </div>
 
   <div class="ctrls"><button class="btn" id="replay">▶ Replay</button></div>
-  <div class="cap">MOCK — Slide 1. MOWES shows TOWES the app: build your own routine, or follow a free video. All original graphics.</div>
+  <div class="cap">MOCK — Slides 1–3. The conversation is split across slides; each speaker shows up with their own line. All original graphics.</div>
 
 <script>
   var CLEAN = /[?&]clean/.test(location.search);
   if (CLEAN){ try { document.body.classList.add('clean'); } catch(e){} }
 
-  // beats timed to how much there is to read
-  var beats = [
-    { bubble:'b1', talk:'cm', a:0,     b:5600  },
-    { bubble:'b2', talk:'ct', a:5600,  b:8700  },
-    { bubble:'b3', talk:'cm', a:8700,  b:12000 }
+  // one slide per line, timed to how much there is to read
+  var slides = [
+    { el:'s1', a:0,     b:5600  },
+    { el:'s2', a:5600,  b:8700  },
+    { el:'s3', a:8700,  b:12000 }
   ];
   var T = 12000;
   var bar = document.getElementById('bar');
@@ -131,15 +145,14 @@
     if (start === null) start = ts;
     var t = ts - start; if (t > T) t = T;
     bar.style.width = (t / T * 100) + '%';
-    beats.forEach(function(bt){
-      var on = (t >= bt.a && t < bt.b) || (bt === beats[beats.length-1] && t >= bt.a);
-      document.getElementById(bt.bubble).classList.toggle('show', on);
-      document.getElementById(bt.talk).classList.toggle('talking', on);
+    slides.forEach(function(s){
+      var on = (t >= s.a && t < s.b) || (s.el === 's3' && t >= s.a);
+      document.getElementById(s.el).classList.toggle('on', on);
     });
     if (t < T){ raf = requestAnimationFrame(frame); }
     else if (CLEAN){ start = null; raf = requestAnimationFrame(frame); }
   }
-  function play(){ if (raf) cancelAnimationFrame(raf); document.getElementById('cm').classList.remove('talking'); document.getElementById('ct').classList.remove('talking'); start = null; raf = requestAnimationFrame(frame); }
+  function play(){ if (raf) cancelAnimationFrame(raf); slides.forEach(function(s){ document.getElementById(s.el).classList.remove('on'); }); start = null; raf = requestAnimationFrame(frame); }
   document.getElementById('replay').addEventListener('click', play);
   play();
 </script>
