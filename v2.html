@@ -10,9 +10,11 @@
    MOWES v2 — Phase 1: the Cover, Today's MOWES, and Build MOWES. That's all.
    Phase 2 = the initial set-up. Phase 3 = the run.
 
-   A ROUTINE IS ONE MOVE. "Arms, 15 reps, 4 sets" is a routine. "Run, 20
-   minutes" is another. You make a pile of them quickly, then hand out the days
-   of the week yourself — that's what builds your own schedule.
+   THE UNIT IS ONE EXERCISE. "Arms, 15 reps, 4 sets" is an exercise. "Run, 20
+   minutes" is another. You make a pile of them quickly — that's your library —
+   then hand out the days of the week yourself, which builds your own schedule.
+   Today's page follows the plan but never traps you in it: skip what you don't
+   want, add anything out of the library, for today only.
    ========================================================================== */
 
   :root{
@@ -155,6 +157,20 @@
   .move .m-name{ font-weight:700; }
   .move .m-meta{ color:var(--ink-soft); font-size:13px; }
   .move.now{ background:#f6f4ff; border-radius:12px; padding-left:10px; padding-right:10px; }
+  .move .m-body{ flex:1; min-width:0; }
+  .move .m-tagline{ font-size:11.5px; font-weight:700; color:var(--violet); background:#eef0ff;
+                    border-radius:99px; padding:2px 7px; vertical-align:middle; }
+  .move.skipped{ opacity:.6; }
+  .move.skipped .m-name{ text-decoration: line-through; }
+  .move.skipped .m-tick{ border-style:dashed; color:var(--ink-soft); background:#f7f8fd; }
+  .today-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .skip-head{ font-size:12px; font-weight:800; letter-spacing:.4px; text-transform:uppercase;
+              color:var(--ink-soft); margin:14px 0 2px; }
+  /* Small, quiet action on a row — Skip / Undo / Skip everything. */
+  .mini-btn{
+    flex:0 0 auto; border:1px solid var(--line); background:#fbfcff; color:var(--ink-soft);
+    border-radius:999px; padding:7px 13px; font-size:13px; font-weight:700;
+  }
   .progress{ height:8px; border-radius:99px; background:#eceffb; overflow:hidden; margin:4px 0 10px; }
   .progress i{ display:block; height:100%; background:linear-gradient(90deg,var(--violet),var(--violet-2)); transition:width .3s ease; }
   .done-note{ text-align:center; padding:12px 0 4px; }
@@ -279,7 +295,7 @@
 <!-- ===================== 2nd PAGE — BUILD MOWES ===================== -->
 <div class="wrap page" id="pageBuild" hidden>
   <h1 class="h1">Build MOWES</h1>
-  <p class="sub" id="buildSub">One move at a time. Days are up to you — pick them now or later.</p>
+  <p class="sub" id="buildSub">One exercise at a time. Days are up to you — pick them now or later.</p>
   <div id="buildBody"></div>
   <div class="support-slot"></div>
 </div>
@@ -307,7 +323,9 @@ var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Sa
 var DAY_SHORT = ["Su","Mo","Tu","We","Th","Fr","Sa"];
 
 /* ---------- saved data ---------- */
-function blank(){ return { routines: [], done: {} }; }
+// day records: { "2026-8-17": { done:[ids], skipped:[ids], added:[ids] } }
+// `added` is today-only — it never touches the weekly plan.
+function blank(){ return { routines: [], days: {} }; }
 var data = blank();
 
 function load(){
@@ -317,7 +335,14 @@ function load(){
   } catch(e){ data = blank(); }
   if (!data || typeof data !== "object") data = blank();
   if (!Array.isArray(data.routines)) data.routines = [];
-  if (!data.done || typeof data.done !== "object") data.done = {};
+  if (!data.days || typeof data.days !== "object") data.days = {};
+  // An earlier build kept only a list of finished ids per date.
+  if (data.done && typeof data.done === "object"){
+    for (var k in data.done){
+      if (!data.days[k]) data.days[k] = { done: (data.done[k] || []).slice(), skipped: [], added: [] };
+    }
+    delete data.done;
+  }
   upgradeOldShape();
 }
 // An earlier build stored a routine as a folder of steps. Each of those steps is
@@ -341,7 +366,7 @@ function upgradeOldShape(){
       }
     } else if (r){ out.push(r); }
   }
-  if (changed){ data.routines = out; data.done = {}; save(); }
+  if (changed){ data.routines = out; data.days = {}; save(); }
 }
 function save(){
   try { localStorage.setItem(KEY, JSON.stringify(data)); }
@@ -382,7 +407,7 @@ function go(where){
 }
 // The bottom bar always drops whatever you were editing, so "Build" takes you to
 // your list instead of trapping you in the editor.
-function tap(where){ editing = null; flash = ""; go(where); }
+function tap(where){ editing = null; flash = ""; picker = false; pickQuery = ""; go(where); }
 function openApp(){ document.getElementById("cover").classList.remove("show"); go("today"); }
 
 /* ---------- 1st page: Today's MOWES ---------- */
@@ -390,7 +415,7 @@ function routinesForToday(){
   var wd = new Date().getDay();
   return data.routines.filter(function(r){ return (r.days || []).indexOf(wd) !== -1; });
 }
-// The next day this move comes around, so a save never looks like it vanished.
+// The next day this routine comes around, so a save never looks like it vanished.
 function nextDayText(r){
   var days = (r.days || []);
   if (!days.length) return "";
@@ -401,77 +426,206 @@ function nextDayText(r){
   }
   return "";
 }
-function doneList(){
-  var k = todayKey();
-  if (!Array.isArray(data.done[k])) data.done[k] = [];
-  return data.done[k];
+// Today's record — what's finished, what you skipped, what you added just for now.
+function dayRec(){
+  var k = todayKey(), r = data.days[k];
+  if (!r || typeof r !== "object") r = data.days[k] = {};
+  if (!Array.isArray(r.done))    r.done = [];
+  if (!Array.isArray(r.skipped)) r.skipped = [];
+  if (!Array.isArray(r.added))   r.added = [];
+  return r;
 }
-function isDone(id){ return doneList().indexOf(id) !== -1; }
-function toggleDone(id){
-  var list = doneList(), at = list.indexOf(id);
+function inList(list, id){ return list.indexOf(id) !== -1; }
+function flip(list, id){
+  var at = list.indexOf(id);
   if (at === -1) list.push(id); else list.splice(at, 1);
+}
+function drop(list, id){
+  var at = list.indexOf(id);
+  if (at !== -1) list.splice(at, 1);
+}
+function isDone(id){ return inList(dayRec().done, id); }
+function isSkipped(id){ return inList(dayRec().skipped, id); }
+
+function toggleDone(id){
+  var r = dayRec();
+  if (inList(r.skipped, id)) return;   // a skipped one isn't waiting to be done
+  flip(r.done, id); save(); drawToday();
+}
+function toggleSkip(id){
+  var r = dayRec();
+  flip(r.skipped, id);
+  if (inList(r.skipped, id)) drop(r.done, id);   // skipped isn't also "done"
   save(); drawToday();
+}
+// Everything on today's list, in one tap. Tapping again brings it all back.
+function skipAll(){
+  var r = dayRec(), items = todayItems();
+  var allSkipped = items.length > 0 && items.every(function(x){ return inList(r.skipped, x.id); });
+  if (allSkipped){ r.skipped = []; }
+  else {
+    items.forEach(function(x){ if (!inList(r.skipped, x.id)) r.skipped.push(x.id); });
+    r.done = [];
+  }
+  save(); drawToday();
+}
+
+// What's on today: the plan for this weekday, plus anything added just for today.
+function todayItems(){
+  var r = dayRec(), out = routinesForToday().slice();
+  r.added.forEach(function(id){
+    if (out.some(function(x){ return x.id === id; })) return;
+    var found = data.routines.filter(function(x){ return x.id === id; })[0];
+    if (found) out.push(found);
+  });
+  return out;
+}
+function addToToday(id){
+  var r = dayRec();
+  if (!inList(r.added, id)) r.added.push(id);
+  drop(r.skipped, id);          // adding it back on purpose un-skips it
+  save();
+  picker = false; pickQuery = "";
+  drawToday();
 }
 
 function drawToday(){
   var now = new Date();
   document.getElementById("todayDate").textContent = DAY_NAMES[now.getDay()];
   var box = document.getElementById("todayBody");
-  var todays = routinesForToday();
 
+  if (picker){ box.innerHTML = pickerHtml(); focusPick(); return; }
+
+  // Nothing in the library at all — the only sensible move is to go build one.
   if (!data.routines.length){
     box.innerHTML =
       '<div class="card"><div class="empty">' +
         '<span class="em-emoji">👋</span>' +
-        '<b>Nothing here yet</b><br>Build a few moves, give them days, and they show up here.' +
-      '</div><button class="big-btn" onclick="tap(\'build\')">Build my first move</button></div>';
+        '<b>Nothing here yet</b><br>Build your exercises first, then give them days.' +
+      '</div><button class="big-btn" onclick="tap(\'build\')">Build my first exercise</button></div>';
     return;
   }
-  if (!todays.length){
+
+  var items = todayItems();
+  var live = items.filter(function(r){ return !isSkipped(r.id); });
+  var skipped = items.filter(function(r){ return isSkipped(r.id); });
+
+  var html = "";
+  if (!items.length){
+    // A rest day is still a day you can choose to do something on.
     var soonest = "", unscheduled = 0;
     for (var n = 0; n < data.routines.length; n++){
       if (!(data.routines[n].days || []).length) unscheduled++;
       else if (!soonest) soonest = nextDayText(data.routines[n]);
     }
-    box.innerHTML =
-      '<div class="card"><div class="empty">' +
-        '<span class="em-emoji">😌</span>' +
-        '<b>Rest day</b><br>Nothing set for ' + DAY_NAMES[now.getDay()] + '. Rest counts too.' +
-        (soonest ? '<br><br>Your next one is <b>' + esc(soonest) + '</b>.' : '') +
-        (unscheduled ? '<br><br>You have <b>' + unscheduled + '</b> move' + (unscheduled === 1 ? '' : 's') +
-                       ' with no days yet.' : '') +
-      '</div><button class="big-btn grey" onclick="tap(\'build\')">Pick my days</button></div>';
-    return;
-  }
+    html += '<div class="card"><div class="empty">' +
+              '<span class="em-emoji">😌</span>' +
+              '<b>Rest day</b><br>Nothing set for ' + DAY_NAMES[now.getDay()] + '. Rest counts too.' +
+              (soonest ? '<br><br>Your next one is <b>' + esc(soonest) + '</b>.' : '') +
+              (unscheduled ? '<br><br>You have <b>' + unscheduled + '</b> exercise' + (unscheduled === 1 ? '' : 's') +
+                             ' with no days yet.' : '') +
+            '</div></div>';
+  } else {
+    var doneCount = live.filter(function(r){ return isDone(r.id); }).length;
+    var allDone = live.length > 0 && doneCount === live.length;
+    var nextId = null;
+    for (var j = 0; j < live.length; j++){ if (!isDone(live[j].id)){ nextId = live[j].id; break; } }
 
-  var doneCount = 0;
-  for (var i = 0; i < todays.length; i++) if (isDone(todays[i].id)) doneCount++;
-  var allDone = doneCount === todays.length;
-  var nextAt = -1;
-  for (var j = 0; j < todays.length; j++){ if (!isDone(todays[j].id)){ nextAt = j; break; } }
-
-  var html = '<div class="card">';
-  html += '<div class="rb-meta">' + doneCount + ' of ' + todays.length + ' done</div>';
-  html += '<div class="progress"><i style="width:' + Math.round(doneCount/todays.length*100) + '%"></i></div>';
-  for (var k = 0; k < todays.length; k++){
-    var r = todays[k], d = isDone(r.id);
-    html += '<div class="move' + (d ? ' done' : '') + (k === nextAt ? ' now' : '') + '" onclick="toggleDone(\'' + r.id + '\')">' +
-              '<div class="m-tick">' + (d ? '✓' : '') + '</div>' +
-              '<div><div class="m-name">' + esc(r.name) + '</div>' +
-              '<div class="m-meta">' + esc(moveMeta(r)) + '</div></div>' +
+    html += '<div class="card">';
+    html += '<div class="today-top">' +
+              '<span class="rb-meta">' + doneCount + ' of ' + live.length + ' done</span>' +
+              (items.length ? '<button class="mini-btn" onclick="skipAll()">' +
+                 (live.length ? "Skip everything" : "Bring it all back") + '</button>' : '') +
             '</div>';
+    html += '<div class="progress"><i style="width:' + (live.length ? Math.round(doneCount/live.length*100) : 0) + '%"></i></div>';
+
+    var added = dayRec().added;
+    live.forEach(function(r){
+      var d = isDone(r.id);
+      html += '<div class="move' + (d ? ' done' : '') + (r.id === nextId ? ' now' : '') + '">' +
+                '<div class="m-tick" onclick="toggleDone(\'' + r.id + '\')">' + (d ? '✓' : '') + '</div>' +
+                '<div class="m-body" onclick="toggleDone(\'' + r.id + '\')">' +
+                  '<div class="m-name">' + esc(r.name) +
+                    (inList(added, r.id) ? ' <span class="m-tagline">added today</span>' : '') + '</div>' +
+                  '<div class="m-meta">' + esc(moveMeta(r)) + '</div>' +
+                '</div>' +
+                '<button class="mini-btn" onclick="toggleSkip(\'' + r.id + '\')">Skip</button>' +
+              '</div>';
+    });
+
+    if (allDone){
+      html += '<div class="done-note"><span class="dn-emoji">🎉</span>' +
+              '<div class="dn-msg">You did it.</div>' +
+              '<div class="rb-meta">That\'s ' + DAY_NAMES[now.getDay()] + ' handled.</div></div>';
+    }
+
+    if (skipped.length){
+      html += '<div class="skip-head">Skipped today</div>';
+      skipped.forEach(function(r){
+        html += '<div class="move skipped">' +
+                  '<div class="m-tick">–</div>' +
+                  '<div class="m-body"><div class="m-name">' + esc(r.name) + '</div>' +
+                  '<div class="m-meta">' + esc(moveMeta(r)) + '</div></div>' +
+                  '<button class="mini-btn" onclick="toggleSkip(\'' + r.id + '\')">Undo</button>' +
+                '</div>';
+      });
+    }
+    html += '</div>';
   }
-  if (allDone){
-    html += '<div class="done-note"><span class="dn-emoji">🎉</span>' +
-            '<div class="dn-msg">You did it.</div>' +
-            '<div class="rb-meta">That\'s ' + DAY_NAMES[now.getDay()] + ' handled.</div></div>';
-  }
-  html += '</div>';
+
+  // Always available — today is yours to change, plan or no plan.
+  html += '<button class="big-btn grey" onclick="openPicker()">+ Add an exercise for today</button>';
   box.innerHTML = html;
 }
 
+/* ---------- picking something out of the library, just for today ---------- */
+var picker = false, pickQuery = "";
+
+function openPicker(){ picker = true; pickQuery = ""; drawToday(); }
+function closePicker(){ picker = false; pickQuery = ""; drawToday(); }
+function focusPick(){ var el = document.getElementById("pickSearch"); if (el) el.focus(); }
+
+function pickMatches(){
+  var q = pickQuery.trim().toLowerCase();
+  var onToday = todayItems().filter(function(r){ return !isSkipped(r.id); })
+                            .map(function(r){ return r.id; });
+  return data.routines.filter(function(r){
+    if (onToday.indexOf(r.id) !== -1) return false;         // already on today
+    return !q || r.name.toLowerCase().indexOf(q) !== -1;
+  });
+}
+// Only the list is redrawn while typing, so the keyboard and cursor stay put.
+function onPickType(v){
+  pickQuery = v;
+  var list = document.getElementById("pickList");
+  if (list) list.innerHTML = pickListHtml();
+}
+function pickListHtml(){
+  var found = pickMatches();
+  if (!found.length){
+    return '<div class="empty">' + (pickQuery.trim()
+      ? 'Nothing in your library matches "' + esc(pickQuery.trim()) + '".'
+      : 'Everything you have is already on today.') + '</div>';
+  }
+  return found.map(function(r){
+    return '<button class="row-btn" onclick="addToToday(\'' + r.id + '\')">' +
+             '<span class="rb-emoji">' + (r.kind === "time" ? "⏱️" : "🔁") + '</span>' +
+             '<span><span class="rb-name">' + esc(r.name) + '</span><br>' +
+             '<span class="rb-meta">' + esc(moveMeta(r)) + '</span></span></button>';
+  }).join("");
+}
+function pickerHtml(){
+  return '<div class="card">' +
+           '<label class="field"><span class="lab">Add from your library — just for today</span>' +
+           '<input id="pickSearch" placeholder="Type a name, like run" autocomplete="off" ' +
+           'value="' + esc(pickQuery) + '" oninput="onPickType(this.value)"></label>' +
+           '<div id="pickList">' + pickListHtml() + '</div>' +
+           '<button class="link-btn" onclick="closePicker()">Back</button>' +
+         '</div>';
+}
+
 /* ---------- 2nd page: Build MOWES ---------- */
-var editing = null;   // the move being made or changed, null when showing the list
+var editing = null;   // the routine being made or changed, null when showing the list
 var flash = "";       // a one-time "saved" line above the list
 
 function drawBuild(){
@@ -483,7 +637,7 @@ function drawBuild(){
     box.innerHTML = editorHtml(editing);
     return;
   }
-  sub.textContent = "One move at a time. Days are up to you — pick them now or later.";
+  sub.textContent = "One exercise at a time. Days are up to you — pick them now or later.";
 
   var html = "";
   if (flash){ html += '<div class="flash">' + flash + '</div>'; flash = ""; }
@@ -491,7 +645,7 @@ function drawBuild(){
   if (!data.routines.length){
     html += '<div class="card"><div class="empty">' +
               '<span class="em-emoji">🛠️</span>' +
-              '<b>No moves yet</b><br>A move is one thing you do — "Arms, 15 reps, 4 sets" or "Run, 20 minutes".' +
+              '<b>No exercises yet</b><br>An exercise is one thing you do — "Arms, 15 reps, 4 sets" or "Run, 20 minutes".' +
             '</div></div>';
   } else {
     for (var i = 0; i < data.routines.length; i++){
@@ -505,7 +659,7 @@ function drawBuild(){
               '</span></button>';
     }
   }
-  html += '<button class="big-btn" onclick="newRoutine()">+ New move</button>';
+  html += '<button class="big-btn" onclick="newRoutine()">+ New exercise</button>';
   if (data.routines.length) html += weekHtml();
   box.innerHTML = html;
 }
@@ -566,7 +720,7 @@ function editorHtml(r){
   html += '</div></div>';
 
   if (r.isNew){
-    // Making a pile of moves in one sitting is the normal thing to do, so the
+    // Making a pile of routines in one sitting is the normal thing to do, so the
     // button that keeps you going is the big one.
     html += '<button class="big-btn" onclick="saveRoutine(true)">Save &amp; add another</button>';
     html += '<button class="big-btn grey" onclick="saveRoutine(false)">Save &amp; done</button>';
@@ -574,7 +728,7 @@ function editorHtml(r){
     html += '<button class="big-btn" onclick="saveRoutine(false)">Save</button>';
   }
   html += '<button class="link-btn" onclick="cancelEdit()">Back without saving</button>';
-  if (!r.isNew) html += '<button class="link-btn danger" onclick="deleteRoutine()">Delete this move</button>';
+  if (!r.isNew) html += '<button class="link-btn danger" onclick="deleteRoutine()">Delete this exercise</button>';
   html += '</div>';
   return html;
 }
@@ -604,7 +758,7 @@ function cancelEdit(){ editing = null; drawBuild(); }
 function saveRoutine(addAnother){
   grabFields();
   var name = (editing.name || "").trim();
-  if (!name){ alert("Give this move a name first — like Arms, Run, or Walk."); return; }
+  if (!name){ alert("Give this exercise a name first — like Arms, Run, or Walk."); return; }
   var saved = {
     id: editing.id, name: name, kind: editing.kind,
     reps: editing.reps, sets: editing.sets, minutes: editing.minutes,
@@ -621,7 +775,7 @@ function saveRoutine(addAnother){
 
   if (addAnother){
     // Straight into a fresh, empty one, keeping the same counting style so a run
-    // of similar moves is quick to type.
+    // of similar routines is quick to type.
     editing = { id: newId(), name: "", kind: saved.kind, reps: saved.reps, sets: saved.sets,
                 minutes: saved.minutes, days: [], isNew: true };
     drawBuild();
