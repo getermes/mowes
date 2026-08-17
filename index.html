@@ -2163,6 +2163,9 @@
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
     background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
   .onb-go:active { transform: scale(0.99); }
+  /* Waiting on a choice — look waiting, so no one taps a dead button. */
+  .onb-go:disabled { opacity: 0.4; box-shadow: none; cursor: default; }
+  .onb-go:disabled:active { transform: none; }
 
   /* My Setup page (a book page, sits under the bottom bar) */
   .setup-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
@@ -2187,6 +2190,29 @@
   .setup-note { text-align: center; font-size: 12.5px; color: #7a7f95; margin-top: auto; padding-top: 20px; }
   .onb-add-own { width: 100%; margin-top: 12px; background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px; padding: 13px; color: #5b6cff; font-weight: 800; font-size: 15px; cursor: pointer; }
   .onb-add-own:active { transform: scale(0.99); }
+
+  /* The two-door question: type your own on the left, or open the list on the
+     right. Nothing else on screen until you choose a door. */
+  .onb-two { display: flex; gap: 10px; }
+  .onb-two button { flex: 1; min-width: 0; background: #fff; border: 2px dashed #c7cdf0;
+    border-radius: 14px; padding: 18px 10px; color: #5b6cff; font-weight: 800; font-size: 15px;
+    cursor: pointer; line-height: 1.3; }
+  .onb-two button.on { border-style: solid; background: #f2f4ff; }
+  .onb-two button:active { transform: scale(0.99); }
+  .onb-typerow { display: flex; gap: 8px; margin-top: 12px; }
+  .onb-typerow input { flex: 1; min-width: 0; font: inherit; padding: 14px; border-radius: 13px;
+    border: 1px solid #d9def5; background: #fbfcff; color: #2b3050; }
+  .onb-typerow input:focus { outline: 2px solid #5b6cff; border-color: transparent; }
+  .onb-typerow button { flex: 0 0 auto; border: none; border-radius: 13px; padding: 0 20px;
+    background: #5b6cff; color: #fff; font-weight: 800; cursor: pointer; }
+  /* What you've picked, small — chips, not full-size cards. */
+  .onb-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .onb-chip { display: inline-flex; align-items: center; gap: 7px; background: #eef0ff;
+    border: 1px solid #ccd3fb; border-radius: 999px; padding: 8px 13px; font-size: 14px;
+    font-weight: 700; color: #3a4270; cursor: pointer; }
+  .onb-chip .x { color: #8a90b8; font-weight: 800; }
+  /* The breathing room Eugenio asked for, between the two doors and Continue. */
+  .onb-gap { flex: 1 1 auto; min-height: 90px; }
 
   /* My Body page (a book page, sits under the bottom bar) */
   .body-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
@@ -3362,7 +3388,6 @@
       <div class="onb-sub" id="onbSub"></div>
       <div class="onb-choices" id="onbChoices"></div>
       <button class="onb-back" id="onbBack" onclick="onbPrev()">‹ Back</button>
-      <p class="onb-note">🔒 Your answers stay on your phone. You can change your routine anytime.</p>
     </div>
   </div>
 
@@ -7801,10 +7826,12 @@
       { e:"💪", l:"Just my body (no equipment)", d:"", v:"bodyweight", where:["home","gym","outdoors"] } ] }
   ];
   let onbStep = 0, onbAnswers = {}, onbSuggesting = false, onbEditMode = false, onbSingleEdit = null;
+  // Which "door" is open on the two-door question: "type", "list", or neither.
+  let onbDoor = null;
   let onbPicked = new Set(), onbExerciseList = [];
   const PICKED_EXERCISES_KEY = "mowes_picked_exercises_v1";
   function needsOnboarding(){ try { return !localStorage.getItem(ONBOARDING_KEY); } catch(e){ return false; } }
-  function showOnboarding(){ onbStep = 0; onbAnswers = {}; onbSuggesting = false; onbEditMode = false; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
+  function showOnboarding(){ onbStep = 0; onbAnswers = {}; onbSuggesting = false; onbEditMode = false; onbDoor = null; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
   // Re-open the questions to EDIT saved answers (from the My Setup page), pre-filled.
   function editSetup(){
     onbStep = 0; onbSuggesting = false; onbEditMode = true; onbSingleEdit = null;
@@ -7853,20 +7880,24 @@
     renderOnbStep();
   }
   window.onbRemoveCustom = onbRemoveCustom;
+  // Keep a typed-in answer as a permanent choice for this question, and pick it now.
+  function onbSaveCustom(key, name){
+    name = (name || "").trim();
+    if (!name) return;
+    const c = loadOnbCustom();
+    const store = Array.isArray(c[key]) ? c[key] : [];
+    if (store.indexOf(name) < 0) store.push(name);
+    c[key] = store; saveOnbCustom(c);
+    let arr = Array.isArray(onbAnswers[key]) ? onbAnswers[key] : [];
+    if (arr.indexOf(name) < 0) arr.push(name);
+    onbAnswers[key] = arr;
+  }
   function onbAddCustom(){
     const q = ONB_QUESTIONS[onbStep];
     if (!q || !q.multi) return;
     const name = (window.prompt("Add your own — type it and tap OK:") || "").trim();
     if (!name) return;
-    // Keep it as a permanent, reusable choice for this question.
-    const c = loadOnbCustom();
-    const store = Array.isArray(c[q.key]) ? c[q.key] : [];
-    if (store.indexOf(name) < 0) store.push(name);
-    c[q.key] = store; saveOnbCustom(c);
-    // And select it right now.
-    let arr = Array.isArray(onbAnswers[q.key]) ? onbAnswers[q.key] : [];
-    if (arr.indexOf(name) < 0) arr.push(name);
-    onbAnswers[q.key] = arr;
+    onbSaveCustom(q.key, name);
     renderOnbStep();
   }
   window.editSetupQuestion = editSetupQuestion; window.onbAddCustom = onbAddCustom;
@@ -10146,6 +10177,14 @@
         }
       }
     }
+    // "What do you have to work out with?" used to lay eight cards on screen at
+    // once. It's two doors now — type your own, or open the list — so the page
+    // stays quiet until you choose one.
+    if (q.key === "equipment"){
+      renderOnbTwoDoor(q, opts, choices);
+      renderOnbNav();
+      return;
+    }
     opts.forEach(o => {
       const b = document.createElement("button");
       b.className = "onb-choice";
@@ -10181,6 +10220,11 @@
       add.onclick = onbAddCustom;
       choices.appendChild(add);
     }
+    renderOnbNav();
+  }
+  // Back button + the progress dots. Shared, so a question that draws its own
+  // body can still get them.
+  function renderOnbNav(){
     const back = document.getElementById("onbBack");
     if (back){
       back.hidden = onbSingleEdit ? false : (onbStep === 0);
@@ -10198,8 +10242,94 @@
       }
     }
   }
+
+  // Two doors, a quiet middle, and Continue at the bottom.
+  function renderOnbTwoDoor(q, opts, choices){
+    const picked = Array.isArray(onbAnswers[q.key]) ? onbAnswers[q.key] : [];
+    const known  = q.opts.map(o => o.v);
+    const mine   = onbCustomFor(q.key).filter(v => known.indexOf(v) < 0);
+
+    const row = document.createElement("div");
+    row.className = "onb-two";
+    [["type", "＋ Add your own"], ["list", "🔍 Suggestions"]].forEach(pair => {
+      const b = document.createElement("button");
+      b.textContent = pair[1];
+      if (onbDoor === pair[0]) b.classList.add("on");
+      b.onclick = () => { onbDoor = (onbDoor === pair[0] ? null : pair[0]); renderOnbStep(); };
+      row.appendChild(b);
+    });
+    choices.appendChild(row);
+
+    if (onbDoor === "type"){
+      const tr = document.createElement("div");
+      tr.className = "onb-typerow";
+      const inp = document.createElement("input");
+      inp.id = "onbTypeBox"; inp.placeholder = "Dumbbells"; inp.maxLength = 40;
+      inp.autocomplete = "off";
+      const go = document.createElement("button"); go.textContent = "Add";
+      const commit = () => {
+        const name = (inp.value || "").trim();
+        if (!name) return;
+        onbSaveCustom(q.key, name);
+        renderOnbStep();
+        const again = document.getElementById("onbTypeBox");
+        if (again) again.focus();     // ready for the next one straight away
+      };
+      go.onclick = commit;
+      inp.onkeydown = (e) => { if (e.key === "Enter"){ e.preventDefault(); commit(); } };
+      tr.appendChild(inp); tr.appendChild(go);
+      choices.appendChild(tr);
+      setTimeout(() => { const el = document.getElementById("onbTypeBox"); if (el) el.focus(); }, 0);
+    }
+
+    if (onbDoor === "list"){
+      opts.forEach(o => {
+        const b = document.createElement("button");
+        b.className = "onb-choice" + (picked.indexOf(o.v) >= 0 ? " picked" : "");
+        b.innerHTML = '<span class="onb-c-emoji">' + o.e + '</span><span class="onb-c-text"><span class="onb-c-label">' + escapeHtml(o.l) + '</span></span>';
+        b.onclick = () => onbToggle(o.v);
+        choices.appendChild(b);
+      });
+      // Anything typed in before stays available here too.
+      mine.forEach(v => {
+        const b = document.createElement("button");
+        b.className = "onb-choice" + (picked.indexOf(v) >= 0 ? " picked" : "");
+        b.innerHTML = '<span class="onb-c-emoji">✏️</span><span class="onb-c-text"><span class="onb-c-label">' + escapeHtml(v) + '</span></span><span class="onb-c-del" title="Remove">✕</span>';
+        b.onclick = () => onbToggle(v);
+        const del = b.querySelector(".onb-c-del");
+        if (del) del.onclick = (ev) => { ev.stopPropagation(); onbRemoveCustom(q.key, v); };
+        choices.appendChild(b);
+      });
+    }
+
+    // What you've picked so far — small, and tap one to drop it.
+    if (picked.length){
+      const chips = document.createElement("div");
+      chips.className = "onb-chips";
+      picked.forEach(v => {
+        const opt = q.opts.filter(o => o.v === v)[0];
+        const chip = document.createElement("button");
+        chip.className = "onb-chip";
+        chip.innerHTML = (opt ? opt.e : "✏️") + " " + escapeHtml(opt ? opt.l : v) + ' <span class="x">✕</span>';
+        chip.onclick = () => onbToggle(v);
+        chips.appendChild(chip);
+      });
+      choices.appendChild(chips);
+    }
+
+    const gap = document.createElement("div");
+    gap.className = "onb-gap";
+    choices.appendChild(gap);
+
+    const cont = document.createElement("button");
+    cont.className = "onb-go";
+    cont.textContent = onbSingleEdit ? "Save ✓" : "Continue →";
+    cont.disabled = !picked.length;
+    cont.onclick = onbContinue;
+    choices.appendChild(cont);
+  }
   function onbAdvance(){
-    if (onbStep < ONB_QUESTIONS.length - 1){ onbStep++; renderOnbStep(); }
+    if (onbStep < ONB_QUESTIONS.length - 1){ onbStep++; onbDoor = null; renderOnbStep(); }
     else {
       onbSuggesting = true;
       // Pre-check a smart, varied starter set — the user can change any of it.
@@ -10231,7 +10361,7 @@
   function onbPrev(){
     if (onbSingleEdit){ cancelSingleEdit(); return; } // Back = cancel this one edit
     if (onbSuggesting){ onbSuggesting = false; renderOnbStep(); return; }
-    if (onbStep > 0){ onbStep--; renderOnbStep(); }
+    if (onbStep > 0){ onbStep--; onbDoor = null; renderOnbStep(); }
   }
   // Build a friendly, tailored "here's a good way to start" from the answers.
   // Exercises that fit each piece of equipment/activity the user said they have.
