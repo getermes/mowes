@@ -4959,17 +4959,22 @@
   const LEAN_MODE = LEAN_ON && !FULL_PREVIEW;
   // Rebuilding the app one page at a time: flip a page to true here to switch it back
   // on in the lean version. (The ?full preview always shows every page, regardless.)
+  // Trimmed back to the three pages that matter: Cover, Today's MOWES, Build
+  // MOWES. Nine pages in the bottom bar was the main thing making the app feel
+  // confusing — to Eugenio, and to the first people who tried it. Everything
+  // below is still built and still works; it's only hidden, and ?full shows it
+  // all. Switch pages back on ONE at a time, once each has earned its place.
   const PAGES_ON = {
     build: true,    // 🛠️ Build MOWES — one page that holds My Library + My Weekly Plan
-    library: true,  // 📚 My Library — build & keep your routines once (feeds My Weekly Plan)
-    weekly: true,   // 🗓️ My Weekly Plan — the routine builder + weekly day-schedule (the "default" sheet page)
-    setup: true,    // ⚙️ My Set-up — review/change your guided-start answers
-    rules: true,    // 📜 My Rules — rules that shape how picks are chosen
-    goals: true,    // 🎯 My Goals & Achievement (Achievements is now a section here)
-    body:  true,    // 📏 My Body & Pics (measurements + progress-photo gallery)
-    shopping: true, // 🛒 My Shopping (the Shopping List book page, id p_ex_shopping)
-    notes: true,    // 📝 My Notes (the Note taking book page, id p_ex_notes — text + pics)
-    trainers: false // 🏋️ Trainers & Programs — HIDDEN WIP; false = off in the live app. Flip to true to publish. Always visible in the ?full preview.
+    library: true,  // 📚 My Library — lives inside Build MOWES
+    weekly: true,   // 🗓️ My Weekly Plan — lives inside Build MOWES
+    setup: false,   // ⚙️ My Set-up — off; the guided start is Phase 2
+    rules: false,   // 📜 My Rules — off
+    goals: false,   // 🎯 My Goals & Achievement — off
+    body:  false,   // 📏 My Body & Pics — off
+    shopping: false,// 🛒 My Shopping — off
+    notes: false,   // 📝 My Notes — off
+    trainers: false // 🏋️ Trainers & Programs — HIDDEN WIP. Always visible in the ?full preview.
   };
   function pageBarStops(){
     const base = [{ cover:true, name:"Cover", icon:"📖 " }, { session:true, name:"Today's MOWES", icon:"▶️ " }];

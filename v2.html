@@ -793,16 +793,17 @@ function deleteRoutine(){
   save(); editing = null; drawBuild();
 }
 
-/* ---------- support set + privacy note, on every page ---------- */
+/* ---------- support set, on every page ---------- */
+// Like and coffee stay on every page; the privacy promise is said ONCE, on the
+// Cover. Repeating it under every screen was three lines of space telling you
+// something you already read.
 function drawSupport(){
   var liked = localStorage.getItem("mowes2_liked") === "1";
   var html =
     '<div class="support">' +
       '<button class="' + (liked ? 'liked' : '') + '" onclick="toggleLike()">' + (liked ? '❤️ Liked' : '🤍 Like') + '</button>' +
       '<a href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener">☕ Buy me a coffee</a>' +
-    '</div>' +
-    '<div class="trust">🔒 <b>No sign-up, no account, no email.</b><br>' +
-    'Your data stays on your phone — it\'s never sent anywhere.<br>Free, and works offline.</div>';
+    '</div>';
   var slots = document.querySelectorAll(".support-slot");
   for (var i = 0; i < slots.length; i++) slots[i].innerHTML = html;
 }
