@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MOWES — My Own Weekly Exercise Sheet</title>
+<meta name="theme-color" content="#d3ddfb">
+<style>
+/* ==========================================================================
+   MOWES v2 — Phase 1: the Cover, Today's MOWES, and Build MOWES. That's all.
+   Nothing else gets added here until Phase 1 feels obvious to a first-timer.
+   Phase 2 = the initial set-up. Phase 3 = the run.
+   ========================================================================== */
+
+  :root{
+    --ink:      #2b3050;   /* main text */
+    --ink-soft: #6a7088;   /* quiet text */
+    --line:     #e2e6f7;   /* hairlines */
+    --card:     #ffffff;
+    --bg:       #f2f4fd;
+    --violet:   #5b6cff;
+    --violet-2: #7a5bff;
+    --gold:     #F0A32E;
+    --gold-ink: #B5760F;
+    --good:     #1f9d64;
+    --bar-h:    68px;      /* bottom page bar */
+  }
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body{ margin:0; padding:0; }
+  body{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--ink);
+    font-size: 16px; line-height: 1.5;
+    padding-bottom: calc(var(--bar-h) + env(safe-area-inset-bottom));
+  }
+  button{ font: inherit; color: inherit; cursor: pointer; }
+
+  /* ---------- shared bits ---------- */
+  .wrap{ max-width: 420px; margin: 0 auto; padding: 18px 16px 8px; }
+  .card{
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 18px; padding: 16px; margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(91,108,255,.05);
+  }
+  .h1{ font-size: 24px; font-weight: 800; margin: 0 0 2px; letter-spacing: -.3px; }
+  .sub{ color: var(--ink-soft); font-size: 14px; margin: 0 0 16px; }
+  .big-btn{
+    display:block; width:100%; border:0; border-radius:16px;
+    padding:17px 18px; font-size:18px; font-weight:800; color:#fff;
+    background: linear-gradient(135deg, var(--violet), var(--violet-2));
+    box-shadow: 0 6px 16px rgba(91,108,255,.30);
+  }
+  .big-btn.grey{ background:#eef0fa; color: var(--ink); box-shadow:none; }
+  .big-btn.gold{ background: linear-gradient(135deg,#FBC13D,var(--gold)); color:#4a3308; box-shadow:0 6px 16px rgba(240,163,46,.3); }
+  .big-btn[disabled]{ opacity:.45; }
+  .row-btn{
+    display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+    background: var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:15px 16px; margin-bottom:10px;
+  }
+  .row-btn .rb-emoji{ font-size:26px; line-height:1; }
+  .row-btn .rb-name{ font-weight:700; }
+  .row-btn .rb-meta{ color: var(--ink-soft); font-size:13px; }
+  .empty{ text-align:center; color: var(--ink-soft); padding: 26px 10px; }
+  .empty .em-emoji{ font-size:44px; display:block; margin-bottom:8px; }
+  .field{ display:block; margin-bottom:14px; }
+  .field .lab{ display:block; font-size:13px; font-weight:700; color: var(--ink-soft); margin-bottom:6px; }
+  .field input, .field select{
+    width:100%; font:inherit; padding:13px 14px; border-radius:13px;
+    border:1px solid var(--line); background:#fbfcff; color:var(--ink);
+  }
+  .field input:focus, .field select:focus{ outline:2px solid var(--violet); border-color:transparent; }
+
+  /* ---------- the Cover ---------- */
+  .cover{
+    position: fixed; inset: 0; z-index: 900;
+    display: none; justify-content: center; align-items: stretch;
+    padding: 34px 18px 40px; overflow-y: auto;
+    background: linear-gradient(180deg,#d3ddfb 0%,#dadcf6 55%,#d6def9 100%);
+  }
+  .cover.show{ display:flex; }
+  /* Shown as page 1 from the bottom bar, it sits below the bar instead of over it. */
+  .cover.as-page{ z-index: 500; padding-bottom: calc(var(--bar-h) + 24px); }
+  .cover-box{ max-width:360px; width:100%; text-align:center; display:flex; flex-direction:column; position:relative; }
+  .c-mark{
+    font-size:18px; font-weight:800; letter-spacing:1.5px;
+    background: linear-gradient(135deg,var(--violet),var(--violet-2));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .c-tag{ margin-top:5px; color:var(--gold-ink); font-size:13px; font-weight:700; }
+  .c-dumbbell{ display:block; width:104px; height:auto; margin:auto auto 0; transform:translateY(-12px); }
+  .c-emoji{ font-size:46px; margin:-42px 0 0; position:relative; z-index:5; }
+  .c-title{ font-weight:800; position:relative; z-index:5; }
+  .c-name{
+    display:inline-block; font-size:clamp(40px,15.5vw,72px); font-weight:800; letter-spacing:1px;
+    transform:scaleY(2.5); transform-origin:center;
+    background:linear-gradient(135deg,var(--violet),var(--violet-2));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .c-sub{ font-size:13px; color:var(--violet); margin-top:-50px; position:relative; z-index:5; }
+  .c-barbell{ display:block; position:relative; left:50%; transform:translateX(-50%); width:98vw; max-width:460px; height:auto; margin:-20px 0 0; z-index:5; }
+  .c-btn{
+    margin-top:auto; border:0; border-radius:16px; padding:17px 18px;
+    font-size:18px; font-weight:800; color:#fff;
+    background:linear-gradient(135deg,var(--violet),var(--violet-2));
+    box-shadow:0 8px 20px rgba(91,108,255,.32);
+  }
+  .c-note{ font-size:12px; color:var(--ink-soft); margin:14px 0 0; }
+  .c-note .wn-name{ font-weight:700; color:var(--gold-ink); }
+  /* Small clouds drifting across the sky behind everything. */
+  .sky{ position:absolute; top:13%; left:0; right:0; height:44%; overflow:hidden; pointer-events:none; z-index:1; }
+  .sky span{ position:absolute; left:0; will-change:transform; }
+  .sky svg{ display:block; opacity:.75; }
+  .sky span:nth-child(1){ top:6%;  width:74px;  animation: drift 34s linear infinite; }
+  .sky span:nth-child(2){ top:38%; width:104px; animation: drift 46s linear infinite -12s; }
+  .sky span:nth-child(3){ top:64%; width:60px;  animation: drift 39s linear infinite -25s; }
+  @keyframes drift{ from{ transform: translateX(-130px); } to{ transform: translateX(105vw); } }
+
+  /* ---------- bottom page bar ---------- */
+  .bar{
+    position: fixed; left:0; right:0; bottom:0; z-index: 800;
+    height: calc(var(--bar-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    display:flex; background: rgba(255,255,255,.96);
+    border-top:1px solid var(--line); backdrop-filter: blur(8px);
+  }
+  .bar button{
+    flex:1; border:0; background:none; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:2px;
+    font-size:11px; font-weight:700; color:var(--ink-soft); padding:0;
+  }
+  .bar button .b-emoji{ font-size:22px; line-height:1; }
+  .bar button.on{ color: var(--violet); }
+
+  /* ---------- Today's MOWES ---------- */
+  .today-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .today-date{ color:var(--ink-soft); font-size:13px; font-weight:700; }
+  .step{
+    display:flex; align-items:center; gap:13px;
+    padding:14px 4px; border-bottom:1px solid var(--line);
+  }
+  .step:last-child{ border-bottom:0; }
+  .step .s-tick{
+    flex:0 0 28px; height:28px; border-radius:50%;
+    border:2px solid var(--line); background:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff;
+  }
+  .step.done .s-tick{ background:var(--good); border-color:var(--good); }
+  .step.done .s-name{ text-decoration: line-through; color: var(--ink-soft); }
+  .step .s-name{ font-weight:700; }
+  .step .s-meta{ color:var(--ink-soft); font-size:13px; }
+  .step.now{ background:#f6f4ff; border-radius:12px; padding-left:10px; padding-right:10px; }
+  .progress{ height:8px; border-radius:99px; background:#eceffb; overflow:hidden; margin:4px 0 16px; }
+  .progress i{ display:block; height:100%; background:linear-gradient(90deg,var(--violet),var(--violet-2)); transition:width .3s ease; }
+  .done-note{ text-align:center; padding:8px 0 4px; }
+  .done-note .dn-emoji{ font-size:48px; display:block; }
+  .done-note .dn-msg{ font-weight:800; font-size:19px; margin-top:4px; }
+
+  /* ---------- Build MOWES ---------- */
+  .days{ display:flex; gap:6px; }
+  .days button{
+    flex:1; border:1px solid var(--line); background:#fbfcff; color:var(--ink-soft);
+    border-radius:11px; padding:11px 0; font-size:13px; font-weight:800;
+  }
+  .days button.on{ background:var(--violet); border-color:var(--violet); color:#fff; }
+  .step-edit{ display:flex; gap:8px; align-items:center; margin-bottom:9px; }
+  .step-edit input.se-name{ flex:1 1 auto; min-width:0; }
+  .step-edit input.se-num{ flex:0 0 66px; text-align:center; }
+  .step-edit select.se-kind{ flex:0 0 96px; }
+  .step-edit input, .step-edit select{
+    font:inherit; padding:11px 8px; border-radius:11px;
+    border:1px solid var(--line); background:#fbfcff; color:var(--ink); min-width:0;
+  }
+  .step-edit .se-x{ flex:0 0 32px; border:0; background:none; font-size:19px; color:var(--ink-soft); padding:0; }
+  .link-btn{ border:0; background:none; color:var(--violet); font-weight:700; padding:8px 0; }
+  .danger{ color:#c0392b; }
+
+  /* ---------- support set (on every page) ---------- */
+  .support{ display:flex; gap:10px; justify-content:center; margin:18px 0 6px; }
+  .support button, .support a{
+    display:flex; align-items:center; gap:7px; text-decoration:none;
+    border:1px solid var(--line); background:#fff; color:var(--ink-soft);
+    border-radius:999px; padding:9px 15px; font-size:14px; font-weight:700;
+  }
+  .support button.liked{ color:#c0392b; border-color:#f3d3d3; background:#fff6f6; }
+  .trust{
+    text-align:center; color:var(--ink-soft); font-size:12.5px; line-height:1.6;
+    padding: 4px 6px 10px;
+  }
+  .trust b{ color: var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- ===================== THE COVER ===================== -->
+<div class="cover" id="cover">
+  <div class="sky" aria-hidden="true">
+    <span><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg"><g fill="#fff"><rect x="14" y="28" width="70" height="20" rx="10"/><circle cx="40" cy="23" r="20"/><circle cx="65" cy="30" r="14"/><circle cx="24" cy="32" r="12"/></g></svg></span>
+    <span><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg"><g fill="#fff"><rect x="8" y="31" width="84" height="14" rx="7"/><circle cx="30" cy="31" r="12"/><circle cx="52" cy="27" r="15"/><circle cx="72" cy="32" r="10"/></g></svg></span>
+    <span><svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg"><g fill="#fff"><rect x="22" y="30" width="54" height="16" rx="8"/><circle cx="41" cy="26" r="15"/><circle cx="59" cy="31" r="11"/></g></svg></span>
+  </div>
+
+  <div class="cover-box">
+    <div class="c-mark">ERMES</div>
+    <div class="c-tag">Apps to solve real problems</div>
+
+    <svg class="c-dumbbell" viewBox="0 0 140 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="dbBar" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#F0A32E"/><stop offset="0.5" stop-color="#FBC13D"/><stop offset="1" stop-color="#F0A32E"/>
+        </linearGradient>
+        <linearGradient id="dbPlate" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#7a5bff"/><stop offset="1" stop-color="#5b6cff"/>
+        </linearGradient>
+      </defs>
+      <rect x="46" y="28" width="48" height="8" rx="4" fill="url(#dbBar)"/>
+      <rect x="55" y="25" width="30" height="14" rx="6" fill="#B5760F"/>
+      <rect x="24" y="12" width="20" height="40" rx="9" fill="url(#dbPlate)"/>
+      <rect x="96" y="12" width="20" height="40" rx="9" fill="url(#dbPlate)"/>
+      <rect x="18" y="26" width="6" height="12" rx="3" fill="#F0A32E"/>
+      <rect x="116" y="26" width="6" height="12" rx="3" fill="#F0A32E"/>
+    </svg>
+
+    <div class="c-emoji">💪</div>
+    <div class="c-title"><span class="c-name">MOWES</span></div>
+
+    <svg class="c-barbell" viewBox="0 0 460 130" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="bbBar" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#F0A32E"/><stop offset="0.5" stop-color="#FBC13D"/><stop offset="1" stop-color="#F0A32E"/>
+        </linearGradient>
+        <linearGradient id="bbPlate" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#7a5bff"/><stop offset="1" stop-color="#5b6cff"/>
+        </linearGradient>
+      </defs>
+      <rect x="18" y="56" width="424" height="8" rx="4" fill="url(#bbBar)"/>
+      <rect x="122" y="49" width="36" height="22" rx="7" fill="#B5760F"/>
+      <rect x="302" y="49" width="36" height="22" rx="7" fill="#B5760F"/>
+      <rect x="62" y="26" width="16" height="68" rx="7" fill="url(#bbPlate)"/>
+      <rect x="40" y="13" width="18" height="95" rx="9" fill="url(#bbPlate)"/>
+      <rect x="382" y="26" width="16" height="68" rx="7" fill="url(#bbPlate)"/>
+      <rect x="402" y="13" width="18" height="95" rx="9" fill="url(#bbPlate)"/>
+      <rect x="11" y="52" width="8" height="16" rx="3" fill="#F0A32E"/>
+      <rect x="441" y="52" width="8" height="16" rx="3" fill="#F0A32E"/>
+    </svg>
+
+    <div class="c-sub">My Own Weekly Exercise Sheet</div>
+
+    <button class="c-btn" onclick="openApp()">Let's Workout →</button>
+    <p class="c-note">Made with 💛 by <span class="wn-name">EUgenio</span> — the Idea Guy</p>
+  </div>
+</div>
+
+<!-- ===================== 1st PAGE — TODAY'S MOWES ===================== -->
+<div class="wrap page" id="pageToday" hidden>
+  <div class="today-head">
+    <div>
+      <h1 class="h1">Today's MOWES</h1>
+      <div class="today-date" id="todayDate"></div>
+    </div>
+  </div>
+  <div id="todayBody"></div>
+  <div class="support-slot"></div>
+</div>
+
+<!-- ===================== 2nd PAGE — BUILD MOWES ===================== -->
+<div class="wrap page" id="pageBuild" hidden>
+  <h1 class="h1">Build MOWES</h1>
+  <p class="sub">Make a routine, pick the days it happens. That's it.</p>
+  <div id="buildBody"></div>
+  <div class="support-slot"></div>
+</div>
+
+<!-- ===================== BOTTOM PAGE BAR ===================== -->
+<nav class="bar" id="bar">
+  <button onclick="go('cover')" id="tabCover"><span class="b-emoji">📖</span>Cover</button>
+  <button onclick="go('today')" id="tabToday"><span class="b-emoji">▶️</span>Today's</button>
+  <button onclick="go('build')" id="tabBuild"><span class="b-emoji">🛠️</span>Build</button>
+</nav>
+
+<script>
+/* ==========================================================================
+   Everything lives on this phone. No account, no server, nothing sent out.
+   ========================================================================== */
+
+var KEY = "mowes2_v1";
+var DAY_NAMES  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var DAY_SHORT  = ["S","M","T","W","T","F","S"];
+
+/* ---------- saved data ---------- */
+function blank(){ return { routines: [], done: {} }; }
+var data = blank();
+
+function load(){
+  try {
+    var raw = localStorage.getItem(KEY);
+    data = raw ? JSON.parse(raw) : blank();
+  } catch(e){ data = blank(); }
+  if (!data || typeof data !== "object") data = blank();
+  if (!Array.isArray(data.routines)) data.routines = [];
+  if (!data.done || typeof data.done !== "object") data.done = {};
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(data)); }
+  catch(e){ /* a full or blocked storage shouldn't break the workout */ }
+}
+function newId(){ return "r" + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36); }
+function todayKey(d){ d = d || new Date(); return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate(); }
+
+/* ---------- page switching ---------- */
+var current = "cover";
+
+function go(where){
+  current = where;
+  var cover = document.getElementById("cover");
+  // From the bar the Cover behaves like page 1 — it sits above the bar, not over it.
+  cover.classList.toggle("show", where === "cover");
+  cover.classList.toggle("as-page", where === "cover");
+  document.getElementById("pageToday").hidden = (where !== "today");
+  document.getElementById("pageBuild").hidden = (where !== "build");
+  document.getElementById("tabCover").classList.toggle("on", where === "cover");
+  document.getElementById("tabToday").classList.toggle("on", where === "today");
+  document.getElementById("tabBuild").classList.toggle("on", where === "build");
+  if (where === "today") drawToday();
+  if (where === "build") drawBuild();
+  window.scrollTo(0, 0);
+}
+// The "Let's Workout" button on the opening Cover.
+function openApp(){
+  document.getElementById("cover").classList.remove("show");
+  go("today");
+}
+
+/* ---------- 1st page: Today's MOWES ---------- */
+function routineForToday(){
+  var wd = new Date().getDay();
+  for (var i = 0; i < data.routines.length; i++){
+    if ((data.routines[i].days || []).indexOf(wd) !== -1) return data.routines[i];
+  }
+  return null;
+}
+function doneList(){
+  var k = todayKey();
+  if (!Array.isArray(data.done[k])) data.done[k] = [];
+  return data.done[k];
+}
+function stepDone(routineId, index){
+  return doneList().indexOf(routineId + "#" + index) !== -1;
+}
+function toggleStep(routineId, index){
+  var list = doneList(), tag = routineId + "#" + index, at = list.indexOf(tag);
+  if (at === -1) list.push(tag); else list.splice(at, 1);
+  save(); drawToday();
+}
+function stepMeta(s){
+  if (s.kind === "time") return s.amount + (s.amount == 1 ? " minute" : " minutes");
+  var reps = s.amount + (s.amount == 1 ? " rep" : " reps");
+  return (s.sets > 1) ? (s.sets + " sets × " + reps) : reps;
+}
+
+function drawToday(){
+  var now = new Date();
+  document.getElementById("todayDate").textContent = DAY_NAMES[now.getDay()];
+  var box = document.getElementById("todayBody");
+  var r = routineForToday();
+
+  if (!data.routines.length){
+    box.innerHTML =
+      '<div class="card"><div class="empty">' +
+        '<span class="em-emoji">👋</span>' +
+        '<b>Nothing here yet</b><br>Make your first routine and it will show up right here on its day.' +
+      '</div>' +
+      '<button class="big-btn" onclick="go(\'build\')">Build my first routine</button></div>';
+    return;
+  }
+  if (!r){
+    box.innerHTML =
+      '<div class="card"><div class="empty">' +
+        '<span class="em-emoji">😌</span>' +
+        '<b>Rest day</b><br>Nothing planned for ' + DAY_NAMES[now.getDay()] + '. Rest counts too.' +
+      '</div>' +
+      '<button class="big-btn grey" onclick="go(\'build\')">Change my days</button></div>';
+    return;
+  }
+
+  var steps = r.steps || [];
+  var doneCount = 0;
+  for (var i = 0; i < steps.length; i++) if (stepDone(r.id, i)) doneCount++;
+  var allDone = steps.length > 0 && doneCount === steps.length;
+
+  var html = '<div class="card">';
+  html += '<div class="rb-name" style="font-size:19px;margin-bottom:2px">' + esc(r.name) + '</div>';
+  html += '<div class="rb-meta">' + doneCount + ' of ' + steps.length + ' done</div>';
+  html += '<div class="progress"><i style="width:' + (steps.length ? Math.round(doneCount/steps.length*100) : 0) + '%"></i></div>';
+
+  if (!steps.length){
+    html += '<div class="empty">This routine has no steps yet.</div>' +
+            '<button class="big-btn grey" onclick="editRoutine(\'' + r.id + '\')">Add steps</button>';
+  } else {
+    // The first step that isn't done is the one you're on.
+    var nextAt = -1;
+    for (var j = 0; j < steps.length; j++){ if (!stepDone(r.id, j)){ nextAt = j; break; } }
+    for (var k = 0; k < steps.length; k++){
+      var d = stepDone(r.id, k);
+      html += '<div class="step' + (d ? ' done' : '') + (k === nextAt ? ' now' : '') + '" onclick="toggleStep(\'' + r.id + '\',' + k + ')">' +
+                '<div class="s-tick">' + (d ? '✓' : '') + '</div>' +
+                '<div><div class="s-name">' + esc(steps[k].name) + '</div>' +
+                '<div class="s-meta">' + esc(stepMeta(steps[k])) + '</div></div>' +
+              '</div>';
+    }
+    if (allDone){
+      html += '<div class="done-note"><span class="dn-emoji">🎉</span>' +
+              '<div class="dn-msg">You did it.</div>' +
+              '<div class="rb-meta">That\'s ' + DAY_NAMES[now.getDay()] + ' handled.</div></div>';
+    }
+  }
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+/* ---------- 2nd page: Build MOWES ---------- */
+var editing = null;  // the routine being edited, or null when showing the list
+
+function drawBuild(){
+  var box = document.getElementById("buildBody");
+  if (editing) { box.innerHTML = editorHtml(editing); return; }
+
+  var html = "";
+  if (!data.routines.length){
+    html += '<div class="card"><div class="empty">' +
+              '<span class="em-emoji">🛠️</span>' +
+              '<b>No routines yet</b><br>A routine is just a name, a few moves, and the days you do it.' +
+            '</div></div>';
+  } else {
+    for (var i = 0; i < data.routines.length; i++){
+      var r = data.routines[i];
+      var days = (r.days || []).slice().sort().map(function(d){ return DAY_NAMES[d].slice(0,3); }).join(", ");
+      html += '<button class="row-btn" onclick="editRoutine(\'' + r.id + '\')">' +
+                '<span class="rb-emoji">📋</span>' +
+                '<span><span class="rb-name">' + esc(r.name) + '</span><br>' +
+                '<span class="rb-meta">' + (r.steps || []).length + ' moves · ' + (days || 'no days picked') + '</span></span>' +
+              '</button>';
+    }
+  }
+  html += '<button class="big-btn" onclick="newRoutine()">+ New routine</button>';
+  box.innerHTML = html;
+}
+
+function newRoutine(){
+  editing = { id: newId(), name: "", days: [], steps: [{ name:"", kind:"reps", amount:10, sets:1 }], isNew: true };
+  drawBuild();
+}
+function editRoutine(id){
+  var r = data.routines.filter(function(x){ return x.id === id; })[0];
+  if (!r) return;
+  // Work on a copy so backing out doesn't change anything.
+  editing = JSON.parse(JSON.stringify(r));
+  editing.isNew = false;
+  go("build");
+}
+
+function editorHtml(r){
+  var html = '<div class="card">';
+  html += '<label class="field"><span class="lab">Name it</span>' +
+          '<input id="edName" value="' + esc(r.name) + '" placeholder="Morning stretch" maxlength="40"></label>';
+
+  html += '<div class="field"><span class="lab">Which days?</span><div class="days">';
+  for (var d = 0; d < 7; d++){
+    html += '<button type="button" class="' + ((r.days||[]).indexOf(d) !== -1 ? 'on' : '') + '" onclick="toggleDay(' + d + ')">' + DAY_SHORT[d] + '</button>';
+  }
+  html += '</div></div>';
+
+  html += '<div class="field"><span class="lab">The moves</span>';
+  for (var i = 0; i < r.steps.length; i++){
+    var s = r.steps[i];
+    html += '<div class="step-edit">' +
+              '<input class="se-name" placeholder="Push-ups" maxlength="40" value="' + esc(s.name) + '" oninput="setStep(' + i + ',\'name\',this.value)">' +
+              '<input class="se-num" type="number" min="1" max="999" value="' + (s.amount || 1) + '" oninput="setStep(' + i + ',\'amount\',this.value)">' +
+              '<select class="se-kind" onchange="setStep(' + i + ',\'kind\',this.value)">' +
+                '<option value="reps"' + (s.kind === "reps" ? " selected" : "") + '>reps</option>' +
+                '<option value="time"' + (s.kind === "time" ? " selected" : "") + '>minutes</option>' +
+              '</select>' +
+              '<button type="button" class="se-x" onclick="removeStep(' + i + ')" aria-label="Remove">✕</button>' +
+            '</div>';
+  }
+  html += '<button type="button" class="link-btn" onclick="addStep()">+ Add another move</button></div>';
+
+  html += '<button class="big-btn" onclick="saveRoutine()">Save</button>';
+  html += '<button class="link-btn" style="display:block;margin:10px auto 0" onclick="cancelEdit()">Back without saving</button>';
+  if (!r.isNew){
+    html += '<button class="link-btn danger" style="display:block;margin:2px auto 0" onclick="deleteRoutine()">Delete this routine</button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+/* Editor actions. Each one keeps what's typed on screen, then redraws. */
+function grabName(){
+  var el = document.getElementById("edName");
+  if (el && editing) editing.name = el.value;
+}
+function toggleDay(d){
+  grabName();
+  var at = editing.days.indexOf(d);
+  if (at === -1) editing.days.push(d); else editing.days.splice(at, 1);
+  drawBuild();
+}
+function setStep(i, field, value){
+  // Typing shouldn't redraw — that would steal the cursor mid-word.
+  if (!editing.steps[i]) return;
+  editing.steps[i][field] = (field === "amount") ? Math.max(1, parseInt(value, 10) || 1) : value;
+}
+function addStep(){
+  grabName();
+  editing.steps.push({ name:"", kind:"reps", amount:10, sets:1 });
+  drawBuild();
+}
+function removeStep(i){
+  grabName();
+  editing.steps.splice(i, 1);
+  if (!editing.steps.length) editing.steps.push({ name:"", kind:"reps", amount:10, sets:1 });
+  drawBuild();
+}
+function cancelEdit(){ editing = null; drawBuild(); }
+
+function saveRoutine(){
+  grabName();
+  var name = (editing.name || "").trim();
+  if (!name){ alert("Give your routine a name first."); return; }
+  // Drop blank moves — an empty box means the person didn't want that row.
+  var steps = editing.steps.filter(function(s){ return (s.name || "").trim(); })
+                           .map(function(s){ return { name:s.name.trim(), kind:s.kind, amount:s.amount, sets:s.sets || 1 }; });
+  var saved = { id: editing.id, name: name, days: editing.days.slice(), steps: steps };
+  var at = -1;
+  for (var i = 0; i < data.routines.length; i++) if (data.routines[i].id === saved.id) at = i;
+  if (at === -1) data.routines.push(saved); else data.routines[at] = saved;
+  save();
+  editing = null;
+  go("today");   // straight back to what you actually do
+}
+function deleteRoutine(){
+  if (!confirm("Delete \"" + editing.name + "\"? This can't be undone.")) return;
+  data.routines = data.routines.filter(function(r){ return r.id !== editing.id; });
+  save(); editing = null; drawBuild();
+}
+
+/* ---------- support set + privacy note, on every page ---------- */
+function drawSupport(){
+  var liked = localStorage.getItem("mowes2_liked") === "1";
+  var html =
+    '<div class="support">' +
+      '<button class="' + (liked ? 'liked' : '') + '" onclick="toggleLike(this)">' +
+        (liked ? '❤️ Liked' : '🤍 Like') + '</button>' +
+      '<a href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener">☕ Buy me a coffee</a>' +
+    '</div>' +
+    '<div class="trust">🔒 <b>No sign-up, no account, no email.</b><br>' +
+    'Your data stays on your phone — it\'s never sent anywhere.<br>Free, and works offline.</div>';
+  var slots = document.querySelectorAll(".support-slot");
+  for (var i = 0; i < slots.length; i++) slots[i].innerHTML = html;
+}
+function toggleLike(btn){
+  var liked = localStorage.getItem("mowes2_liked") === "1";
+  try { localStorage.setItem("mowes2_liked", liked ? "0" : "1"); } catch(e){}
+  drawSupport();
+}
+
+/* ---------- keep text safe inside the HTML we build ---------- */
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+/* ---------- start ---------- */
+load();
+drawSupport();
+// ?fresh wipes everything, so the true first-time experience can be recorded.
+if (location.search.indexOf("fresh") !== -1){
+  try { localStorage.removeItem(KEY); localStorage.removeItem("mowes2_liked"); } catch(e){}
+  data = blank();
+}
+document.getElementById("cover").classList.add("show");
+</script>
+</body>
+</html>

@@ -7501,6 +7501,37 @@
     // Mirror the geometry horizontally for "go back" (dots run the other way).
     function mx(x){ return mirror ? (L + R - x) : x; }
 
+    // The fold between the two dots bows like a real sheet of paper bending —
+    // flat at the start, deepest halfway through the turn, flat again at the
+    // end. Sampled into points so it stays an ordinary clip-path polygon.
+    //   sign  - which way the belly points; it must swell OUT into the part
+    //           already revealed, so the covered half keeps a rounded edge
+    //   bend  - 0..1, how deep the bow is right now
+    function curveEdge(x1, y1, x2, y2, sign, bend){
+      const dx = x2 - x1, dy = y2 - y1;
+      const len = Math.hypot(dx, dy);
+      if (len < 1 || bend < 0.02) return [[x1, y1], [x2, y2]];
+      // A quadratic curve sags half as deep as its control point is pushed,
+      // so push twice the bow we actually want to see.
+      // Capped so the belly never swells past the phone column, which would
+      // flatten it against the edge instead of reading as a curve.
+      const bow = Math.min(0.15 * len, 46) * bend * 2;
+      const cpx = (x1 + x2) / 2 + sign * (-dy / len) * bow;
+      const cpy = (y1 + y2) / 2 + sign * ( dx / len) * bow;
+      const SEG = 14, pts = [];
+      for (let s = 0; s <= SEG; s++){
+        const t = s / SEG, u = 1 - t;
+        pts.push([u*u*x1 + 2*u*t*cpx + t*t*x2, u*u*y1 + 2*u*t*cpy + t*t*y2]);
+      }
+      return pts;
+    }
+    // Turn a list of [x,y] screen points into a clip-path polygon.
+    function toPoly(pts){
+      return "polygon(" + pts.map(function(pt){
+        return cx(mx(pt[0])) + " " + cy(pt[1]);
+      }).join(", ") + ")";
+    }
+
     // The trailing LINES live in the SVG; we draw them by hand each frame.
     const svgWrap = document.getElementById("pageTrace");
     const svg = document.getElementById("pageTraceSvg");
@@ -7552,26 +7583,26 @@
       // keep the RIGHT/BOTTOM complement instead, so the old page peels away
       // while the dots sweep top-left -> across the top -> down to bottom-right
       // (the same direction as going back to the cover).
+      // The fold runs from DOT B to DOT A; it bows deepest mid-turn.
+      const bend = Math.sin(Math.PI * prog);
+      const sgn  = peelAway ? 1 : -1;
+      const fold = curveEdge(bx, by, ax, B, sgn, bend);
       let poly;
       if (along <= vLen){
         if (peelAway){
           // Phase 1: keep the bottom-right triangle ahead of the sweep.
-          poly = "polygon(" + cx(mx(R)) + " " + cy(by) + ", " + cx(mx(R)) + " " + cy(B) + ", " +
-                 cx(mx(ax)) + " " + cy(B) + ")";
+          poly = toPoly(fold.concat([[R, B]]));
         } else {
           // Phase 1: only a triangle in the bottom-right is revealed.
-          poly = "polygon(" + cx(mx(L)) + " " + cy(T) + ", " + cx(mx(R)) + " " + cy(T) + ", " +
-                 cx(mx(R)) + " " + cy(by) + ", " + cx(mx(ax)) + " " + cy(B) + ", " + cx(mx(L)) + " " + cy(B) + ")";
+          poly = toPoly([[L, T], [R, T]].concat(fold).concat([[L, B]]));
         }
       } else {
         if (peelAway){
-          // Phase 2: keep the right chunk bounded by the dot-to-dot line.
-          poly = "polygon(" + cx(mx(bx)) + " " + cy(T) + ", " + cx(mx(R)) + " " + cy(T) + ", " +
-                 cx(mx(R)) + " " + cy(B) + ", " + cx(mx(ax)) + " " + cy(B) + ")";
+          // Phase 2: keep the right chunk bounded by the fold.
+          poly = toPoly([[R, T], [R, B]].concat(fold.slice().reverse()));
         } else {
-          // Phase 2: overlay is the left chunk bounded by the dot-to-dot line.
-          poly = "polygon(" + cx(mx(L)) + " " + cy(T) + ", " + cx(mx(bx)) + " " + cy(T) + ", " +
-                 cx(mx(ax)) + " " + cy(B) + ", " + cx(mx(L)) + " " + cy(B) + ")";
+          // Phase 2: overlay is the left chunk bounded by the fold.
+          poly = toPoly([[L, T]].concat(fold).concat([[L, B]]));
         }
       }
       overlay.style.clipPath = poly;
