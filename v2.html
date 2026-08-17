@@ -8,14 +8,17 @@
 <style>
 /* ==========================================================================
    MOWES v2 — Phase 1: the Cover, Today's MOWES, and Build MOWES. That's all.
-   Nothing else gets added here until Phase 1 feels obvious to a first-timer.
    Phase 2 = the initial set-up. Phase 3 = the run.
+
+   A ROUTINE IS ONE MOVE. "Arms, 15 reps, 4 sets" is a routine. "Run, 20
+   minutes" is another. You make a pile of them quickly, then hand out the days
+   of the week yourself — that's what builds your own schedule.
    ========================================================================== */
 
   :root{
-    --ink:      #2b3050;   /* main text */
-    --ink-soft: #6a7088;   /* quiet text */
-    --line:     #e2e6f7;   /* hairlines */
+    --ink:      #2b3050;
+    --ink-soft: #6a7088;
+    --line:     #e2e6f7;
     --card:     #ffffff;
     --bg:       #f2f4fd;
     --violet:   #5b6cff;
@@ -23,7 +26,7 @@
     --gold:     #F0A32E;
     --gold-ink: #B5760F;
     --good:     #1f9d64;
-    --bar-h:    68px;      /* bottom page bar */
+    --bar-h:    68px;
   }
   *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body{ margin:0; padding:0; }
@@ -48,28 +51,33 @@
     display:block; width:100%; border:0; border-radius:16px;
     padding:17px 18px; font-size:18px; font-weight:800; color:#fff;
     background: linear-gradient(135deg, var(--violet), var(--violet-2));
-    box-shadow: 0 6px 16px rgba(91,108,255,.30);
+    box-shadow: 0 6px 16px rgba(91,108,255,.30); margin-bottom:10px;
   }
   .big-btn.grey{ background:#eef0fa; color: var(--ink); box-shadow:none; }
-  .big-btn.gold{ background: linear-gradient(135deg,#FBC13D,var(--gold)); color:#4a3308; box-shadow:0 6px 16px rgba(240,163,46,.3); }
-  .big-btn[disabled]{ opacity:.45; }
   .row-btn{
     display:flex; align-items:center; gap:12px; width:100%; text-align:left;
     background: var(--card); border:1px solid var(--line); border-radius:16px;
-    padding:15px 16px; margin-bottom:10px;
+    padding:14px 16px; margin-bottom:9px;
   }
-  .row-btn .rb-emoji{ font-size:26px; line-height:1; }
+  .row-btn .rb-emoji{ font-size:24px; line-height:1; flex:0 0 auto; }
   .row-btn .rb-name{ font-weight:700; }
   .row-btn .rb-meta{ color: var(--ink-soft); font-size:13px; }
+  .row-btn .rb-days{ color: var(--violet); font-size:13px; font-weight:700; }
+  .row-btn .rb-nodays{ color: var(--gold-ink); font-size:13px; font-weight:700; }
   .empty{ text-align:center; color: var(--ink-soft); padding: 26px 10px; }
   .empty .em-emoji{ font-size:44px; display:block; margin-bottom:8px; }
-  .field{ display:block; margin-bottom:14px; }
-  .field .lab{ display:block; font-size:13px; font-weight:700; color: var(--ink-soft); margin-bottom:6px; }
-  .field input, .field select{
+  .field{ display:block; margin-bottom:16px; }
+  .field .lab{ display:block; font-size:13px; font-weight:700; color: var(--ink-soft); margin-bottom:7px; }
+  .field .lab .opt{ font-weight:600; color:#98a0bb; }
+  .field input{
     width:100%; font:inherit; padding:13px 14px; border-radius:13px;
     border:1px solid var(--line); background:#fbfcff; color:var(--ink);
   }
-  .field input:focus, .field select:focus{ outline:2px solid var(--violet); border-color:transparent; }
+  .field input:focus{ outline:2px solid var(--violet); border-color:transparent; }
+  .flash{
+    background:#eafaf1; border:1px solid #bfe8d2; color:#1b6b45;
+    border-radius:14px; padding:12px 14px; margin-bottom:12px; font-size:14.5px;
+  }
 
   /* ---------- the Cover ---------- */
   .cover{
@@ -79,7 +87,6 @@
     background: linear-gradient(180deg,#d3ddfb 0%,#dadcf6 55%,#d6def9 100%);
   }
   .cover.show{ display:flex; }
-  /* Shown as page 1 from the bottom bar, it sits below the bar instead of over it. */
   .cover.as-page{ z-index: 500; padding-bottom: calc(var(--bar-h) + 24px); }
   .cover-box{ max-width:360px; width:100%; text-align:center; display:flex; flex-direction:column; position:relative; }
   .c-mark{
@@ -107,7 +114,6 @@
   }
   .c-note{ font-size:12px; color:var(--ink-soft); margin:14px 0 0; }
   .c-note .wn-name{ font-weight:700; color:var(--gold-ink); }
-  /* Small clouds drifting across the sky behind everything. */
   .sky{ position:absolute; top:13%; left:0; right:0; height:44%; overflow:hidden; pointer-events:none; z-index:1; }
   .sky span{ position:absolute; left:0; will-change:transform; }
   .sky svg{ display:block; opacity:.75; }
@@ -133,47 +139,61 @@
   .bar button.on{ color: var(--violet); }
 
   /* ---------- Today's MOWES ---------- */
-  .today-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:14px; }
-  .today-date{ color:var(--ink-soft); font-size:13px; font-weight:700; }
-  .step{
+  .today-date{ color:var(--ink-soft); font-size:13px; font-weight:700; margin-bottom:14px; }
+  .move{
     display:flex; align-items:center; gap:13px;
     padding:14px 4px; border-bottom:1px solid var(--line);
   }
-  .step:last-child{ border-bottom:0; }
-  .step .s-tick{
-    flex:0 0 28px; height:28px; border-radius:50%;
+  .move:last-child{ border-bottom:0; }
+  .move .m-tick{
+    flex:0 0 30px; height:30px; border-radius:50%;
     border:2px solid var(--line); background:#fff;
-    display:flex; align-items:center; justify-content:center; font-size:15px; color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff;
   }
-  .step.done .s-tick{ background:var(--good); border-color:var(--good); }
-  .step.done .s-name{ text-decoration: line-through; color: var(--ink-soft); }
-  .step .s-name{ font-weight:700; }
-  .step .s-meta{ color:var(--ink-soft); font-size:13px; }
-  .step.now{ background:#f6f4ff; border-radius:12px; padding-left:10px; padding-right:10px; }
-  .progress{ height:8px; border-radius:99px; background:#eceffb; overflow:hidden; margin:4px 0 16px; }
+  .move.done .m-tick{ background:var(--good); border-color:var(--good); }
+  .move.done .m-name{ text-decoration: line-through; color: var(--ink-soft); }
+  .move .m-name{ font-weight:700; }
+  .move .m-meta{ color:var(--ink-soft); font-size:13px; }
+  .move.now{ background:#f6f4ff; border-radius:12px; padding-left:10px; padding-right:10px; }
+  .progress{ height:8px; border-radius:99px; background:#eceffb; overflow:hidden; margin:4px 0 10px; }
   .progress i{ display:block; height:100%; background:linear-gradient(90deg,var(--violet),var(--violet-2)); transition:width .3s ease; }
-  .done-note{ text-align:center; padding:8px 0 4px; }
+  .done-note{ text-align:center; padding:12px 0 4px; }
   .done-note .dn-emoji{ font-size:48px; display:block; }
   .done-note .dn-msg{ font-weight:800; font-size:19px; margin-top:4px; }
 
   /* ---------- Build MOWES ---------- */
-  .days{ display:flex; gap:6px; }
+  .days{ display:flex; gap:5px; }
   .days button{
     flex:1; border:1px solid var(--line); background:#fbfcff; color:var(--ink-soft);
-    border-radius:11px; padding:11px 0; font-size:13px; font-weight:800;
+    border-radius:11px; padding:12px 0; font-size:13px; font-weight:800;
   }
   .days button.on{ background:var(--violet); border-color:var(--violet); color:#fff; }
-  .step-edit{ display:flex; gap:8px; align-items:center; margin-bottom:9px; }
-  .step-edit input.se-name{ flex:1 1 auto; min-width:0; }
-  .step-edit input.se-num{ flex:0 0 66px; text-align:center; }
-  .step-edit select.se-kind{ flex:0 0 96px; }
-  .step-edit input, .step-edit select{
-    font:inherit; padding:11px 8px; border-radius:11px;
-    border:1px solid var(--line); background:#fbfcff; color:var(--ink); min-width:0;
+  /* Reps or minutes — one choice, two big targets. */
+  .seg{ display:flex; gap:8px; }
+  .seg button{
+    flex:1; border:1px solid var(--line); background:#fbfcff; color:var(--ink-soft);
+    border-radius:13px; padding:13px 0; font-size:15px; font-weight:800;
   }
-  .step-edit .se-x{ flex:0 0 32px; border:0; background:none; font-size:19px; color:var(--ink-soft); padding:0; }
-  .link-btn{ border:0; background:none; color:var(--violet); font-weight:700; padding:8px 0; }
+  .seg button.on{ background:var(--violet); border-color:var(--violet); color:#fff; }
+  .nums{ display:flex; gap:10px; }
+  .nums label{ flex:1; }
+  .nums .n-lab{ display:block; font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px; }
+  .nums input{
+    width:100%; font:inherit; font-size:19px; font-weight:700; text-align:center;
+    padding:12px 6px; border-radius:13px; border:1px solid var(--line);
+    background:#fbfcff; color:var(--ink);
+  }
+  .link-btn{ border:0; background:none; color:var(--violet); font-weight:700; padding:9px 0; display:block; margin:0 auto; }
   .danger{ color:#c0392b; }
+  /* The week you built for yourself. */
+  .week{ margin-top:6px; }
+  .week-row{ display:flex; gap:12px; padding:10px 2px; border-bottom:1px solid var(--line); font-size:14px; }
+  .week-row:last-child{ border-bottom:0; }
+  .week-row .wk-day{ flex:0 0 42px; font-weight:800; color:var(--ink-soft); }
+  .week-row.today .wk-day{ color:var(--violet); }
+  .week-row.today{ background:#f6f4ff; border-radius:10px; padding-left:8px; padding-right:8px; }
+  .week-row .wk-list{ flex:1; }
+  .week-row .wk-none{ color:#aab1c8; }
 
   /* ---------- support set (on every page) ---------- */
   .support{ display:flex; gap:10px; justify-content:center; margin:18px 0 6px; }
@@ -183,10 +203,7 @@
     border-radius:999px; padding:9px 15px; font-size:14px; font-weight:700;
   }
   .support button.liked{ color:#c0392b; border-color:#f3d3d3; background:#fff6f6; }
-  .trust{
-    text-align:center; color:var(--ink-soft); font-size:12.5px; line-height:1.6;
-    padding: 4px 6px 10px;
-  }
+  .trust{ text-align:center; color:var(--ink-soft); font-size:12.5px; line-height:1.6; padding:4px 6px 10px; }
   .trust b{ color: var(--ink); }
 </style>
 </head>
@@ -253,12 +270,8 @@
 
 <!-- ===================== 1st PAGE — TODAY'S MOWES ===================== -->
 <div class="wrap page" id="pageToday" hidden>
-  <div class="today-head">
-    <div>
-      <h1 class="h1">Today's MOWES</h1>
-      <div class="today-date" id="todayDate"></div>
-    </div>
-  </div>
+  <h1 class="h1">Today's MOWES</h1>
+  <div class="today-date" id="todayDate"></div>
   <div id="todayBody"></div>
   <div class="support-slot"></div>
 </div>
@@ -266,26 +279,32 @@
 <!-- ===================== 2nd PAGE — BUILD MOWES ===================== -->
 <div class="wrap page" id="pageBuild" hidden>
   <h1 class="h1">Build MOWES</h1>
-  <p class="sub">Make a routine, pick the days it happens. That's it.</p>
+  <p class="sub" id="buildSub">One move at a time. Days are up to you — pick them now or later.</p>
   <div id="buildBody"></div>
   <div class="support-slot"></div>
 </div>
 
 <!-- ===================== BOTTOM PAGE BAR ===================== -->
 <nav class="bar" id="bar">
-  <button onclick="go('cover')" id="tabCover"><span class="b-emoji">📖</span>Cover</button>
-  <button onclick="go('today')" id="tabToday"><span class="b-emoji">▶️</span>Today's</button>
-  <button onclick="go('build')" id="tabBuild"><span class="b-emoji">🛠️</span>Build</button>
+  <button onclick="tap('cover')" id="tabCover"><span class="b-emoji">📖</span>Cover</button>
+  <button onclick="tap('today')" id="tabToday"><span class="b-emoji">▶️</span>Today's</button>
+  <button onclick="tap('build')" id="tabBuild"><span class="b-emoji">🛠️</span>Build</button>
 </nav>
 
 <script>
 /* ==========================================================================
    Everything lives on this phone. No account, no server, nothing sent out.
+
+   A routine is ONE move:
+     { id, name, kind:"reps"|"time", reps, sets, minutes, days:[0..6] }
+   `days` may be empty — that's allowed. It just means "made, not scheduled yet".
    ========================================================================== */
 
 var KEY = "mowes2_v1";
-var DAY_NAMES  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-var DAY_SHORT  = ["S","M","T","W","T","F","S"];
+var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+// Two letters, not one — "S M T W T F S" gives two T's and two S's, and there
+// is no way to tell Tuesday from Thursday.
+var DAY_SHORT = ["Su","Mo","Tu","We","Th","Fr","Sa"];
 
 /* ---------- saved data ---------- */
 function blank(){ return { routines: [], done: {} }; }
@@ -299,13 +318,50 @@ function load(){
   if (!data || typeof data !== "object") data = blank();
   if (!Array.isArray(data.routines)) data.routines = [];
   if (!data.done || typeof data.done !== "object") data.done = {};
+  upgradeOldShape();
+}
+// An earlier build stored a routine as a folder of steps. Each of those steps is
+// really a routine of its own now, so split them out instead of losing them.
+function upgradeOldShape(){
+  var out = [], changed = false;
+  for (var i = 0; i < data.routines.length; i++){
+    var r = data.routines[i];
+    if (r && Array.isArray(r.steps)){
+      changed = true;
+      for (var s = 0; s < r.steps.length; s++){
+        var st = r.steps[s];
+        out.push({
+          id: newId(), name: st.name,
+          kind: st.kind === "time" ? "time" : "reps",
+          reps: st.kind === "time" ? 10 : (st.amount || 10),
+          sets: st.sets || 1,
+          minutes: st.kind === "time" ? (st.amount || 10) : 10,
+          days: (r.days || []).slice()
+        });
+      }
+    } else if (r){ out.push(r); }
+  }
+  if (changed){ data.routines = out; data.done = {}; save(); }
 }
 function save(){
   try { localStorage.setItem(KEY, JSON.stringify(data)); }
   catch(e){ /* a full or blocked storage shouldn't break the workout */ }
 }
-function newId(){ return "r" + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36); }
+function newId(){ return "r" + Date.now().toString(36) + Math.floor(Math.random()*1e6).toString(36); }
 function todayKey(d){ d = d || new Date(); return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate(); }
+
+/* How a move reads out loud: "4 sets × 15 reps" or "20 minutes". */
+function moveMeta(r){
+  if (r.kind === "time") return r.minutes + (r.minutes == 1 ? " minute" : " minutes");
+  var reps = r.reps + (r.reps == 1 ? " rep" : " reps");
+  return (r.sets > 1) ? (r.sets + " sets × " + reps) : reps;
+}
+function daysText(r){
+  var d = (r.days || []).slice().sort(function(a,b){ return a-b; });
+  if (!d.length) return "";
+  if (d.length === 7) return "Every day";
+  return d.map(function(x){ return DAY_NAMES[x].slice(0,3); }).join(", ");
+}
 
 /* ---------- page switching ---------- */
 var current = "cover";
@@ -313,7 +369,6 @@ var current = "cover";
 function go(where){
   current = where;
   var cover = document.getElementById("cover");
-  // From the bar the Cover behaves like page 1 — it sits above the bar, not over it.
   cover.classList.toggle("show", where === "cover");
   cover.classList.toggle("as-page", where === "cover");
   document.getElementById("pageToday").hidden = (where !== "today");
@@ -325,136 +380,160 @@ function go(where){
   if (where === "build") drawBuild();
   window.scrollTo(0, 0);
 }
-// The "Let's Workout" button on the opening Cover.
-function openApp(){
-  document.getElementById("cover").classList.remove("show");
-  go("today");
-}
+// The bottom bar always drops whatever you were editing, so "Build" takes you to
+// your list instead of trapping you in the editor.
+function tap(where){ editing = null; flash = ""; go(where); }
+function openApp(){ document.getElementById("cover").classList.remove("show"); go("today"); }
 
 /* ---------- 1st page: Today's MOWES ---------- */
-function routineForToday(){
+function routinesForToday(){
   var wd = new Date().getDay();
-  for (var i = 0; i < data.routines.length; i++){
-    if ((data.routines[i].days || []).indexOf(wd) !== -1) return data.routines[i];
+  return data.routines.filter(function(r){ return (r.days || []).indexOf(wd) !== -1; });
+}
+// The next day this move comes around, so a save never looks like it vanished.
+function nextDayText(r){
+  var days = (r.days || []);
+  if (!days.length) return "";
+  var wd = new Date().getDay();
+  for (var i = 0; i < 7; i++){
+    var d = (wd + i) % 7;
+    if (days.indexOf(d) !== -1) return (i === 0) ? "today" : (i === 1 ? "tomorrow" : DAY_NAMES[d]);
   }
-  return null;
+  return "";
 }
 function doneList(){
   var k = todayKey();
   if (!Array.isArray(data.done[k])) data.done[k] = [];
   return data.done[k];
 }
-function stepDone(routineId, index){
-  return doneList().indexOf(routineId + "#" + index) !== -1;
-}
-function toggleStep(routineId, index){
-  var list = doneList(), tag = routineId + "#" + index, at = list.indexOf(tag);
-  if (at === -1) list.push(tag); else list.splice(at, 1);
+function isDone(id){ return doneList().indexOf(id) !== -1; }
+function toggleDone(id){
+  var list = doneList(), at = list.indexOf(id);
+  if (at === -1) list.push(id); else list.splice(at, 1);
   save(); drawToday();
-}
-function stepMeta(s){
-  if (s.kind === "time") return s.amount + (s.amount == 1 ? " minute" : " minutes");
-  var reps = s.amount + (s.amount == 1 ? " rep" : " reps");
-  return (s.sets > 1) ? (s.sets + " sets × " + reps) : reps;
 }
 
 function drawToday(){
   var now = new Date();
   document.getElementById("todayDate").textContent = DAY_NAMES[now.getDay()];
   var box = document.getElementById("todayBody");
-  var r = routineForToday();
+  var todays = routinesForToday();
 
   if (!data.routines.length){
     box.innerHTML =
       '<div class="card"><div class="empty">' +
         '<span class="em-emoji">👋</span>' +
-        '<b>Nothing here yet</b><br>Make your first routine and it will show up right here on its day.' +
-      '</div>' +
-      '<button class="big-btn" onclick="go(\'build\')">Build my first routine</button></div>';
+        '<b>Nothing here yet</b><br>Build a few moves, give them days, and they show up here.' +
+      '</div><button class="big-btn" onclick="tap(\'build\')">Build my first move</button></div>';
     return;
   }
-  if (!r){
+  if (!todays.length){
+    var soonest = "", unscheduled = 0;
+    for (var n = 0; n < data.routines.length; n++){
+      if (!(data.routines[n].days || []).length) unscheduled++;
+      else if (!soonest) soonest = nextDayText(data.routines[n]);
+    }
     box.innerHTML =
       '<div class="card"><div class="empty">' +
         '<span class="em-emoji">😌</span>' +
-        '<b>Rest day</b><br>Nothing planned for ' + DAY_NAMES[now.getDay()] + '. Rest counts too.' +
-      '</div>' +
-      '<button class="big-btn grey" onclick="go(\'build\')">Change my days</button></div>';
+        '<b>Rest day</b><br>Nothing set for ' + DAY_NAMES[now.getDay()] + '. Rest counts too.' +
+        (soonest ? '<br><br>Your next one is <b>' + esc(soonest) + '</b>.' : '') +
+        (unscheduled ? '<br><br>You have <b>' + unscheduled + '</b> move' + (unscheduled === 1 ? '' : 's') +
+                       ' with no days yet.' : '') +
+      '</div><button class="big-btn grey" onclick="tap(\'build\')">Pick my days</button></div>';
     return;
   }
 
-  var steps = r.steps || [];
   var doneCount = 0;
-  for (var i = 0; i < steps.length; i++) if (stepDone(r.id, i)) doneCount++;
-  var allDone = steps.length > 0 && doneCount === steps.length;
+  for (var i = 0; i < todays.length; i++) if (isDone(todays[i].id)) doneCount++;
+  var allDone = doneCount === todays.length;
+  var nextAt = -1;
+  for (var j = 0; j < todays.length; j++){ if (!isDone(todays[j].id)){ nextAt = j; break; } }
 
   var html = '<div class="card">';
-  html += '<div class="rb-name" style="font-size:19px;margin-bottom:2px">' + esc(r.name) + '</div>';
-  html += '<div class="rb-meta">' + doneCount + ' of ' + steps.length + ' done</div>';
-  html += '<div class="progress"><i style="width:' + (steps.length ? Math.round(doneCount/steps.length*100) : 0) + '%"></i></div>';
-
-  if (!steps.length){
-    html += '<div class="empty">This routine has no steps yet.</div>' +
-            '<button class="big-btn grey" onclick="editRoutine(\'' + r.id + '\')">Add steps</button>';
-  } else {
-    // The first step that isn't done is the one you're on.
-    var nextAt = -1;
-    for (var j = 0; j < steps.length; j++){ if (!stepDone(r.id, j)){ nextAt = j; break; } }
-    for (var k = 0; k < steps.length; k++){
-      var d = stepDone(r.id, k);
-      html += '<div class="step' + (d ? ' done' : '') + (k === nextAt ? ' now' : '') + '" onclick="toggleStep(\'' + r.id + '\',' + k + ')">' +
-                '<div class="s-tick">' + (d ? '✓' : '') + '</div>' +
-                '<div><div class="s-name">' + esc(steps[k].name) + '</div>' +
-                '<div class="s-meta">' + esc(stepMeta(steps[k])) + '</div></div>' +
-              '</div>';
-    }
-    if (allDone){
-      html += '<div class="done-note"><span class="dn-emoji">🎉</span>' +
-              '<div class="dn-msg">You did it.</div>' +
-              '<div class="rb-meta">That\'s ' + DAY_NAMES[now.getDay()] + ' handled.</div></div>';
-    }
+  html += '<div class="rb-meta">' + doneCount + ' of ' + todays.length + ' done</div>';
+  html += '<div class="progress"><i style="width:' + Math.round(doneCount/todays.length*100) + '%"></i></div>';
+  for (var k = 0; k < todays.length; k++){
+    var r = todays[k], d = isDone(r.id);
+    html += '<div class="move' + (d ? ' done' : '') + (k === nextAt ? ' now' : '') + '" onclick="toggleDone(\'' + r.id + '\')">' +
+              '<div class="m-tick">' + (d ? '✓' : '') + '</div>' +
+              '<div><div class="m-name">' + esc(r.name) + '</div>' +
+              '<div class="m-meta">' + esc(moveMeta(r)) + '</div></div>' +
+            '</div>';
+  }
+  if (allDone){
+    html += '<div class="done-note"><span class="dn-emoji">🎉</span>' +
+            '<div class="dn-msg">You did it.</div>' +
+            '<div class="rb-meta">That\'s ' + DAY_NAMES[now.getDay()] + ' handled.</div></div>';
   }
   html += '</div>';
   box.innerHTML = html;
 }
 
 /* ---------- 2nd page: Build MOWES ---------- */
-var editing = null;  // the routine being edited, or null when showing the list
+var editing = null;   // the move being made or changed, null when showing the list
+var flash = "";       // a one-time "saved" line above the list
 
 function drawBuild(){
   var box = document.getElementById("buildBody");
-  if (editing) { box.innerHTML = editorHtml(editing); return; }
+  var sub = document.getElementById("buildSub");
+  if (editing){
+    sub.textContent = editing.isNew ? "Name it, say how much, and save. Days are optional."
+                                    : "Change anything here, including the days.";
+    box.innerHTML = editorHtml(editing);
+    return;
+  }
+  sub.textContent = "One move at a time. Days are up to you — pick them now or later.";
 
   var html = "";
+  if (flash){ html += '<div class="flash">' + flash + '</div>'; flash = ""; }
+
   if (!data.routines.length){
     html += '<div class="card"><div class="empty">' +
               '<span class="em-emoji">🛠️</span>' +
-              '<b>No routines yet</b><br>A routine is just a name, a few moves, and the days you do it.' +
+              '<b>No moves yet</b><br>A move is one thing you do — "Arms, 15 reps, 4 sets" or "Run, 20 minutes".' +
             '</div></div>';
   } else {
     for (var i = 0; i < data.routines.length; i++){
-      var r = data.routines[i];
-      var days = (r.days || []).slice().sort().map(function(d){ return DAY_NAMES[d].slice(0,3); }).join(", ");
+      var r = data.routines[i], days = daysText(r);
       html += '<button class="row-btn" onclick="editRoutine(\'' + r.id + '\')">' +
-                '<span class="rb-emoji">📋</span>' +
+                '<span class="rb-emoji">' + (r.kind === "time" ? "⏱️" : "🔁") + '</span>' +
                 '<span><span class="rb-name">' + esc(r.name) + '</span><br>' +
-                '<span class="rb-meta">' + (r.steps || []).length + ' moves · ' + (days || 'no days picked') + '</span></span>' +
-              '</button>';
+                '<span class="rb-meta">' + esc(moveMeta(r)) + '</span><br>' +
+                (days ? '<span class="rb-days">' + esc(days) + '</span>'
+                      : '<span class="rb-nodays">No days yet — tap to pick</span>') +
+              '</span></button>';
     }
   }
-  html += '<button class="big-btn" onclick="newRoutine()">+ New routine</button>';
+  html += '<button class="big-btn" onclick="newRoutine()">+ New move</button>';
+  if (data.routines.length) html += weekHtml();
   box.innerHTML = html;
 }
 
+// Your week, exactly as you set it up.
+function weekHtml(){
+  var wd = new Date().getDay();
+  var html = '<div class="card"><div class="lab" style="font-size:13px;font-weight:700;color:var(--ink-soft);margin-bottom:4px">YOUR WEEK</div><div class="week">';
+  for (var d = 0; d < 7; d++){
+    var onDay = data.routines.filter(function(r){ return (r.days || []).indexOf(d) !== -1; });
+    html += '<div class="week-row' + (d === wd ? ' today' : '') + '">' +
+              '<div class="wk-day">' + DAY_SHORT[d] + '</div>' +
+              '<div class="wk-list">' +
+                (onDay.length ? onDay.map(function(r){ return esc(r.name); }).join(", ")
+                              : '<span class="wk-none">rest</span>') +
+              '</div></div>';
+  }
+  return html + '</div></div>';
+}
+
 function newRoutine(){
-  editing = { id: newId(), name: "", days: [], steps: [{ name:"", kind:"reps", amount:10, sets:1 }], isNew: true };
-  drawBuild();
+  editing = { id: newId(), name: "", kind: "reps", reps: 15, sets: 4, minutes: 20, days: [], isNew: true };
+  go("build");
 }
 function editRoutine(id){
   var r = data.routines.filter(function(x){ return x.id === id; })[0];
   if (!r) return;
-  // Work on a copy so backing out doesn't change anything.
-  editing = JSON.parse(JSON.stringify(r));
+  editing = JSON.parse(JSON.stringify(r));   // a copy, so backing out changes nothing
   editing.isNew = false;
   go("build");
 }
@@ -462,81 +541,95 @@ function editRoutine(id){
 function editorHtml(r){
   var html = '<div class="card">';
   html += '<label class="field"><span class="lab">Name it</span>' +
-          '<input id="edName" value="' + esc(r.name) + '" placeholder="Morning stretch" maxlength="40"></label>';
+          '<input id="edName" value="' + esc(r.name) + '" placeholder="Arms" maxlength="40" autocomplete="off"></label>';
 
-  html += '<div class="field"><span class="lab">Which days?</span><div class="days">';
+  html += '<div class="field"><span class="lab">How do you count it?</span><div class="seg">' +
+            '<button type="button" class="' + (r.kind === "reps" ? "on" : "") + '" onclick="setKind(\'reps\')">🔁 Reps</button>' +
+            '<button type="button" class="' + (r.kind === "time" ? "on" : "") + '" onclick="setKind(\'time\')">⏱️ Minutes</button>' +
+          '</div></div>';
+
+  if (r.kind === "reps"){
+    html += '<div class="field"><div class="nums">' +
+              '<label><span class="n-lab">Reps</span><input id="edReps" type="number" inputmode="numeric" min="1" max="999" value="' + r.reps + '"></label>' +
+              '<label><span class="n-lab">Sets</span><input id="edSets" type="number" inputmode="numeric" min="1" max="99" value="' + r.sets + '"></label>' +
+            '</div></div>';
+  } else {
+    html += '<div class="field"><div class="nums">' +
+              '<label><span class="n-lab">Minutes</span><input id="edMins" type="number" inputmode="numeric" min="1" max="999" value="' + r.minutes + '"></label>' +
+            '</div></div>';
+  }
+
+  html += '<div class="field"><span class="lab">Which days? <span class="opt">— optional, you can set these later</span></span><div class="days">';
   for (var d = 0; d < 7; d++){
     html += '<button type="button" class="' + ((r.days||[]).indexOf(d) !== -1 ? 'on' : '') + '" onclick="toggleDay(' + d + ')">' + DAY_SHORT[d] + '</button>';
   }
   html += '</div></div>';
 
-  html += '<div class="field"><span class="lab">The moves</span>';
-  for (var i = 0; i < r.steps.length; i++){
-    var s = r.steps[i];
-    html += '<div class="step-edit">' +
-              '<input class="se-name" placeholder="Push-ups" maxlength="40" value="' + esc(s.name) + '" oninput="setStep(' + i + ',\'name\',this.value)">' +
-              '<input class="se-num" type="number" min="1" max="999" value="' + (s.amount || 1) + '" oninput="setStep(' + i + ',\'amount\',this.value)">' +
-              '<select class="se-kind" onchange="setStep(' + i + ',\'kind\',this.value)">' +
-                '<option value="reps"' + (s.kind === "reps" ? " selected" : "") + '>reps</option>' +
-                '<option value="time"' + (s.kind === "time" ? " selected" : "") + '>minutes</option>' +
-              '</select>' +
-              '<button type="button" class="se-x" onclick="removeStep(' + i + ')" aria-label="Remove">✕</button>' +
-            '</div>';
+  if (r.isNew){
+    // Making a pile of moves in one sitting is the normal thing to do, so the
+    // button that keeps you going is the big one.
+    html += '<button class="big-btn" onclick="saveRoutine(true)">Save &amp; add another</button>';
+    html += '<button class="big-btn grey" onclick="saveRoutine(false)">Save &amp; done</button>';
+  } else {
+    html += '<button class="big-btn" onclick="saveRoutine(false)">Save</button>';
   }
-  html += '<button type="button" class="link-btn" onclick="addStep()">+ Add another move</button></div>';
-
-  html += '<button class="big-btn" onclick="saveRoutine()">Save</button>';
-  html += '<button class="link-btn" style="display:block;margin:10px auto 0" onclick="cancelEdit()">Back without saving</button>';
-  if (!r.isNew){
-    html += '<button class="link-btn danger" style="display:block;margin:2px auto 0" onclick="deleteRoutine()">Delete this routine</button>';
-  }
+  html += '<button class="link-btn" onclick="cancelEdit()">Back without saving</button>';
+  if (!r.isNew) html += '<button class="link-btn danger" onclick="deleteRoutine()">Delete this move</button>';
   html += '</div>';
   return html;
 }
 
-/* Editor actions. Each one keeps what's typed on screen, then redraws. */
-function grabName(){
-  var el = document.getElementById("edName");
-  if (el && editing) editing.name = el.value;
+/* Pull whatever is typed on screen into memory before any redraw. */
+function grabFields(){
+  if (!editing) return;
+  var n = document.getElementById("edName");   if (n) editing.name = n.value;
+  var rp = document.getElementById("edReps");  if (rp) editing.reps = clampNum(rp.value, 1, 999, editing.reps);
+  var st = document.getElementById("edSets");  if (st) editing.sets = clampNum(st.value, 1, 99, editing.sets);
+  var mn = document.getElementById("edMins");  if (mn) editing.minutes = clampNum(mn.value, 1, 999, editing.minutes);
 }
+function clampNum(v, lo, hi, fallback){
+  var n = parseInt(v, 10);
+  if (isNaN(n)) return fallback;
+  return Math.min(hi, Math.max(lo, n));
+}
+function setKind(kind){ grabFields(); editing.kind = kind; drawBuild(); }
 function toggleDay(d){
-  grabName();
+  grabFields();
   var at = editing.days.indexOf(d);
   if (at === -1) editing.days.push(d); else editing.days.splice(at, 1);
   drawBuild();
 }
-function setStep(i, field, value){
-  // Typing shouldn't redraw — that would steal the cursor mid-word.
-  if (!editing.steps[i]) return;
-  editing.steps[i][field] = (field === "amount") ? Math.max(1, parseInt(value, 10) || 1) : value;
-}
-function addStep(){
-  grabName();
-  editing.steps.push({ name:"", kind:"reps", amount:10, sets:1 });
-  drawBuild();
-}
-function removeStep(i){
-  grabName();
-  editing.steps.splice(i, 1);
-  if (!editing.steps.length) editing.steps.push({ name:"", kind:"reps", amount:10, sets:1 });
-  drawBuild();
-}
 function cancelEdit(){ editing = null; drawBuild(); }
 
-function saveRoutine(){
-  grabName();
+function saveRoutine(addAnother){
+  grabFields();
   var name = (editing.name || "").trim();
-  if (!name){ alert("Give your routine a name first."); return; }
-  // Drop blank moves — an empty box means the person didn't want that row.
-  var steps = editing.steps.filter(function(s){ return (s.name || "").trim(); })
-                           .map(function(s){ return { name:s.name.trim(), kind:s.kind, amount:s.amount, sets:s.sets || 1 }; });
-  var saved = { id: editing.id, name: name, days: editing.days.slice(), steps: steps };
+  if (!name){ alert("Give this move a name first — like Arms, Run, or Walk."); return; }
+  var saved = {
+    id: editing.id, name: name, kind: editing.kind,
+    reps: editing.reps, sets: editing.sets, minutes: editing.minutes,
+    days: editing.days.slice()
+  };
   var at = -1;
   for (var i = 0; i < data.routines.length; i++) if (data.routines[i].id === saved.id) at = i;
   if (at === -1) data.routines.push(saved); else data.routines[at] = saved;
   save();
-  editing = null;
-  go("today");   // straight back to what you actually do
+
+  var when = nextDayText(saved);
+  flash = "✅ Saved. <b>" + esc(saved.name) + "</b> — " + esc(moveMeta(saved)) +
+          (when ? ", next on <b>" + esc(when) + "</b>." : ". No days picked yet — tap it when you're ready.");
+
+  if (addAnother){
+    // Straight into a fresh, empty one, keeping the same counting style so a run
+    // of similar moves is quick to type.
+    editing = { id: newId(), name: "", kind: saved.kind, reps: saved.reps, sets: saved.sets,
+                minutes: saved.minutes, days: [], isNew: true };
+    drawBuild();
+    var box = document.getElementById("edName"); if (box) box.focus();
+  } else {
+    editing = null;
+    go("build");
+  }
 }
 function deleteRoutine(){
   if (!confirm("Delete \"" + editing.name + "\"? This can't be undone.")) return;
@@ -549,8 +642,7 @@ function drawSupport(){
   var liked = localStorage.getItem("mowes2_liked") === "1";
   var html =
     '<div class="support">' +
-      '<button class="' + (liked ? 'liked' : '') + '" onclick="toggleLike(this)">' +
-        (liked ? '❤️ Liked' : '🤍 Like') + '</button>' +
+      '<button class="' + (liked ? 'liked' : '') + '" onclick="toggleLike()">' + (liked ? '❤️ Liked' : '🤍 Like') + '</button>' +
       '<a href="https://buymeacoffee.com/ermejia07c" target="_blank" rel="noopener">☕ Buy me a coffee</a>' +
     '</div>' +
     '<div class="trust">🔒 <b>No sign-up, no account, no email.</b><br>' +
@@ -558,7 +650,7 @@ function drawSupport(){
   var slots = document.querySelectorAll(".support-slot");
   for (var i = 0; i < slots.length; i++) slots[i].innerHTML = html;
 }
-function toggleLike(btn){
+function toggleLike(){
   var liked = localStorage.getItem("mowes2_liked") === "1";
   try { localStorage.setItem("mowes2_liked", liked ? "0" : "1"); } catch(e){}
   drawSupport();
