@@ -694,6 +694,14 @@ function editRoutine(id){
 
 function editorHtml(r){
   var html = '<div class="card">';
+
+  // Days sit above the name — pick when it happens, then say what it is.
+  html += '<div class="field"><span class="lab">Which days? <span class="opt">— optional, you can set these later</span></span><div class="days">';
+  for (var d = 0; d < 7; d++){
+    html += '<button type="button" class="' + ((r.days||[]).indexOf(d) !== -1 ? 'on' : '') + '" onclick="toggleDay(' + d + ')">' + DAY_SHORT[d] + '</button>';
+  }
+  html += '</div></div>';
+
   html += '<label class="field"><span class="lab">Name it</span>' +
           '<input id="edName" value="' + esc(r.name) + '" placeholder="Arms" maxlength="40" autocomplete="off"></label>';
 
@@ -712,12 +720,6 @@ function editorHtml(r){
               '<label><span class="n-lab">Minutes</span><input id="edMins" type="number" inputmode="numeric" min="1" max="999" value="' + r.minutes + '"></label>' +
             '</div></div>';
   }
-
-  html += '<div class="field"><span class="lab">Which days? <span class="opt">— optional, you can set these later</span></span><div class="days">';
-  for (var d = 0; d < 7; d++){
-    html += '<button type="button" class="' + ((r.days||[]).indexOf(d) !== -1 ? 'on' : '') + '" onclick="toggleDay(' + d + ')">' + DAY_SHORT[d] + '</button>';
-  }
-  html += '</div></div>';
 
   if (r.isNew){
     // Making a pile of routines in one sitting is the normal thing to do, so the
