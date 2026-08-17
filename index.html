@@ -2336,6 +2336,11 @@
   .lib-reset-btn { display: block; width: 100%; margin-top: 14px; padding: 10px; border: none; border-radius: 12px;
     background: transparent; color: #7a80a0; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline; }
   .lib-reset-btn:active { color: #4a52a0; }
+  /* Calls the unused drawers back onto the screen when you actually want one. */
+  .lib-more { display: block; width: 100%; margin-top: 12px; padding: 14px; cursor: pointer;
+    background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px;
+    color: #5b6cff; font-weight: 800; font-size: 15px; }
+  .lib-more:active { transform: scale(0.99); }
   .lib-group { font-size: 15px; font-weight: 800; color: #3a4699; margin: 20px 2px 8px; padding-bottom: 6px;
     border-bottom: 2px solid rgba(90,104,214,0.18); }
   .lib-group:first-child { margin-top: 4px; }
@@ -3516,7 +3521,6 @@
     <div class="library-inner">
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
       <div class="setup-title">📚 My Library</div>
-      <p class="lib-hint">Tap a drawer to open it and see its routines. Add new ones right inside the drawer.</p>
       <div id="libraryList"></div>
       <button class="lib-reset-btn" onclick="libResetToStarter()">↺ Start over with the starter routines</button>
       <div class="msupport-compact msupport-auto"></div>
@@ -6029,7 +6033,7 @@
   const SET_COL_INFO = {
     reps:     { toggle:"Reps/laps", ph:"reps", title:()=>"" },
     weight:   { toggle:"Weight",    ph:"wt",   title:(c)=> c.weightUnit==="kg" ? "Kls" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
-    distance: { toggle:"Dist",      ph:"dist", title:(c)=> c.distUnit==="km" ? "km" : "mi", unitKey:"distUnit", units:["mi","km"] },
+    distance: { toggle:"Dist",      ph:"dist", title:(c)=> c.distUnit==="km" ? "km" : (c.distUnit==="m" ? "m" : "mi"), unitKey:"distUnit", units:["mi","km","m"] },
     time:     { toggle:"Time",      ph:"min",  title:()=>"min" }
   };
   function activeCols(cfg){ return SET_COLS.filter(k => cfg.cols[k]); }
@@ -6297,12 +6301,14 @@
     captureDay(); saveData();
   }
 
-  // Tap the Weight/Distance title to switch its unit (Lbs↔Kls, mi↔km)
+  // Tap the Weight/Distance title to switch its unit — weight goes Lbs↔Kls,
+  // distance steps round mi → km → m → mi.
   function toggleColUnit(btn){
     const fieldEl = btn.closest(".detail-field");
     const cfg = fieldEl._repsCfg;
     const info = SET_COL_INFO[btn.dataset.col];
-    cfg[info.unitKey] = (cfg[info.unitKey] === info.units[1]) ? info.units[0] : info.units[1];
+    const at = info.units.indexOf(cfg[info.unitKey]);
+    cfg[info.unitKey] = info.units[(at + 1) % info.units.length];
     btn.textContent = info.title(cfg);
     updateSpeed(fieldEl);
     captureDay(); saveData();
@@ -8367,6 +8373,7 @@
   const LIBRARY_SEEDED_KEY = "mowes_library_seeded_v1";
   let libraryRoutines = [];
   let libOpenGroup = null; // which drawer (category) is open in My Library
+  let libShowEmpty = false; // are the empty drawers being shown right now?
   let libIdSeq = 0;
   // Each library routine gets a stable id so a weekly day can REFERENCE it (edit the
   // routine once in the Library → every day that uses it updates too).
@@ -8533,11 +8540,14 @@
     const buckets = {};
     LIB_GROUP_ORDER.forEach(g => { buckets[g] = []; });
     libraryRoutines.forEach(r => { const g = LIB_GROUP_META[r.group] ? r.group : "__mine__"; buckets[g].push(r); });
-    // One drawer per category. Real categories always show (so you can add into them);
-    // the "My own routines" drawer only shows when it actually holds something.
+    // Only drawers with something in them are on screen. An empty drawer is a
+    // row that does nothing, and four of them in a row is just clutter — they
+    // wait behind "＋ Another drawer" until you call for one.
+    const hidden = [];
     LIB_GROUP_ORDER.forEach(g => {
       const items = buckets[g];
       if (g === "__mine__" && !items.length) return;
+      if (!items.length && !libShowEmpty && libOpenGroup !== g){ hidden.push(g); return; }
       const meta = (g === "__mine__") ? { icon:"✍️", name:"My own routines" } : LIB_GROUP_META[g];
       const isOpen = (libOpenGroup === g);
       const drawer = document.createElement("div");
@@ -8582,6 +8592,22 @@
       drawer.appendChild(body);
       list.appendChild(drawer);
     });
+    // The drawers you're not using, one tap away.
+    if (hidden.length){
+      const more = document.createElement("button");
+      more.type = "button";
+      more.className = "lib-more";
+      more.textContent = libShowEmpty ? "‹ Fewer drawers" : "＋ Another drawer";
+      more.onclick = () => { libShowEmpty = !libShowEmpty; renderLibrary(); };
+      list.appendChild(more);
+    } else if (libShowEmpty){
+      const less = document.createElement("button");
+      less.type = "button";
+      less.className = "lib-more";
+      less.textContent = "‹ Fewer drawers";
+      less.onclick = () => { libShowEmpty = false; renderLibrary(); };
+      list.appendChild(less);
+    }
   }
   // Read the library cards' DOM back into libraryRoutines (mirrors captureDay).
   function captureLibrary(){
