@@ -1399,7 +1399,8 @@
   }
   /* Inline routine entry: one value per line (Sets / Reps / Weight / …) */
   .sets-inline { display: flex; flex-direction: column; gap: 8px; margin: 4px 2px 10px; }
-  .si-row { display: flex; align-items: center; gap: 10px; }
+  /* Wraps so a row with an extra button on it doesn't push off the screen. */
+  .si-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .si-label { flex: 0 0 78px; font-size: 14px; font-weight: 700; color: #3a4066; }
   .si-input {
     width: 72px; text-align: center; font-size: 16px; font-weight: 800; color: #3a4066;
@@ -1409,6 +1410,13 @@
   .si-input[data-role="count"] { color: #5b6cff; }
   .si-unit { font-size: 13px; font-weight: 700; color: #5b6cff; }
   button.si-unit { background: none; border: none; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0; }
+  /* "Measure it" sitting right next to the distance box, where you'd look. */
+  /* The Dist row can't fit label + box + unit + button on one line, so this
+     drops underneath it — lined up with the box it belongs to, not the label. */
+  .si-measure { flex: 0 1 auto; min-width: 0; margin-left: 88px; padding: 8px 14px; cursor: pointer;
+    border: 1px solid #d8dcf0; border-radius: 999px; background: #fff;
+    color: #5b6cff; font-size: 13px; font-weight: 800; white-space: nowrap; }
+  .si-measure:active { background: #f2f4ff; }
   /* Video line: a wide paste box + a ▶ open button */
   .si-video .si-input { width: auto; flex: 1 1 0; min-width: 0; text-align: left; font-size: 14px; font-weight: 600; }
   .si-play {
@@ -6097,7 +6105,12 @@
       const unit = info.unitKey
         ? `<button type="button" class="si-unit sh-unit-btn" data-col="${k}" onclick="toggleColUnit(this)" title="Switch unit">${titleText}</button>`
         : ((titleText && titleText !== info.toggle) ? `<span class="si-unit">${titleText}</span>` : "");
-      html += `<div class="si-row"><span class="si-label">${info.toggle}</span><input class="si-input set-inline" data-col="${k}" type="number" min="0" step="any" inputmode="decimal" placeholder="${info.ph}" value="${v}" oninput="onSetsInlineInput(this)">${unit}</div>`;
+      // The GPS measure sat at the very bottom of My Weekly Plan, under every
+      // routine — nobody found it. It belongs beside the box you'd type into.
+      const measure = (k === "distance")
+        ? `<button type="button" class="si-measure" onclick="openGps()" title="Measure it with GPS">📍 Measure</button>`
+        : "";
+      html += `<div class="si-row"><span class="si-label">${info.toggle}</span><input class="si-input set-inline" data-col="${k}" type="number" min="0" step="any" inputmode="decimal" placeholder="${info.ph}" value="${v}" oninput="onSetsInlineInput(this)">${unit}${measure}</div>`;
     });
     if (cfg.showVideo){
       // A how-to / follow-along / companion clip — paste any link, tap ▶ to open it.
