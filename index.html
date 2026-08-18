@@ -3551,7 +3551,7 @@
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
       <div class="setup-title">📚 My Library</div>
       <div id="libraryList"></div>
-      <button class="lib-reset-btn" onclick="libResetToStarter()">↺ Start over with the starter routines</button>
+      <button class="lib-reset-btn" onclick="libEmptyAll()">🗑️ Empty my Library</button>
       <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
@@ -8489,6 +8489,23 @@
     renderLibrary();
   }
   window.libResetToStarter = libResetToStarter;
+  // Clears the Library outright. Phones seeded before the starters were dropped
+  // still carry twenty routines nobody chose, and no button removed them — the
+  // only one there ADDED them back. This is how you get to "nothing I didn't
+  // choose" without ?fresh wiping the whole app.
+  function libEmptyAll(){
+    const n = getLibrary().length;
+    if (!n){ window.alert("Your Library is already empty."); return; }
+    if (!window.confirm("Remove all " + n + " routines from your Library?\n\nThis also clears your weekly plan. Your settings and everything else stay.")) return;
+    writeLibraryStore([]);
+    try { localStorage.removeItem(WEEK_SEL_KEY); } catch(e){}
+    localStorage.setItem(LIBRARY_SEEDED_KEY, "1");   // and don't pour the starters back
+    libOpenGroup = null; libShowEmpty = false;
+    loadLibrary();
+    renderLibrary();
+  }
+  window.libEmptyAll = libEmptyAll;
+
   // Draw the library cards (one per saved routine) into #libraryList.
   // Routines are grouped by TYPE; you choose each routine's group on its card.
   const LIB_GROUP_META = { weights:{ icon:"🏋️", name:"Weights" }, gym:{ icon:"🏢", name:"Gym" }, outdoor:{ icon:"🌳", name:"Outdoor" }, bodyonly:{ icon:"💪", name:"Body only" }, sports:{ icon:"⚽", name:"Sports" }, cardio:{ icon:"🏃", name:"Cardio" }, stretching:{ icon:"🧘", name:"Stretching" }, swimming:{ icon:"🏊", name:"Swimming" } };
@@ -8626,6 +8643,9 @@
       drawer.appendChild(body);
       list.appendChild(drawer);
     });
+    // Nothing to empty when it's already empty.
+    const emptyBtn = document.querySelector('#libraryOverlay .lib-reset-btn');
+    if (emptyBtn) emptyBtn.style.display = libraryRoutines.length ? "" : "none";
     // The drawers you're not using, one tap away.
     if (hidden.length){
       const more = document.createElement("button");
