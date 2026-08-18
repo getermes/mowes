@@ -2352,6 +2352,11 @@
     background: transparent; color: #7a80a0; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline; }
   .lib-reset-btn:active { color: #4a52a0; }
   /* Calls the unused drawers back onto the screen when you actually want one. */
+  /* Calls the rest of the library in under a day's picks. */
+  .wp-more { display: block; width: 100%; margin-top: 12px; padding: 14px; cursor: pointer;
+    background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px;
+    color: #5b6cff; font-weight: 800; font-size: 15px; }
+  .wp-more:active { transform: scale(0.99); }
   .lib-more { display: block; width: 100%; margin-top: 12px; padding: 14px; cursor: pointer;
     background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px;
     color: #5b6cff; font-weight: 800; font-size: 15px; }
@@ -8813,6 +8818,7 @@
   const WEEK_SEL_KEY = "mowes_week_selection_v1";
   const WEEK_MIGRATED_KEY = "mowes_week_migrated_v1";
   let weekPlanDay = todayKey;
+  let wpShowAll = false; // is the full library open under the day's picks?
   function loadWeekSel(){
     let o = {};
     try { o = JSON.parse(localStorage.getItem(WEEK_SEL_KEY) || "{}") || {}; } catch(e){ o = {}; }
@@ -8867,7 +8873,9 @@
       ? ''
       : '<div class="wp-note wp-rest">🌴 Rest day</div>';
     html += '<div class="wp-picks">';
-    lib.forEach(r => {
+    // A day shows what is ON it. The whole library used to be listed here every
+    // time — about twenty rows to tell you the two things you do on Monday.
+    (wpShowAll ? lib : lib.filter(r => picked.indexOf(r.id) >= 0)).forEach(r => {
       const on = picked.indexOf(r.id) >= 0;
       const sum = wpSummary(r);
       // Which days is this routine scheduled on? Show them only if it has any (else clean).
@@ -8882,14 +8890,18 @@
         + daysBadge + '</span></button>';
     });
     html += '</div>';
+    html += '<button class="wp-more" onclick="wpToggleAll()">'
+         + (wpShowAll ? '‹ Done' : '＋ Add') + '</button>';
     if (picked.length){
-      html += '<div class="wp-copy"><div class="wp-copy-title">📋 Copy ' + escapeHtml(full) + '’s plan to:</div><div class="wp-copy-days">';
+      html += '<div class="wp-copy"><div class="wp-copy-title">📋 Copy to:</div><div class="wp-copy-days">';
       days.forEach(d => { if (d === weekPlanDay) return; html += '<button class="wp-copy-day" onclick="wpCopyTo(\'' + d + '\')">' + d + '</button>'; });
       html += '</div><div class="wp-copy-msg" id="wpCopyMsg"></div></div>';
     }
     body.innerHTML = html;
   }
-  function wpSelectDay(d){ weekPlanDay = d; renderWeekPlan(); }
+  function wpSelectDay(d){ weekPlanDay = d; wpShowAll = false; renderWeekPlan(); }
+  function wpToggleAll(){ wpShowAll = !wpShowAll; renderWeekPlan(); }
+  window.wpToggleAll = wpToggleAll;
   function wpToggle(id){
     const sel = loadWeekSel();
     const a = sel[weekPlanDay];
