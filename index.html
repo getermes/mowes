@@ -7879,6 +7879,8 @@
   let onbStep = 0, onbAnswers = {}, onbSuggesting = false, onbEditMode = false, onbSingleEdit = null;
   // Which "door" is open on the two-door question: "type", "list", or neither.
   let onbDoor = null;
+  // On the last screen: null = the "what next?" choice, "suggest" = the list.
+  let onbNextChoice = null;
   let onbPicked = new Set(), onbExerciseList = [];
   const PICKED_EXERCISES_KEY = "mowes_picked_exercises_v1";
   function needsOnboarding(){ try { return !localStorage.getItem(ONBOARDING_KEY); } catch(e){ return false; } }
@@ -8665,12 +8667,20 @@
     // Nothing to empty when it's already empty.
     const emptyBtn = document.querySelector('#libraryOverlay .lib-reset-btn');
     if (emptyBtn) emptyBtn.style.display = libraryRoutines.length ? "" : "none";
-    // An empty Library is exactly when the guided start is worth offering again.
+    // An empty Library has to help you fill it. Adding your first exercise is the
+    // point of being here, so that leads; the guided start is the quieter offer
+    // underneath, for someone who would rather be asked than start typing.
     if (!libraryRoutines.length){
+      const add = document.createElement("button");
+      add.type = "button";
+      add.className = "lib-guide";
+      add.textContent = "＋ Add my first exercise";
+      add.onclick = function(){ libAddRoutineTo(""); };
+      list.appendChild(add);
       const guide = document.createElement("button");
       guide.type = "button";
-      guide.className = "lib-guide";
-      guide.textContent = "👋 Set up my week";
+      guide.className = "lib-more";
+      guide.textContent = "👋 Walk me through the set-up";
       guide.onclick = startGuidedSetup;
       list.appendChild(guide);
     }
@@ -10462,12 +10472,12 @@
     if (onbStep < ONB_QUESTIONS.length - 1){ onbStep++; onbDoor = null; renderOnbStep(); }
     else {
       onbSuggesting = true;
-      // Nothing is ticked for you. This screen used to pre-check a "smart starter
-      // set", so tapping straight through handed you a Library and a week full of
-      // exercises you never chose — you had only failed to untick them. Tick what
-      // you want; tick nothing and you land in an empty Library to build your own.
+      // Nothing is ticked for you, ever. And the last screen asks what you want to
+      // do next rather than putting a list in front of you — build your own, look
+      // at suggestions, or leave it for later.
       onbPicked = new Set();
-      renderOnbSuggestion();
+      onbNextChoice = null;
+      renderOnbNext();
     }
   }
   function onbPick(value){ // single-choice questions: pick and move on
@@ -10497,7 +10507,8 @@
   }
   function onbPrev(){
     if (onbSingleEdit){ cancelSingleEdit(); return; } // Back = cancel this one edit
-    if (onbSuggesting){ onbSuggesting = false; renderOnbStep(); return; }
+    if (onbSuggesting && onbNextChoice === "suggest"){ onbNextChoice = null; renderOnbNext(); return; }
+    if (onbSuggesting){ onbSuggesting = false; onbNextChoice = null; renderOnbStep(); return; }
     if (onbStep > 0){ onbStep--; onbDoor = null; renderOnbStep(); }
   }
   // Build a friendly, tailored "here's a good way to start" from the answers.
@@ -10552,6 +10563,42 @@
     const nextStep = "Add these on your Weight Routine page (flip there with the bottom bar), then tap “Let’s go! 💪” to start your day.";
     return { body: body, exercises: exercises, nextStep: nextStep };
   }
+  // The last screen of the set-up: three doors, no list.
+  function renderOnbNext(){
+    document.getElementById("onbEmoji").textContent = "👆";
+    document.getElementById("onbTitle").textContent = "What do you want to do next?";
+    const sub = document.getElementById("onbSub");
+    sub.textContent = ""; sub.style.display = "none";
+    const doors = [
+      ["📝", "Create my own exercises", "onbGoLibrary()"],
+      ["🔍", "See suggestions to choose from", "onbGoSuggestions()"],
+      ["🌙", "Not now — I'll set it up later", "onbSkipForNow()"]
+    ];
+    document.getElementById("onbChoices").innerHTML = doors.map(function(d){
+      return '<button type="button" class="onb-choice" onclick="' + d[2] + '">'
+           + '<span class="onb-c-emoji">' + d[0] + '</span>'
+           + '<span class="onb-c-text"><span class="onb-c-label">' + d[1] + '</span></span></button>';
+    }).join("");
+    const back = document.getElementById("onbBack");
+    if (back){ back.hidden = false; back.textContent = "‹ Back"; }
+    const prog = document.getElementById("onbProgress");
+    if (prog){ prog.innerHTML = ""; ONB_QUESTIONS.forEach(function(){ const d = document.createElement("div"); d.className = "onb-dot done"; prog.appendChild(d); }); }
+  }
+  // Keep the answers (they shape the suggestions) without picking any exercises.
+  function onbSaveAnswersOnly(){
+    try {
+      localStorage.setItem(ONB_ANSWERS_KEY, JSON.stringify(onbAnswers));
+      localStorage.setItem(ONBOARDING_KEY, "1");
+    } catch(e){}
+    onbSuggesting = false; onbNextChoice = null;
+    hideOnboarding();
+  }
+  function onbGoLibrary(){ onbSaveAnswersOnly(); openBuildPage(); openLibraryPage(); }
+  function onbSkipForNow(){ onbSaveAnswersOnly(); openSessionPage(); }
+  function onbGoSuggestions(){ onbNextChoice = "suggest"; renderOnbSuggestion(); }
+  window.onbGoLibrary = onbGoLibrary; window.onbSkipForNow = onbSkipForNow;
+  window.onbGoSuggestions = onbGoSuggestions;
+
   function renderOnbSuggestion(){
     const s = buildSuggestion(onbAnswers);
     document.getElementById("onbEmoji").textContent = "👆";
