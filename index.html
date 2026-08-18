@@ -582,17 +582,20 @@
     display: inline-block; color: #ff2d55; font-weight: 800;
     animation: usHeartbeat 1.4s ease-in-out infinite;
   }
+  /* A beat, not a bulge. This word sits inside a sentence and scaling does not
+     push its neighbours aside, so 1.32 grew MOWES straight over the words either
+     side of it — "HelpMOWEShelp". 1.1 still reads as a heartbeat and stays put. */
   @keyframes usHeartbeat {
     0%   { transform: scale(1); }
-    12%  { transform: scale(1.32); }
+    12%  { transform: scale(1.1); }
     24%  { transform: scale(1); }
-    36%  { transform: scale(1.32); }
+    36%  { transform: scale(1.1); }
     60%  { transform: scale(1); }
     100% { transform: scale(1); }
   }
   /* "Is MOWES coaching you?" — MOWES keeps its blue but beats like a heart,
      "coaching" is red to tie into the like heart. */
-  .mowes-beat { display: inline-block; font-weight: 800; animation: usHeartbeat 1.4s ease-in-out infinite; }
+  .mowes-beat { display: inline-block; font-weight: 800; margin: 0 3px; animation: usHeartbeat 1.4s ease-in-out infinite; }
   /* "coaching" does the same curl-then-lift move MOWES does on the cover:
      it rests curled/arched, then straightens as it floats up. */
   /* An inline word has to stay in its sentence. mowesLift raises 34px and
@@ -2409,6 +2412,13 @@
   .build-tile-name { font-size: 18px; font-weight: 800; color: #2f3350; }
   .build-tile-desc { font-size: 13px; color: #7a80a0; margin-top: 2px; }
   .build-tile-arrow { flex: 0 0 auto; font-size: 26px; color: #b7bedd; font-weight: 700; }
+  /* Half tiles: stacked icon over name so the words fit, and no arrow —
+     there is no room for one and the card is obviously tappable. */
+  .build-pair { display: flex; gap: 12px; margin-top: 12px; }
+  .build-tile-half { flex: 1 1 0; min-width: 0; margin-top: 0; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 20px 10px; }
+  .build-tile-half .build-tile-icon { width: 46px; height: 46px; font-size: 27px; }
+  .build-tile-half .build-tile-name { font-size: 15px; line-height: 1.25; }
 
   /* My Weekly Plan — pick Library routines onto each day */
   .wp-days { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; }
@@ -3514,16 +3524,18 @@
         <div class="build-tile-text"><div class="build-tile-name">Workout Schedule</div></div>
         <div class="build-tile-arrow">›</div>
       </button>
-      <button class="build-tile" onclick="openLibraryPage()">
-        <div class="build-tile-icon">📚</div>
-        <div class="build-tile-text"><div class="build-tile-name">My Library</div></div>
-        <div class="build-tile-arrow">›</div>
-      </button>
-      <button class="build-tile" onclick="openShareProgram()">
-        <div class="build-tile-icon">📤</div>
-        <div class="build-tile-text"><div class="build-tile-name">Share this program</div><div class="build-tile-desc">Send your routines to someone as a link</div></div>
-        <div class="build-tile-arrow">›</div>
-      </button>
+      <!-- The two you visit now and then, paired side by side and smaller than
+           the week above them. Share sits next to the Library it sends. -->
+      <div class="build-pair">
+        <button class="build-tile build-tile-half" onclick="openLibraryPage()">
+          <div class="build-tile-icon">📚</div>
+          <div class="build-tile-name">My Library</div>
+        </button>
+        <button class="build-tile build-tile-half" onclick="openShareProgram()">
+          <div class="build-tile-icon">📤</div>
+          <div class="build-tile-name">Share this</div>
+        </button>
+      </div>
       <div id="buildSupport" class="msupport-compact"></div>
     </div>
   </div>
