@@ -9047,7 +9047,15 @@
   function leaveWeekPlanPage(){ const el = document.getElementById("weekPlanOverlay"); if (el) el.classList.remove("show"); }
   function weekPlanShownAsPage(){ const el = document.getElementById("weekPlanOverlay"); return !!(el && el.classList.contains("show")); }
   // Is this a PLANNED rest day? (You have a library, but picked nothing for this day.)
-  function isPlannedRestDay(day){ return getLibrary().length > 0 && (loadWeekSel()[day] || []).length === 0; }
+  // A rest day is one you CHOSE — this day is empty while other days have
+  // something. A week with nothing assigned anywhere isn't rest, it's a week
+  // you haven't set up yet, and saying "Rest Day" would put words in your mouth.
+  function isPlannedRestDay(day){
+    if (!getLibrary().length) return false;
+    const sel = loadWeekSel();
+    if ((sel[day] || []).length) return false;
+    return days.some(d => (sel[d] || []).length > 0);
+  }
   // One-time: move any routines the user already built on the old day-by-day plan into
   // the Library, and reference them in the new weekly picks — so nothing is lost.
   function ensureWeekMigrated(){
@@ -9383,12 +9391,11 @@
         if (ovr && ovr[id]) r = Object.assign({}, r, { details: ovr[id] });
         routineToSteps(r, "lib:" + id + ":" + ri).forEach(s => steps.push(s));
       });
-      // Fresh start: routines exist but the whole week is still unassigned. Rather than
-      // a dead "Nothing set yet" screen, drop in the ready starter so today runs. Once
-      // ANY day has picks, blank days are respected as the user's own rest days.
-      if (!steps.length && days.every(d => (sel[d] || []).length === 0)){
-        starterSessionSteps().forEach(s => steps.push(s));
-      }
+      // No starter workout gets dropped in here. It used to, on the reasoning that
+      // an unassigned week shouldn't show an empty screen — but that put exercises
+      // in front of Eugenio that he had never chosen anywhere, which is the one
+      // thing this app must not do. An unassigned day shows "Nothing set yet"
+      // with a ＋ Routines button, which is honest and one tap from fixing.
       return wrapWarmCool(steps);
     }
     // OLD model (no Library yet): build from the routine sheet pages; brand-new users
