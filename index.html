@@ -11161,7 +11161,11 @@
 
   // Brand-new device → start with the 5 starter routines (runs once; after all
   // definitions are initialized, so it's safe here at the end of startup).
-  try { seedStarterLibraryIfEmpty(); } catch(e){}
+  // The Library is NOT pre-filled any more. A new phone used to receive twenty
+  // starter routines nobody chose, which is why it looked full of other
+  // people's exercises. It now holds exactly what you ticked in the guided
+  // start plus whatever you add. "Start over with the starter routines" is
+  // still there for when you actually want them.
   try { var _gs = document.getElementById("goalsSupport"); if (_gs) _gs.innerHTML = supportSetHTML('Is <span class="mowes-beat">MOWES</span> ' + curlWordHTML('coaching', 'coach-red') + ' you?'); } catch(e){}
   try { var _bs = document.getElementById("bodySupport"); if (_bs) _bs.innerHTML = supportSetHTML('Feeling the <span class="mowes-beat">MOWES</span> ' + curlWordHTML('change', 'coach-red') + '?'); } catch(e){}
   try { var _buildS = document.getElementById("buildSupport"); if (_buildS) _buildS.innerHTML = supportSetHTML('Help <span class="mowes-beat">MOWES</span> help ' + curlWordHTML('you', 'coach-red') + ' too!'); } catch(e){}
