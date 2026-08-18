@@ -2353,6 +2353,12 @@
   .lib-reset-btn:active { color: #4a52a0; }
   /* Calls the unused drawers back onto the screen when you actually want one. */
   /* Calls the rest of the library in under a day's picks. */
+  /* The way back into the guided start, offered where an empty Library makes
+     it useful. Its old door, the My Set-up page, is asleep. */
+  .lib-guide { display: block; width: 100%; margin-top: 12px; padding: 16px; cursor: pointer;
+    border: none; border-radius: 16px; color: #fff; font-weight: 800; font-size: 16px;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.25); }
+  .lib-guide:active { transform: scale(0.99); }
   .wp-more { display: block; width: 100%; margin-top: 12px; padding: 14px; cursor: pointer;
     background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px;
     color: #5b6cff; font-weight: 800; font-size: 15px; }
@@ -7871,6 +7877,14 @@
   let onbPicked = new Set(), onbExerciseList = [];
   const PICKED_EXERCISES_KEY = "mowes_picked_exercises_v1";
   function needsOnboarding(){ try { return !localStorage.getItem(ONBOARDING_KEY); } catch(e){ return false; } }
+  // Run the guided start again. The only door used to be the My Set-up page, and
+  // that page is asleep — so once you had done the intro once there was no way
+  // back to it. This is offered wherever an empty Library makes it useful.
+  function startGuidedSetup(){
+    try { document.querySelectorAll(".library-overlay.open, .overlay.open").forEach(function(el){ el.classList.remove("open"); }); } catch(e){}
+    showOnboarding();
+  }
+  window.startGuidedSetup = startGuidedSetup;
   function showOnboarding(){ onbStep = 0; onbAnswers = {}; onbSuggesting = false; onbEditMode = false; onbDoor = null; renderOnbStep(); document.getElementById("onboardingOverlay").classList.add("show"); }
   // Re-open the questions to EDIT saved answers (from the My Setup page), pre-filled.
   function editSetup(){
@@ -8646,6 +8660,15 @@
     // Nothing to empty when it's already empty.
     const emptyBtn = document.querySelector('#libraryOverlay .lib-reset-btn');
     if (emptyBtn) emptyBtn.style.display = libraryRoutines.length ? "" : "none";
+    // An empty Library is exactly when the guided start is worth offering again.
+    if (!libraryRoutines.length){
+      const guide = document.createElement("button");
+      guide.type = "button";
+      guide.className = "lib-guide";
+      guide.textContent = "👋 Set up my week";
+      guide.onclick = startGuidedSetup;
+      list.appendChild(guide);
+    }
     // The drawers you're not using, one tap away.
     if (hidden.length){
       const more = document.createElement("button");
@@ -9425,7 +9448,10 @@
     const lib = getLibrary();
     // NEW model: once you have routines in your Library, the day runs whatever you
     // PICKED for it in My Weekly Plan. A day with nothing picked = a rest day (no steps).
-    if (lib.length){
+    // Once the one-time migration has run, the Library IS the source — even when
+    // it is empty. Falling through to the old day-by-day sheets meant emptying
+    // your Library still left yesterday's routines on Today's.
+    if (lib.length || localStorage.getItem(WEEK_MIGRATED_KEY)){
       const sel = loadWeekSel();
       // "Just for today" tweaks only apply to the real today (the day you're actually on).
       const ovr = (sessionDayOffset === 0) ? todayOvrMap() : null;
@@ -9449,10 +9475,9 @@
       const week = all[currentWeekKey] || {};
       (week[day] || []).forEach((r, ri) => { routineToSteps(r, pg.id + ":" + ri).forEach(s => steps.push(s)); });
     });
-    if (!steps.length){
-      const starters = starterSessionSteps();
-      for (var k = 0; k < starters.length; k++) steps.push(starters[k]);
-    }
+    // The other starter injection, and the same answer: an empty Library means
+    // nothing has been chosen yet, so Today's says so and offers the guided
+    // start. It used to quietly fill the day with exercises nobody picked.
     return wrapWarmCool(steps);
   }
   function sessionStepDuration(st){
@@ -9790,6 +9815,9 @@
             nextBanner = '<button class="restday-next" onclick="sessionChangeDay(' + nw.off + ')">💪 See ' + escapeHtml(when) + '’s workout →</button>';
           }
         }
+        // With an empty Library there is nothing to add yet — the guided start is
+        // the useful offer, and its old door (My Set-up) is switched off.
+        const needsSetup = !getLibrary().length;
         // Emoji + title in the green card, plus the next-workout nudge on a rest day.
         list.innerHTML =
           '<div class="restday-card' + (rest ? '' : ' restday-plain') + '">' +
@@ -9798,6 +9826,7 @@
             nextBanner +
           '</div>' +
           // Below the card: the same two-square barbell — Settings ⚙️ + Add ＋ joined by a bar.
+          (needsSetup ? '<button class="lib-guide" onclick="startGuidedSetup()">👋 Set up my week</button>' : '') +
           '<div class="restday-actions">' +
             '<button class="sa-btn restday-gear" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings"><span class="sa-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span><span class="sa-lbl">Settings</span></button>' +
             '<span class="sa-bar"></span>' +
