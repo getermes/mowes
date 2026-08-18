@@ -595,7 +595,11 @@
   .mowes-beat { display: inline-block; font-weight: 800; animation: usHeartbeat 1.4s ease-in-out infinite; }
   /* "coaching" does the same curl-then-lift move MOWES does on the cover:
      it rests curled/arched, then straightens as it floats up. */
-  .curl-word { display: inline-block; transform-origin: center bottom; animation: mowesLift 3.2s ease-in-out infinite; }
+  /* An inline word has to stay in its sentence. mowesLift raises 34px and
+     tilts 10deg, which is right for the standalone logo but tears a word
+     like "you" clean out of the line it belongs to. */
+  @keyframes curlLift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  .curl-word { display: inline-block; transform-origin: center bottom; animation: curlLift 3.2s ease-in-out infinite; }
   .curl-word > span { display: inline-block; animation: curlLetter 3.2s ease-in-out infinite; }
   @keyframes curlLetter {
     0%, 100% { transform: translateY(var(--dy, 0)) rotate(var(--rot, 0deg)); }
@@ -3500,11 +3504,6 @@
   <div class="library-overlay" id="buildOverlay">
     <div class="library-inner">
       <div class="setup-title">🛠️ Build MOWES</div>
-      <button class="build-tile" onclick="openLibraryPage()">
-        <div class="build-tile-icon">📚</div>
-        <div class="build-tile-text"><div class="build-tile-name">My Library</div></div>
-        <div class="build-tile-arrow">›</div>
-      </button>
       <button class="build-tile" onclick="openWeekPlanPage()">
         <div class="build-tile-icon">🗓️</div>
         <div class="build-tile-text"><div class="build-tile-name">My Weekly Plan</div></div>
@@ -3513,6 +3512,11 @@
       <button class="build-tile" onclick="openSchedulePage()">
         <div class="build-tile-icon">⏰</div>
         <div class="build-tile-text"><div class="build-tile-name">Workout Schedule</div></div>
+        <div class="build-tile-arrow">›</div>
+      </button>
+      <button class="build-tile" onclick="openLibraryPage()">
+        <div class="build-tile-icon">📚</div>
+        <div class="build-tile-text"><div class="build-tile-name">My Library</div></div>
         <div class="build-tile-arrow">›</div>
       </button>
       <button class="build-tile" onclick="openShareProgram()">
