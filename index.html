@@ -10363,7 +10363,9 @@
     const cont = document.createElement("button");
     cont.className = "onb-go";
     cont.textContent = onbSingleEdit ? "Save ✓" : "Continue →";
-    cont.disabled = !picked.length;
+    // No lock here. Telling us your gear is a help, not a toll gate — skip it and
+    // buildSuggestion falls back to bodyweight, which anyone can do.
+
     cont.onclick = onbContinue;
     choices.appendChild(cont);
   }
@@ -10393,7 +10395,11 @@
   function onbContinue(){
     const q = ONB_QUESTIONS[onbStep];
     const arr = onbAnswers[q.key];
-    if (!(Array.isArray(arr) && arr.length)) return; // need at least one
+    // "What do you have to work out with?" is skippable — buildSuggestion falls
+    // back to bodyweight, so an empty answer still gives a real plan. The other
+    // multi questions still want an answer.
+    const mustAnswer = (q.key !== "equipment");
+    if (mustAnswer && !(Array.isArray(arr) && arr.length)) return;
     if (onbSingleEdit){ saveSingleEditAndReturn(); return; } // editing one answer → save & back
     onbAdvance();
   }
