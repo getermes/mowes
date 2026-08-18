@@ -4410,7 +4410,12 @@
     try { localStorage.setItem(sheetKeyFor("p_ex_walkrun"), JSON.stringify(rAll)); } catch(e){}
     try { localStorage.setItem("mowes_sample_plan_v1", "1"); } catch(e){}
   }
-  seedSamplePlan();
+  // seedSamplePlan() is NOT called any more. It wrote a full sample week — five
+  // weight days plus two run/walk days — into a brand-new phone, and the one-time
+  // migration then carried all of it into the Library. That is where the "data I
+  // did not choose" on Today's was coming from, after both starter injections and
+  // the pre-ticked set-up screen were already dealt with. The function is kept,
+  // asleep, in case a demo device ever wants it.
   loadAllWeeks();
 
   // Make sure this week exists. If it's a brand-new week, repeat last week's
@@ -10457,8 +10462,11 @@
     if (onbStep < ONB_QUESTIONS.length - 1){ onbStep++; onbDoor = null; renderOnbStep(); }
     else {
       onbSuggesting = true;
-      // Pre-check a smart, varied starter set — the user can change any of it.
-      onbPicked = new Set(buildSuggestion(onbAnswers).exercises);
+      // Nothing is ticked for you. This screen used to pre-check a "smart starter
+      // set", so tapping straight through handed you a Library and a week full of
+      // exercises you never chose — you had only failed to untick them. Tick what
+      // you want; tick nothing and you land in an empty Library to build your own.
+      onbPicked = new Set();
       renderOnbSuggestion();
     }
   }
