@@ -33,7 +33,7 @@
     flex: 1;
     padding: 0 24px 24px;
   }
-  /* Sticky header keeps the title + day bar visible while routines scroll */
+  /* Sticky header keeps the title + day bar visible while exercises scroll */
   .screen-top {
     position: sticky;
     top: 0;
@@ -228,22 +228,22 @@
   .screen.notes-mode .day-row,
   .screen.notes-mode .thought-card,
   .screen.notes-mode .thought-show,
-  .screen.notes-mode .routines,
+  .screen.notes-mode .exercises,
   .screen.notes-mode .history-btn,
   .screen.list-mode .day-row,
   .screen.list-mode .thought-card,
   .screen.list-mode .thought-show,
-  .screen.list-mode .routines,
+  .screen.list-mode .exercises,
   .screen.list-mode .history-btn,
   .screen.pics-mode .day-row,
   .screen.pics-mode .thought-card,
   .screen.pics-mode .thought-show,
-  .screen.pics-mode .routines,
+  .screen.pics-mode .exercises,
   .screen.pics-mode .history-btn,
   .screen.videos-mode .day-row,
   .screen.videos-mode .thought-card,
   .screen.videos-mode .thought-show,
-  .screen.videos-mode .routines,
+  .screen.videos-mode .exercises,
   .screen.videos-mode .history-btn { display: none !important; }
   .notes-view { display: none; margin-top: 8px; }
   .screen.notes-mode .notes-view { display: block; }
@@ -1220,8 +1220,8 @@
   }
   .day-pill.active .today-dot { background: #fff; }
 
-  /* Routine inputs below selected day */
-  .routines h3 {
+  /* Exercise inputs below selected day */
+  .exercises h3 {
     font-size: 16px;
     margin-bottom: 12px;
     color: #5b6cff;
@@ -1234,7 +1234,7 @@
     margin-bottom: 12px;
     transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   }
-  /* Light up the routine you're working on (typing in it or tapping its buttons)
+  /* Light up the exercise you're working on (typing in it or tapping its buttons)
      so it stands out from the rest — raised up, white, with a soft glow. */
   .routine-card:focus-within {
     background: #fff;
@@ -1290,7 +1290,7 @@
     cursor: pointer;
   }
   .routine-delete:active { transform: scale(0.92); }
-  /* Move a routine up or down to reorder it */
+  /* Move a exercise up or down to reorder it */
   .routine-move {
     flex: 0 0 auto;
     display: flex;
@@ -1404,7 +1404,7 @@
     color: #6a6f85;
     white-space: nowrap;
   }
-  /* Inline routine entry: one value per line (Sets / Reps / Weight / …) */
+  /* Inline exercise entry: one value per line (Sets / Reps / Weight / …) */
   .sets-inline { display: flex; flex-direction: column; gap: 8px; margin: 4px 2px 10px; }
   /* Wraps so a row with an extra button on it doesn't push off the screen. */
   .si-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -1510,7 +1510,7 @@
   .set-col-auto { background: #eef1fd !important; color: #5b6cff !important; }
   .set-col:focus { outline: none; border-color: #5b6cff; }
   .set-row.done .set-col { text-decoration: line-through; color: #aab; }
-  /* Rest Times section: Between Sets + After Routine */
+  /* Rest Times section: Between Sets + After Exercise */
   .rest-times { margin-top: 14px; padding: 12px 12px 4px; background: #f6f7fc; border-radius: 12px; }
   .rest-times-title { font-size: 13px; font-weight: 800; color: #3a4066; margin-bottom: 6px; }
   .rest-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
@@ -2334,7 +2334,7 @@
   .ach-verdict.behind { background: #fdf1e7; color: #b06a00; }
   .ach-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
 
-  /* My Library — build & keep your routines once (feeds My Weekly Plan) */
+  /* My Library — build & keep your exercises once (feeds My Weekly Plan) */
   .library-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .library-overlay.show { display: block; }
@@ -2386,12 +2386,12 @@
     background: rgba(255,255,255,0.55); color: #3a4699; font-size: 15px; font-weight: 700; cursor: pointer; }
   .lib-drawer-add:active { background: rgba(255,255,255,0.85); }
   .lib-empty-drawer { text-align: center; color: #9096b5; font-size: 13px; padding: 6px 4px 2px; }
-  /* Move-to-another-drawer: hidden until you tap "Move" on a routine. */
+  /* Move-to-another-drawer: hidden until you tap "Move" on a exercise. */
   .lib-move-toggle { margin: 8px 0 2px; padding: 5px 11px; border: 1px solid #e0e4f2; border-radius: 999px;
     background: #fff; color: #7a80a0; font-size: 12px; font-weight: 700; cursor: pointer; }
   .lib-groups { display: none; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
   .lib-groups.show { display: flex; }
-  /* Day-marks on a routine: tap the days it should pop (shared with My Weekly Plan). */
+  /* Day-marks on a exercise: tap the days it should pop (shared with My Weekly Plan). */
   .lib-days-label { font-size: 12px; font-weight: 700; color: #7a80a0; margin: 8px 0 5px; }
   .lib-days { display: flex; flex-wrap: wrap; gap: 5px; margin: 0 0 4px; }
   .lib-day { flex: 1 1 0; min-width: 38px; padding: 7px 4px; border: 1px solid #d3d8f0; border-radius: 10px;
@@ -2431,7 +2431,7 @@
   .build-tile-half .build-tile-icon { width: 46px; height: 46px; font-size: 27px; }
   .build-tile-half .build-tile-name { font-size: 15px; line-height: 1.25; }
 
-  /* My Weekly Plan — pick Library routines onto each day */
+  /* My Weekly Plan — pick Library exercises onto each day */
   .wp-days { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; }
   .wp-day { flex: 0 0 auto; min-width: 52px; padding: 8px 6px 6px; border: none; border-radius: 12px; background: #fff;
     color: #3c4066; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 6px rgba(60,64,102,0.08);
@@ -2515,7 +2515,7 @@
   .wp-pick-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
   .wp-pick-name { font-size: 16px; font-weight: 700; color: #2f3350; }
   .wp-pick-sum { font-size: 13px; color: #7a80a0; }
-  /* Which days this routine is scheduled on (only shown if it has any). The day you're
+  /* Which days this exercise is scheduled on (only shown if it has any). The day you're
      viewing is highlighted, so you can tell at a glance if it belongs on this day. */
   .wp-pick-days { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
   .wp-pd { font-size: 11px; font-weight: 800; color: #3a7a4a; background: #e7f6ea; border-radius: 6px; padding: 2px 6px; letter-spacing: .2px; }
@@ -2693,11 +2693,11 @@
   .session-step.s-main { background: #FFF8DA; }
   .session-step.s-cool { background: #EAF7F0; }
   .session-step.current { border: 2px solid #5b6cff; }
-  /* Finished routines live in the done-deck; when expanded they list plainly. */
+  /* Finished exercises live in the done-deck; when expanded they list plainly. */
   .session-step.done { opacity: 0.72; }
   .session-step.done .session-step-name { text-decoration: line-through; font-size: 13.5px; }
   .session-step.done .session-step-detail, .session-step.done .session-step-tools { display: none; }
-  /* The done "playing card" stack: one card on top, a thin edge per routine behind it. */
+  /* The done "playing card" stack: one card on top, a thin edge per exercise behind it. */
   .done-deck { position: relative; margin: 34px 0 16px; cursor: pointer; }
   .done-deck-top { position: relative; z-index: 20; display: flex; align-items: center; gap: 10px;
     background: linear-gradient(135deg, #FFE7A0, #FFD25C); border-radius: 12px; padding: 12px 14px; box-shadow: 0 5px 14px rgba(240,180,40,0.32); }
@@ -2710,7 +2710,7 @@
     color: #5b6cff; font-weight: 800; font-size: 13px; border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; cursor: pointer; }
   .session-step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
   .session-step-main { flex: 1 1 auto; min-width: 0; }
-  /* Tap-to-edit: the card's name area opens the routine in My Library. */
+  /* Tap-to-edit: the card's name area opens the exercise in My Library. */
   .session-step-main.tappable { cursor: pointer; border-radius: 8px; margin: -4px -6px; padding: 4px 6px; transition: background .15s; }
   .session-step-main.tappable:active { background: #eef1ff; }
   .session-step-edit { font-size: 12px; opacity: 0.5; margin-left: 3px; vertical-align: middle; }
@@ -2818,7 +2818,7 @@
   .celebrate-fb { display: inline-block; margin-top: 16px; font-size: 14px; font-weight: 700; color: #5b6cff; text-decoration: none; }
   .celebrate-fb:active { opacity: 0.6; }
   .celebrate-fbnote { margin-top: 6px; font-size: 11.5px; color: #9aa0b8; line-height: 1.4; }
-  /* Quick-edit routine modal (tap a card on Today's page). */
+  /* Quick-edit exercise modal (tap a card on Today's page). */
   .qedit-overlay { position: fixed; inset: 0; z-index: 10050; display: none; align-items: center; justify-content: center;
     background: rgba(30,34,60,0.55); padding: 18px; overflow-y: auto; }
   .qedit-overlay.show { display: flex; }
@@ -3045,7 +3045,7 @@
   .welcome-note .wn-name { color: #E0941A; font-weight: 700; }
   .welcome-note .wn-heart { font-style: normal; }
 
-  /* Page-border trace animation (cover -> Routines) */
+  /* Page-border trace animation (cover -> Exercises) */
   .page-trace {
     position: fixed; inset: 0; z-index: 9300; /* above the cover so the line is the visible divider */
     pointer-events: none; display: none;
@@ -3091,16 +3091,16 @@
   }
   .cover-overlay.show { display: flex; }
   /* "Opening like a curtain": the cover stays in place and is REVEALED AWAY
-     from the bottom up (your routines appear underneath), then the thin strip
+     from the bottom up (your exercises appear underneath), then the thin strip
      left at the top SLIDES off to the left. A glowing blue line rides the
      rising edge — that's the boundary between the two pages. */
-  /* OUT (cover -> routines): wipe up from the bottom, then slide the top strip left. */
+  /* OUT (cover -> exercises): wipe up from the bottom, then slide the top strip left. */
   @keyframes coverWipeOut {
     0%   { clip-path: inset(0 0 0% 0);  transform: translateX(0); }
     62%  { clip-path: inset(0 0 88% 0); transform: translateX(0); }
     100% { clip-path: inset(0 0 88% 0); transform: translateX(-115%); }
   }
-  /* IN (routines -> cover): exact reverse — strip slides in from the left, then drops down to fill. */
+  /* IN (exercises -> cover): exact reverse — strip slides in from the left, then drops down to fill. */
   @keyframes coverRevealIn {
     0%   { clip-path: inset(0 0 88% 0); transform: translateX(-115%); }
     38%  { clip-path: inset(0 0 88% 0); transform: translateX(0); }
@@ -3326,14 +3326,14 @@
         <button type="button" class="session-flank cooldown" id="sessionCooldownBtn" onclick="sessionToggleCooldown()">🧘 Cool-down</button>
       </div>
       <div id="sessionList"></div>
-      <!-- Two square buttons joined by a bar: Settings (tucks the pacing away) + Add a Routine -->
+      <!-- Two square buttons joined by a bar: Settings (tucks the pacing away) + Add a Exercise -->
       <div class="session-actions" id="sessionActions">
         <button class="sa-btn" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings">
           <span class="sa-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span><span class="sa-lbl">Settings</span>
         </button>
         <span class="sa-bar"></span>
-        <button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a routine" aria-label="Add a routine">
-          <span class="sa-ic">＋</span><span class="sa-lbl">Routines</span>
+        <button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a exercise" aria-label="Add a exercise">
+          <span class="sa-ic">＋</span><span class="sa-lbl">Exercises</span>
         </button>
       </div>
       <div class="session-settings">
@@ -3374,11 +3374,11 @@
     </div>
   </div>
 
-  <!-- Quick edit: tap a routine card on Today's page to tweak its numbers on the spot. -->
+  <!-- Quick edit: tap a exercise card on Today's page to tweak its numbers on the spot. -->
   <div class="qedit-overlay" id="qeditOverlay" onclick="if(event.target===this)qeditClose()">
     <div class="qedit-card">
       <div class="qedit-head">
-        <div class="qedit-title" id="qeditTitle">Edit routine</div>
+        <div class="qedit-title" id="qeditTitle">Edit exercise</div>
         <button class="qedit-x" onclick="qeditClose()" aria-label="Close">✕</button>
       </div>
       <div class="qedit-body" id="qeditBody"></div>
@@ -3397,12 +3397,12 @@
     </div>
   </div>
 
-  <!-- Bottom page bar: always there. Flip between pages (Today's Plan → routines → your other pages). -->
+  <!-- Bottom page bar: always there. Flip between pages (Today's Plan → exercises → your other pages). -->
   <div class="page-bar" id="pageBar">
     <div class="page-bar-strip" id="pageBarStrip"></div>
   </div>
 
-  <!-- Today's Workout: your real routine for today, step by step, check off as you go -->
+  <!-- Today's Workout: your real exercise for today, step by step, check off as you go -->
   <div class="workout-overlay" id="workoutOverlay">
     <div class="workout-inner">
       <div class="workout-head">
@@ -3551,7 +3551,7 @@
     </div>
   </div>
 
-  <!-- My Library: build & keep your exercise routines once, then use them in My Weekly Plan -->
+  <!-- My Library: build & keep your exercise exercises once, then use them in My Weekly Plan -->
   <div class="library-overlay" id="libraryOverlay">
     <div class="library-inner">
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
@@ -3562,7 +3562,7 @@
     </div>
   </div>
 
-  <!-- My Weekly Plan: pick which Library routines to do each day -->
+  <!-- My Weekly Plan: pick which Library exercises to do each day -->
   <div class="library-overlay" id="weekPlanOverlay">
     <div class="library-inner">
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
@@ -3757,7 +3757,7 @@
         </div>
       </div>
       <button class="cover-btn" onclick="openApp()">Open MOWES →</button>
-      <p class="cover-note">Opening your routines… or tap to go now.</p>
+      <p class="cover-note">Opening your exercises… or tap to go now.</p>
       <button type="button" class="help-open-btn" onclick="openHelp()">How to use MOWES ❓</button>
       <button type="button" class="help-open-btn" onclick="openMemberPage()">💛 Membership &amp; supporter codes</button>
       <div class="privacy-note">
@@ -3784,7 +3784,7 @@
   </div>
 
   <!-- Page-border "trace": two glowing dots draw the page outline when the
-       cover hands off to the Routines page. Bottom dot runs along the bottom
+       cover hands off to the Exercises page. Bottom dot runs along the bottom
        edge (slow); top dot runs up the right edge and across the top (fast).
        They start together at the bottom-right corner and finish together on
        the left side. -->
@@ -3846,20 +3846,20 @@
       </div>
 
       <!-- The thought of the day now lives only on the cover (tap "💭 Thought" up top) -->
-      <!-- Routine inputs for the selected day -->
-      <div class="routines">
+      <!-- Exercise inputs for the selected day -->
+      <div class="exercises">
         <div class="routines-header">
           <h3 id="selectedDayTitle">Monday</h3>
           <button class="copy-btn" onclick="toggleCopyPicker()">Copy to…</button>
         </div>
         <div class="copy-picker" id="copyPicker">
-          <div class="copy-picker-title">Copy this day's routines to:</div>
+          <div class="copy-picker-title">Copy this day's exercises to:</div>
           <div class="copy-picker-days" id="copyPickerDays"></div>
           <button class="copy-confirm" onclick="confirmCopy()">Copy</button>
           <div class="copy-msg" id="copyMsg"></div>
         </div>
         <div id="routineList"></div>
-        <button class="add-routine" onclick="addRoutine()">+ Add routine</button>
+        <button class="add-routine" onclick="addRoutine()">+ Add exercise</button>
         <button class="suggest-btn" onclick="openSuggestions()">💡 Beginner Exercise Suggestions</button>
         <button class="suggest-btn gps-open-btn" onclick="openGps()">📍 Measure a walk / run (GPS)</button>
         <p class="support-cta" style="text-align:center; font-size:15px; font-weight:700; color:#5b6cff; margin:60px 0 6px; padding-top:28px; border-top:1px solid #d3d8f2;"><span class="us-beat">Help us</span> keep <span class="mowes-anim"><span class="mL">M</span><span class="mO">O</span><span class="mW">W</span><span class="mE">E</span><span class="mS">S</span></span> free…</p>
@@ -3976,7 +3976,7 @@
           <div class="help-num">2</div>
           <div class="help-body">
             <div class="help-title">➕ Add an exercise</div>
-            <p>Tap <strong>+ Add routine</strong>, then type the name — like <em>Push-ups</em> or <em>Morning walk</em>.</p>
+            <p>Tap <strong>+ Add exercise</strong>, then type the name — like <em>Push-ups</em> or <em>Morning walk</em>.</p>
           </div>
         </div>
 
@@ -4103,7 +4103,7 @@
           <h2>💡 Beginner Suggestions</h2>
           <button class="close-btn" onclick="closeSuggestions()">&times;</button>
         </div>
-        <p class="suggest-intro">Simple, safe moves to get started — great for beginners, staying in shape, gentle therapy, or training at home. Tap one to see how, then add it to your routine.</p>
+        <p class="suggest-intro">Simple, safe moves to get started — great for beginners, staying in shape, gentle therapy, or training at home. Tap one to see how, then add it to your exercise.</p>
         <div id="suggestList"></div>
       </div>
     </div>
@@ -4125,7 +4125,7 @@
         <button class="gps-btn" id="gpsStartBtn" onclick="toggleGps()">▶ Start</button>
         <div class="gps-done-actions" id="gpsDoneActions" style="display:none;">
           <button class="gps-btn gps-btn-alt" onclick="resetGps()">↺ Again</button>
-          <button class="gps-btn" onclick="addGpsToRoutine()">＋ Add to my routine</button>
+          <button class="gps-btn" onclick="addGpsToRoutine()">＋ Add to my exercise</button>
         </div>
         <button type="button" class="gps-history-link" id="gpsHistoryLink" onclick="openGpsHistory()">🕘 Past runs</button>
       </div>
@@ -4171,7 +4171,7 @@
           <h2>💾 Backup &amp; Restore</h2>
           <button class="close-btn" onclick="closeBackup()">&times;</button>
         </div>
-        <p class="backup-intro">Everything in MOWES lives only on this phone. Save a backup file so your routines, notes, photos and history are safe — for example if you lose your phone or clear your browser.</p>
+        <p class="backup-intro">Everything in MOWES lives only on this phone. Save a backup file so your exercises, notes, photos and history are safe — for example if you lose your phone or clear your browser.</p>
         <button class="backup-btn backup-save" onclick="doBackupSave()">💾 Save a backup file</button>
         <p class="backup-sub" id="backupSaveMsg"></p>
         <div class="backup-divider"><span>or</span></div>
@@ -4194,14 +4194,14 @@
       </div>
     </div>
 
-    <!-- Share a program: turn your routines + weekly plan into a link/file to send someone -->
+    <!-- Share a program: turn your exercises + weekly plan into a link/file to send someone -->
     <div class="overlay" id="shareProgramOverlay">
       <div class="card">
         <div class="card-header">
           <h2>📤 Share this program</h2>
           <button class="close-btn" onclick="closeShareProgram()">&times;</button>
         </div>
-        <p class="backup-intro">This turns your routines + weekly plan into a link. Send it to anyone — they tap it and it loads into their MOWES, right on their phone. 🔒 Nothing goes through us.</p>
+        <p class="backup-intro">This turns your exercises + weekly plan into a link. Send it to anyone — they tap it and it loads into their MOWES, right on their phone. 🔒 Nothing goes through us.</p>
         <input type="text" id="shareProgramLink" class="share-link" readonly onclick="this.select()">
         <button class="backup-btn backup-save" id="shareProgramCopyBtn" onclick="copyShareProgram()">🔗 Copy link</button>
         <p class="backup-sub" id="shareProgramNote"></p>
@@ -4212,7 +4212,7 @@
         </div>
         <div class="backup-divider"><span>or</span></div>
         <button class="backup-btn backup-restore" onclick="saveProgramFile()">📁 Save as a file</button>
-        <div class="backup-privacy">🔒 The link/file holds only the routines — no personal data. Send it your way (message, email, a YouTube description).</div>
+        <div class="backup-privacy">🔒 The link/file holds only the exercises — no personal data. Send it your way (message, email, a YouTube description).</div>
       </div>
     </div>
 
@@ -4225,7 +4225,7 @@
         <p class="backup-intro" id="importProgramText"></p>
         <button class="backup-btn backup-save" onclick="confirmImportProgram()">✅ Add it to my MOWES</button>
         <button class="backup-btn backup-restore" onclick="cancelImportProgram()">Not now</button>
-        <div class="backup-privacy">🔒 This only ADDS the new routines — your own routines and plan stay exactly as they are.</div>
+        <div class="backup-privacy">🔒 This only ADDS the new exercises — your own exercises and plan stay exactly as they are.</div>
       </div>
     </div>
 
@@ -4301,7 +4301,7 @@
     };
   }
 
-  // A fresh week = 7 days, each starting with 1 blank routine
+  // A fresh week = 7 days, each starting with 1 blank exercise
   function blankWeek(){
     const w = {};
     days.forEach(d => { w[d] = [blankRoutine()]; });
@@ -4353,7 +4353,7 @@
   function currentPageIsSheet(){ const p = currentPage(); return !!(p && p.type === "sheet"); }
   function currentPageIsPics(){ const p = currentPage(); return !!(p && p.type === "pics"); }
   function currentPageIsVideos(){ const p = currentPage(); return !!(p && p.type === "videos"); }
-  function pageName(id){ const p = pages.find(x => x.id === id); return p ? p.name : "Weight Routine"; }
+  function pageName(id){ const p = pages.find(x => x.id === id); return p ? p.name : "Weight Exercise"; }
 
   let allWeeks = {};
   function saveData(){
@@ -4380,7 +4380,7 @@
   }
   // First run only: seed a realistic sample week (5 weight days basics + 2 run/walk
   // days) so a brand-new user opens the app to a working plan. Never clobbers a
-  // user who already has routines.
+  // user who already has exercises.
   function seedSamplePlan(){
     try { if (localStorage.getItem("mowes_sample_plan_v1")) return; } catch(e){ return; }
     let wAll = {}; try { wAll = JSON.parse(localStorage.getItem(WEEKS_KEY) || "{}") || {}; } catch(e){}
@@ -4470,10 +4470,10 @@
       if (raw) pages = JSON.parse(raw) || [];
     } catch(e){ pages = []; }
     if (!Array.isArray(pages) || !pages.length){
-      pages = [{ id:"default", type:"sheet", name:"Weight Routine" }];
+      pages = [{ id:"default", type:"sheet", name:"Weight Exercise" }];
     }
     if (!pages.some(p => p.id === "default")){
-      pages.unshift({ id:"default", type:"sheet", name:"Weight Routine" });
+      pages.unshift({ id:"default", type:"sheet", name:"Weight Exercise" });
     }
     // First run only: seed a few example pages so the tabs row clearly shows
     // more than one page — making "swipe to find / add your own pages" easy to
@@ -4503,13 +4503,13 @@
         if (gp && gp.type === "notes") gp.type = "list";
       }
     } catch(e){}
-    // Starter routine pages: make "Weight Routine" and "Walk & Running" the first
+    // Starter exercise pages: make "Weight Exercise" and "Walk & Running" the first
     // two buttons. One-time; renames the old default and adds the walking page.
     try {
       if (!localStorage.getItem("mowes_starter_routines_v1")){
         localStorage.setItem("mowes_starter_routines_v1", "1");
         const def = pages.find(p => p.id === "default");
-        if (def && def.name === "My Exercise Sheet") def.name = "Weight Routine";
+        if (def && def.name === "My Exercise Sheet") def.name = "Weight Exercise";
         if (!pages.some(p => p.id === "p_ex_walkrun")){
           const di = pages.findIndex(p => p.id === "default");
           pages.splice((di < 0 ? 0 : di) + 1, 0, { id:"p_ex_walkrun", type:"sheet", name:"Walk & Running" });
@@ -5014,14 +5014,14 @@
     window.scrollTo({ top:0, behavior:"smooth" });
   }
 
-  // ---- Bottom page bar: flip between pages (Today's Plan → routines → others) ----
+  // ---- Bottom page bar: flip between pages (Today's Plan → exercises → others) ----
   var appOpened = false; // becomes true once you've entered the workspace
   // LEAN VERSION switch: when true, the rest of the app is on hold — the bottom bar
   // shows ONLY the Cover + Today's Session, and Today's Session shows ONLY what the
-  // user picked in the guided start (plus Surprise me), not the sample routine pages.
+  // user picked in the guided start (plus Surprise me), not the sample exercise pages.
   //
   // Secret preview: add "?full" to the web address (e.g. .../mowes/?full) to see the
-  // WHOLE app — all pages + built routines — handy for deciding what to add back next.
+  // WHOLE app — all pages + built exercises — handy for deciding what to add back next.
   // The normal public link stays lean. To make the full app public, set LEAN_ON = false.
   const LEAN_ON = true;
   const FULL_PREVIEW = (function(){ try { return /(^|[?&#])full(\b|=)/i.test((location.search || "") + (location.hash || "")); } catch(e){ return false; } })();
@@ -5197,7 +5197,7 @@
   }
   window.pageBarStep = pageBarStep; window.goToStop = goToStop; window.openPlanPage = openPlanPage;
 
-  // ---- Today's Workout: your real routine for today, step by step ----
+  // ---- Today's Workout: your real exercise for today, step by step ----
   let workoutSteps = [];
   // Make sure a sheet page has this week materialised (copying last week's plan
   // with the checkmarks cleared, like the app does when you open a page).
@@ -5212,7 +5212,7 @@
     return all[currentWeekKey];
   }
   // The "done" state for guided-start picks is tracked per calendar day (they
-  // reset each day, like a routine's checkmarks).
+  // reset each day, like a exercise's checkmarks).
   function pickDoneToday(){
     let all = {};
     try { all = JSON.parse(localStorage.getItem("mowes_pick_done_v1") || "{}") || {}; } catch(e){}
@@ -5245,11 +5245,11 @@
         steps.push({ kind:"pick", name:name, groupKey:"__surprise__", groupTitle:"🎁 Today's surprise", rowLabel:name, detail:"", done: doneSet.has(name) });
       });
     }
-    // 2) The sets from the routines they've built for today (My Weekly Plan is on).
+    // 2) The sets from the exercises they've built for today (My Weekly Plan is on).
     if (!LEAN_MODE || PAGES_ON.weekly) pages.filter(p => p.type === "sheet").forEach(pg => {
       const week = ensureTodayWeek(pg.id);
-      const routines = (week && week[todayKey]) || [];
-      routines.forEach((r, ri) => {
+      const exercises = (week && week[todayKey]) || [];
+      exercises.forEach((r, ri) => {
         if (!r || !(r.name || "").trim()) return;
         const det = r.details || {};
         const reps = det.reps || {};
@@ -5346,7 +5346,7 @@
   }
   window.startWorkout = startWorkout; window.closeWorkout = closeWorkout; window.toggleWorkoutStep = toggleWorkoutStep;
 
-  // The two routine pages get their own tabs; every other page lives in the
+  // The two exercise pages get their own tabs; every other page lives in the
   // "More" dropdown (along with "Add page").
   const PINNED_PAGE_IDS = ["default", "p_ex_walkrun"];
   function pageIcon(type){ return type === "notes" ? "📝 " : type === "list" ? "🛒 " : type === "pics" ? "🖼️ " : type === "videos" ? "🎬 " : "📋 "; }
@@ -5364,7 +5364,7 @@
     wrap.innerHTML = "";
     wrap.style.display = "flex";
     let activeTab = null;
-    // The pinned routine pages, shown as their own tabs.
+    // The pinned exercise pages, shown as their own tabs.
     pages.filter(p => PINNED_PAGE_IDS.includes(p.id)).forEach(p => {
       const tab = document.createElement("button");
       tab.className = "page-tab" + (p.id === activePageId ? " active" : "");
@@ -5743,7 +5743,7 @@
     if (cover) cover.classList.remove("show", "reveal", "wipeout");
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     if (typeof centerToday === "function") centerToday();
-    // make sure at least one routine exists so its parts can be highlighted
+    // make sure at least one exercise exists so its parts can be highlighted
     if (!document.querySelector(".routine-input") && typeof addRoutine === "function") addRoutine();
     tourIdx = 0;
     document.getElementById("tourBlock").classList.add("on");
@@ -5839,10 +5839,10 @@
   function openHistoryDay(key, day){
     document.querySelectorAll(".hist-day").forEach(b => b.classList.toggle("active", b.dataset.day === day));
     const wk = allWeeks[key] || {};
-    const routines = (wk[day] || []).filter(r => !routineIsEmpty(r));
+    const exercises = (wk[day] || []).filter(r => !routineIsEmpty(r));
     const view = document.getElementById("histDayView");
-    view.innerHTML = routines.length
-      ? routines.map((r, i) => routineReadOnly(r, i + 1)).join("")
+    view.innerHTML = exercises.length
+      ? exercises.map((r, i) => routineReadOnly(r, i + 1)).join("")
       : '<p class="hist-empty">Nothing recorded for this day.</p>';
   }
 
@@ -5870,8 +5870,8 @@
     const routineCount = weekData[selectedDay].length;
     weekData[selectedDay].forEach((r, idx) => {
       // Safety net: older or partial saved data may be missing some detail
-      // fields (e.g. no "reps"). Fill any gaps from a blank routine so drawing
-      // a routine can never crash the whole app.
+      // fields (e.g. no "reps"). Fill any gaps from a blank exercise so drawing
+      // a exercise can never crash the whole app.
       const _def = blankRoutine();
       if (!r.details) r.details = _def.details;
       else { for (const k in _def.details){ if (r.details[k] == null) r.details[k] = _def.details[k]; } }
@@ -5889,7 +5889,7 @@
             <button class="move-btn"${isLast ? " disabled" : ""} title="Move down" onclick="moveRoutine(this,1)">▼</button>
           </div>
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
-          <button class="routine-delete" title="Delete this routine" onclick="deleteRoutine(this)">✕</button>
+          <button class="routine-delete" title="Delete this exercise" onclick="deleteRoutine(this)">✕</button>
         </div>
         <div class="detail-fields">
           ${fieldOrder.map(f => {
@@ -5911,7 +5911,7 @@
                   <span class="rest-unit">sec</span>
                 </div>
                 <div class="rest-row">
-                  <span class="rest-label">After Routine</span>
+                  <span class="rest-label">After Exercise</span>
                   <input class="rest-after-input" type="number" min="0" placeholder="0" inputmode="numeric">
                   <span class="rest-unit">sec</span>
                 </div>
@@ -5986,8 +5986,8 @@
 
   // Read the current day's DOM back into weekData
   function captureDay(){
-    if (libraryShownAsPage()){ captureLibrary(); return; } // the Library reuses the same routine card/handlers
-    if (!currentPageIsSheet()) return; // only exercise-sheet pages have routines to capture
+    if (libraryShownAsPage()){ captureLibrary(); return; } // the Library reuses the same exercise card/handlers
+    if (!currentPageIsSheet()) return; // only exercise-sheet pages have exercises to capture
     const cards = document.querySelectorAll("#routineList .routine-card");
     const arr = [];
     cards.forEach(card => {
@@ -6138,7 +6138,7 @@
         ? `<button type="button" class="si-unit sh-unit-btn" data-col="${k}" onclick="toggleColUnit(this)" title="Switch unit">${titleText}</button>`
         : ((titleText && titleText !== info.toggle) ? `<span class="si-unit">${titleText}</span>` : "");
       // The GPS measure sat at the very bottom of My Weekly Plan, under every
-      // routine — nobody found it. It belongs beside the box you'd type into.
+      // exercise — nobody found it. It belongs beside the box you'd type into.
       const measure = (k === "distance")
         ? `<button type="button" class="si-measure" onclick="openGps()" title="Measure it with GPS">📍 Measure</button>`
         : "";
@@ -6167,7 +6167,7 @@
     updateSetsSummary(fieldEl);
   }
   window.onSetsInlineInput = onSetsInlineInput;
-  // ADD button → build the full routine from the values, and show a confirmation.
+  // ADD button → build the full exercise from the values, and show a confirmation.
   function addBuiltSets(btn){
     const fieldEl = btn.closest(".detail-field");
     if (!fieldEl) return;
@@ -6844,7 +6844,7 @@
           head.onclick = () => row.classList.toggle("open");
           const body = document.createElement("div"); body.className = "suggest-body";
           const how = document.createElement("p"); how.className = "suggest-how"; how.textContent = ex.how;
-          const add = document.createElement("button"); add.type = "button"; add.className = "suggest-add"; add.textContent = "＋ Add to my routine";
+          const add = document.createElement("button"); add.type = "button"; add.className = "suggest-add"; add.textContent = "＋ Add to my exercise";
           add.onclick = () => {
             addSuggestionToRoutine(ex.name);
             const done = document.createElement("span"); done.className = "suggest-added"; done.textContent = "✓ Added!";
@@ -6861,10 +6861,10 @@
     document.getElementById("suggestOverlay").classList.add("open");
   }
   function closeSuggestions(){ document.getElementById("suggestOverlay").classList.remove("open"); }
-  // Drop a suggested exercise into today's routine (reuse a trailing empty row if there is one)
+  // Drop a suggested exercise into today's exercise (reuse a trailing empty row if there is one)
   function addSuggestionToRoutine(name){
     if (!currentPageIsSheet()){
-      // if somehow not on a workout page, hop to the main Weight Routine page first
+      // if somehow not on a workout page, hop to the main Weight Exercise page first
       switchToPage("default");
     }
     captureDay();
@@ -6940,7 +6940,7 @@
     document.getElementById("gpsDoneActions").style.display = "flex";
     const saved = recordGpsRun(); // remember every run with real distance
     gpsMsg(gpsDistanceInUnit() > 0
-      ? (saved ? "Nice work! Saved to your past runs. 🎉 Add it to a routine, or go again." : "Nice work! Add it to your routine, or go again.")
+      ? (saved ? "Nice work! Saved to your past runs. 🎉 Add it to a exercise, or go again." : "Nice work! Add it to your exercise, or go again.")
       : "No distance recorded — try again outside.");
   }
   // ---- Past runs history: remember every finished GPS run on this phone ----
@@ -7082,9 +7082,9 @@
   window.openBackup = openBackup; window.closeBackup = closeBackup;
   window.doBackupSave = doBackupSave; window.doBackupRestore = doBackupRestore;
 
-  // ---- Publish / load a PROGRAM (a trainer shares their routines with a client) ----
-  // A program = your Library routines + your Weekly Plan, packed into a link or file.
-  // Loading it ADDS to what's already there — it never wipes the person's own routines.
+  // ---- Publish / load a PROGRAM (a trainer shares their exercises with a client) ----
+  // A program = your Library exercises + your Weekly Plan, packed into a link or file.
+  // Loading it ADDS to what's already there — it never wipes the person's own exercises.
   function buildProgramPayload(){
     return { app:"MOWES", type:"mowes-program", version:1, savedAt:new Date().toISOString(),
              library: JSON.parse(JSON.stringify(getLibrary())), week: JSON.parse(JSON.stringify(loadWeekSel())) };
@@ -7121,7 +7121,7 @@
     }
   }
   function openShareProgram(){
-    if (!getLibrary().length){ alert("Build at least one routine in My Library first — then you can share it."); return; }
+    if (!getLibrary().length){ alert("Build at least one exercise in My Library first — then you can share it."); return; }
     const link = programShareLink();
     const inp = document.getElementById("shareProgramLink"); if (inp) inp.value = link;
     const note = document.getElementById("shareProgramNote");
@@ -7144,7 +7144,7 @@
     document.body.appendChild(a); a.click();
     setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(url); }, 1000);
   }
-  // Additive import: give the shared routines fresh ids, add them, and append their
+  // Additive import: give the shared exercises fresh ids, add them, and append their
   // day-assignments alongside whatever's already on each day. Nothing is removed.
   function importProgramPayload(payload){
     if (!(payload && payload.type === "mowes-program" && Array.isArray(payload.library))) return false;
@@ -7177,7 +7177,7 @@
     if (!(payload && payload.type === "mowes-program")) return;
     const count = (payload.library || []).length;
     const el = document.getElementById("importProgramText");
-    if (el) el.textContent = "Someone shared a workout program with you (" + count + " routine" + (count === 1 ? "" : "s") + "). Add it to your MOWES? Your own routines stay — this only adds.";
+    if (el) el.textContent = "Someone shared a workout program with you (" + count + " exercise" + (count === 1 ? "" : "s") + "). Add it to your MOWES? Your own exercises stay — this only adds.";
     _pendingProgram = payload;
     document.getElementById("importProgramOverlay").classList.add("open");
   }
@@ -7185,7 +7185,7 @@
     document.getElementById("importProgramOverlay").classList.remove("open");
     const p = _pendingProgram; _pendingProgram = null;
     if (!p) return;
-    if (importProgramPayload(p)){ alert("✅ Program added! You'll find the new routines in My Library and on your Weekly Plan."); location.reload(); }
+    if (importProgramPayload(p)){ alert("✅ Program added! You'll find the new exercises in My Library and on your Weekly Plan."); location.reload(); }
     else { alert("Sorry — that shared program couldn't be read."); }
   }
   function cancelImportProgram(){ document.getElementById("importProgramOverlay").classList.remove("open"); _pendingProgram = null; }
@@ -7297,7 +7297,7 @@
   window.openLapMeasure = openLapMeasure; window.closeLapMeasure = closeLapMeasure;
   window.pickStepSize = pickStepSize; window.recomputeLap = recomputeLap; window.useLapLength = useLapLength;
 
-  // Move a routine up (dir = -1) or down (dir = +1) to reorder the list
+  // Move a exercise up (dir = -1) or down (dir = +1) to reorder the list
   function moveRoutine(btn, dir){
     const card = btn.closest(".routine-card");
     const cards = [...document.querySelectorAll("#routineList .routine-card")];
@@ -7322,7 +7322,7 @@
     captureDay();
     const r = weekData[selectedDay][idx];
     // only ask if the card actually has something in it
-    if (!routineIsEmpty(r) && !confirm("Delete this routine? This can't be undone.")) return;
+    if (!routineIsEmpty(r) && !confirm("Delete this exercise? This can't be undone.")) return;
     weekData[selectedDay].splice(idx, 1);
     // always keep at least one card so the day is never empty
     if (weekData[selectedDay].length === 0) weekData[selectedDay].push(blankRoutine());
@@ -7481,7 +7481,7 @@
 
   // Cover page (shows every time) + first-time-only welcome (shows once, on top)
   const WELCOME_KEY = "mowes_welcome_seen_v1";
-  const COVER_AUTO_OPEN_MS = 2000; // shows the cover for ~2 seconds, then opens the routines
+  const COVER_AUTO_OPEN_MS = 2000; // shows the cover for ~2 seconds, then opens the exercises
   let coverTimer = null;
   function startCoverAutoOpen(){
     if (coverTimer) clearTimeout(coverTimer);
@@ -7492,7 +7492,7 @@
     const ov = document.getElementById("coverOverlay");
     if (typeof centerToday === "function") centerToday();
     // The two dots sweep the border; their moving line peels the cover away to
-    // reveal the routines underneath. playDotTrace hides the cover when it ends.
+    // reveal the exercises underneath. playDotTrace hides the cover when it ends.
     ov.classList.remove("reveal", "wipeout");
     appOpened = true;
     playDotTrace();
@@ -7777,7 +7777,7 @@
     });
   }
 
-  // Two glowing dots draw the page outline as the Routines page arrives.
+  // Two glowing dots draw the page outline as the Exercises page arrives.
   // Both start at the bottom-right corner: the BOTTOM dot runs along the bottom
   // edge (short path = slower feel), the TOP dot runs up the right edge then
   // across the top (long path = ~2.5x faster). Same duration, so they finish
@@ -7841,7 +7841,7 @@
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
     document.getElementById("coverThought").textContent = getTodaysThoughtText();
     // Going back a page: run the dot-trace in REVERSE so the dots sweep back to the
-    // bottom-right and the cover re-covers the Routines page.
+    // bottom-right and the cover re-covers the Exercises page.
     playDotTrace({ reverse: true });
   }
   window.showCover = showCover;
@@ -8419,8 +8419,8 @@
   window.rulesToggleMax = rulesToggleMax; window.rulesSetMaxMin = rulesSetMaxMin;
   window.rulesAddOwn = rulesAddOwn; window.rulesDeleteOwn = rulesDeleteOwn; window.rulesToggleOwn = rulesToggleOwn;
 
-  // ---- My Library: build & keep your routines once (STEP 1 of My Weekly Plan) ----
-  // A library routine is the SAME shape as a day routine (blankRoutine), so it can be
+  // ---- My Library: build & keep your exercises once (STEP 1 of My Weekly Plan) ----
+  // A library exercise is the SAME shape as a day exercise (blankRoutine), so it can be
   // dropped straight into a weekly day later. We reuse the exact routine-card + reps
   // form (renderSets / readRepsFromDom); the shared captureDay()/saveData() are routed
   // here while the Library overlay is open, so every set/pill/video handler just works.
@@ -8430,8 +8430,8 @@
   let libOpenGroup = null; // which drawer (category) is open in My Library
   let libShowEmpty = false; // are the empty drawers being shown right now?
   let libIdSeq = 0;
-  // Each library routine gets a stable id so a weekly day can REFERENCE it (edit the
-  // routine once in the Library → every day that uses it updates too).
+  // Each library exercise gets a stable id so a weekly day can REFERENCE it (edit the
+  // exercise once in the Library → every day that uses it updates too).
   function genLibId(){ libIdSeq++; return "r_" + Date.now().toString(36) + "_" + libIdSeq.toString(36) + Math.floor(Math.random()*1296).toString(36); }
   function readLibraryStore(){ try { const raw = localStorage.getItem(LIBRARY_KEY); const a = raw ? JSON.parse(raw) : []; return Array.isArray(a) ? a : []; } catch(e){ return []; } }
   function writeLibraryStore(arr){ try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(arr)); } catch(e){} }
@@ -8440,7 +8440,7 @@
   function getLibrary(){ const arr = readLibraryStore(); let ch = ensureLibIds(arr); if (normalizeLibGroups(arr)) ch = true; if (ch) writeLibraryStore(arr); return arr; }
   function loadLibrary(){ libraryRoutines = getLibrary(); }
   function saveLibrary(){ writeLibraryStore(libraryRoutines); }
-  // Ready-made starter routines, grouped by where you train (editable / deletable).
+  // Ready-made starter exercises, grouped by where you train (editable / deletable).
   function mkStarterRoutine(name, group, cols, first, showSets){
     const r = blankRoutine(); r.id = genLibId(); r.name = name; r.group = group;
     const reps = r.details.reps;
@@ -8479,7 +8479,7 @@
       ["Lunges",     { reps:true }, { count:3, reps:"12" }, true]
     ]
   };
-  // A ready-made interval routine: an ordered list of timed parts.
+  // A ready-made interval exercise: an ordered list of timed parts.
   function mkIntervalRoutine(name, group, segments){
     const r = blankRoutine(); r.id = genLibId(); r.name = name; r.group = group;
     r.details.reps.on = false;
@@ -8494,7 +8494,7 @@
     out.push(mkIntervalRoutine("Walk + Run", "outdoor", [["Walk", 10], ["Run", 20], ["Walk", 10], ["Run", 20]]));
     return out;
   }
-  // On a brand-new device (empty Library), start people off with the starter routines.
+  // On a brand-new device (empty Library), start people off with the starter exercises.
   function seedStarterLibraryIfEmpty(){
     if (localStorage.getItem(LIBRARY_SEEDED_KEY)) return;
     if (!readLibraryStore().length) writeLibraryStore(starterLibrary());
@@ -8502,7 +8502,7 @@
   }
   // "Start over" — replace the Library with fresh starters and clear the weekly picks.
   function libResetToStarter(){
-    if (!window.confirm("Replace your Library with the starter routines (grouped by type: Weights, Gym, Outdoor, Body only)?\n\nThis clears your current routines and your weekly picks so you can start fresh.")) return;
+    if (!window.confirm("Replace your Library with the starter exercises (grouped by type: Weights, Gym, Outdoor, Body only)?\n\nThis clears your current exercises and your weekly picks so you can start fresh.")) return;
     writeLibraryStore(starterLibrary());
     try { localStorage.removeItem(WEEK_SEL_KEY); } catch(e){}
     localStorage.setItem(LIBRARY_SEEDED_KEY, "1");
@@ -8511,13 +8511,13 @@
   }
   window.libResetToStarter = libResetToStarter;
   // Clears the Library outright. Phones seeded before the starters were dropped
-  // still carry twenty routines nobody chose, and no button removed them — the
+  // still carry twenty exercises nobody chose, and no button removed them — the
   // only one there ADDED them back. This is how you get to "nothing I didn't
   // choose" without ?fresh wiping the whole app.
   function libEmptyAll(){
     const n = getLibrary().length;
     if (!n){ window.alert("Your Library is already empty."); return; }
-    if (!window.confirm("Remove all " + n + " routines from your Library?\n\nThis also clears your weekly plan. Your settings and everything else stay.")) return;
+    if (!window.confirm("Remove all " + n + " exercises from your Library?\n\nThis also clears your weekly plan. Your settings and everything else stay.")) return;
     writeLibraryStore([]);
     try { localStorage.removeItem(WEEK_SEL_KEY); } catch(e){}
     localStorage.setItem(LIBRARY_SEEDED_KEY, "1");   // and don't pour the starters back
@@ -8527,11 +8527,11 @@
   }
   window.libEmptyAll = libEmptyAll;
 
-  // Draw the library cards (one per saved routine) into #libraryList.
-  // Routines are grouped by TYPE; you choose each routine's group on its card.
+  // Draw the library cards (one per saved exercise) into #libraryList.
+  // Exercises are grouped by TYPE; you choose each exercise's group on its card.
   const LIB_GROUP_META = { weights:{ icon:"🏋️", name:"Weights" }, gym:{ icon:"🏢", name:"Gym" }, outdoor:{ icon:"🌳", name:"Outdoor" }, bodyonly:{ icon:"💪", name:"Body only" }, sports:{ icon:"⚽", name:"Sports" }, cardio:{ icon:"🏃", name:"Cardio" }, stretching:{ icon:"🧘", name:"Stretching" }, swimming:{ icon:"🏊", name:"Swimming" } };
   const LIB_GROUP_ORDER = ["weights", "gym", "outdoor", "bodyonly", "sports", "cardio", "stretching", "swimming", "__mine__"];
-  // Old location-based groups → new type-based groups (one-time, for existing routines).
+  // Old location-based groups → new type-based groups (one-time, for existing exercises).
   const LIB_GROUP_REMAP = { home:"bodyonly", outdoors:"outdoor" };
   function buildLibCard(r, num, isFirst, isLast){
     const _def = blankRoutine();
@@ -8542,7 +8542,7 @@
     card.className = "routine-card";
     card.dataset.libId = r.id || (r.id = genLibId());
     card.dataset.libGroup = r.group || "";
-    // Which days is this routine marked to pop? (Shared with My Weekly Plan.)
+    // Which days is this exercise marked to pop? (Shared with My Weekly Plan.)
     const _sel = loadWeekSel();
     const dayOn = {};
     days.forEach(d => { dayOn[d] = (_sel[d] || []).indexOf(r.id) >= 0; });
@@ -8554,7 +8554,7 @@
             <button class="move-btn"${isLast ? " disabled" : ""} title="Move down" onclick="libMoveRoutine(this,1)">▼</button>
           </div>
           <input class="routine-input" type="text" placeholder="Exercise name (e.g. Push-ups)">
-          <button class="routine-delete" title="Delete this routine" onclick="libDeleteRoutine(this)">✕</button>
+          <button class="routine-delete" title="Delete this exercise" onclick="libDeleteRoutine(this)">✕</button>
         </div>
         <div class="lib-days-label">📅 Pops on these days:</div>
         <div class="lib-days">
@@ -8581,7 +8581,7 @@
                   <span class="rest-unit">sec</span>
                 </div>
                 <div class="rest-row">
-                  <span class="rest-label">After Routine</span>
+                  <span class="rest-label">After Exercise</span>
                   <input class="rest-after-input" type="number" min="0" placeholder="0" inputmode="numeric">
                   <span class="rest-unit">sec</span>
                 </div>
@@ -8608,7 +8608,7 @@
     list.querySelectorAll(".detail-field").forEach(stopRest);
     list.querySelectorAll(".interval-row").forEach(stopTimeRow);
     list.innerHTML = "";
-    // Bucket by group; ungrouped routines (the user's own) go under "My own routines".
+    // Bucket by group; ungrouped exercises (the user's own) go under "My own exercises".
     const buckets = {};
     LIB_GROUP_ORDER.forEach(g => { buckets[g] = []; });
     libraryRoutines.forEach(r => { const g = LIB_GROUP_META[r.group] ? r.group : "__mine__"; buckets[g].push(r); });
@@ -8620,7 +8620,7 @@
       const items = buckets[g];
       if (g === "__mine__" && !items.length) return;
       if (!items.length && !libShowEmpty && libOpenGroup !== g){ hidden.push(g); return; }
-      const meta = (g === "__mine__") ? { icon:"✍️", name:"My own routines" } : LIB_GROUP_META[g];
+      const meta = (g === "__mine__") ? { icon:"✍️", name:"My own exercises" } : LIB_GROUP_META[g];
       const isOpen = (libOpenGroup === g);
       const drawer = document.createElement("div");
       drawer.className = "lib-drawer" + (isOpen ? " open" : "");
@@ -8639,7 +8639,7 @@
       if (!items.length){
         const empty = document.createElement("div");
         empty.className = "lib-empty-drawer";
-        empty.textContent = "This drawer is empty — add your first routine below.";
+        empty.textContent = "This drawer is empty — add your first exercise below.";
         body.appendChild(empty);
       }
       items.forEach((r, i) => {
@@ -8658,7 +8658,7 @@
       const add = document.createElement("button");
       add.type = "button";
       add.className = "lib-drawer-add";
-      add.textContent = "＋ New routine in " + meta.name;
+      add.textContent = "＋ New exercise in " + meta.name;
       add.onclick = () => libAddRoutineTo(g === "__mine__" ? "" : g);
       body.appendChild(add);
       drawer.appendChild(body);
@@ -8715,7 +8715,7 @@
       const timeFe = card.querySelector('.detail-field[data-field="time"]');
       // Always capture BOTH the sets and the interval parts (they live in the card even
       // when hidden), so switching modes never loses the other one. Only the on-flags
-      // pick which one is the routine's active shape.
+      // pick which one is the exercise's active shape.
       if (repsFe){
         const rd = readRepsFromDom(repsFe);
         r.details.reps.on = (mode !== "intervals");
@@ -8745,7 +8745,7 @@
     });
     libraryRoutines = arr;
   }
-  // Choose which group a routine belongs to (Weights / Gym / Outdoor / Body only).
+  // Choose which group a exercise belongs to (Weights / Gym / Outdoor / Body only).
   function libSetGroup(btn, g){
     const card = btn.closest(".routine-card");
     if (!card) return;
@@ -8753,7 +8753,7 @@
     card.dataset.libGroup = g;
     libOpenGroup = g; // open the drawer it moved into, so the user sees where it went
     captureLibrary(); saveLibrary(); renderLibrary(); // re-render so it moves into that drawer
-    // Keep the routine the user just moved in view.
+    // Keep the exercise the user just moved in view.
     const moved = [...document.querySelectorAll("#libraryList .routine-card")].find(c => c.dataset.libId === id);
     if (moved) moved.scrollIntoView({ block:"center", behavior:"smooth" });
   }
@@ -8765,8 +8765,8 @@
     renderLibrary();
   }
   window.libToggleDrawer = libToggleDrawer;
-  // Mark/unmark which days a routine pops on. Shared with My Weekly Plan (same memory),
-  // so marking a day here makes the routine show that day in Today's Session too.
+  // Mark/unmark which days a exercise pops on. Shared with My Weekly Plan (same memory),
+  // so marking a day here makes the exercise show that day in Today's Session too.
   function libToggleDay(btn, day){
     const card = btn.closest(".routine-card");
     if (!card) return;
@@ -8779,7 +8779,7 @@
     saveWeekSel(sel);
   }
   window.libToggleDay = libToggleDay;
-  // Add a new routine straight into a given drawer (category). "" = My own routines.
+  // Add a new exercise straight into a given drawer (category). "" = My own exercises.
   function libAddRoutineTo(group){
     captureLibrary();
     const nr = blankRoutine(); nr.id = genLibId();
@@ -8792,7 +8792,7 @@
     if (card){ const nm = card.querySelector(".routine-input"); if (nm) nm.focus(); card.scrollIntoView({ block:"center", behavior:"smooth" }); }
   }
   window.libAddRoutineTo = libAddRoutineTo;
-  // Switch a routine card between "Repeat sets" and "Intervals (mix)" mode.
+  // Switch a exercise card between "Repeat sets" and "Intervals (mix)" mode.
   function libSetMode(btn, mode){
     const card = btn.closest(".routine-card");
     if (!card) return;
@@ -8817,7 +8817,7 @@
     libraryRoutines.push(nr);
     saveLibrary();
     renderLibrary();
-    // Focus the new routine's name box so Eugenio can start typing right away.
+    // Focus the new exercise's name box so Eugenio can start typing right away.
     const cards = document.querySelectorAll("#libraryList .routine-card");
     const last = cards[cards.length - 1];
     if (last){ const nm = last.querySelector(".routine-input"); if (nm) nm.focus(); last.scrollIntoView({ block:"center", behavior:"smooth" }); }
@@ -8829,7 +8829,7 @@
     const delId = libraryRoutines[idx] && libraryRoutines[idx].id;
     libraryRoutines.splice(idx, 1);
     saveLibrary();
-    // Drop this routine from any day that had it picked in My Weekly Plan.
+    // Drop this exercise from any day that had it picked in My Weekly Plan.
     if (delId){ const sel = loadWeekSel(); let ch = false; days.forEach(d => { const a = sel[d]; const j = a.indexOf(delId); if (j >= 0){ a.splice(j, 1); ch = true; } }); if (ch) saveWeekSel(sel); }
     renderLibrary();
   }
@@ -8869,8 +8869,8 @@
   window.libAddRoutine = libAddRoutine; window.libDeleteRoutine = libDeleteRoutine; window.libMoveRoutine = libMoveRoutine;
   window.openLibraryPage = openLibraryPage;
 
-  // ---- My Weekly Plan: pick which Library routines to do each day (STEP 2) ----
-  // A simple repeating weekly template: for each weekday you pick 1+ routines FROM the
+  // ---- My Weekly Plan: pick which Library exercises to do each day (STEP 2) ----
+  // A simple repeating weekly template: for each weekday you pick 1+ exercises FROM the
   // Library (by id). A day with none picked = a rest day 🌴. Today's Session then runs
   // whatever today's day has picked.
   const WEEK_SEL_KEY = "mowes_week_selection_v1";
@@ -8884,7 +8884,7 @@
     return o;
   }
   function saveWeekSel(sel){ try { localStorage.setItem(WEEK_SEL_KEY, JSON.stringify(sel)); } catch(e){} }
-  // A short "3 × 12 reps · 8 lbs" line describing a routine, for the pick list.
+  // A short "3 × 12 reps · 8 lbs" line describing a exercise, for the pick list.
   function wpSummary(r){
     const tm = (r.details && r.details.time) || {};
     if (tm.on && tm.rows){
@@ -8923,7 +8923,7 @@
     const picked = sel[weekPlanDay] || [];
     let html = '<div class="wp-dayhead">' + escapeHtml(full) + (weekPlanDay === todayKey ? ' <span class="wp-todaytag">Today</span>' : '') + '</div>';
     if (!lib.length){
-      html += '<div class="lib-empty">No routines yet.<br><br><button class="lib-add-btn" onclick="openLibraryPage()">📚 Go to My Library</button></div>';
+      html += '<div class="lib-empty">No exercises yet.<br><br><button class="lib-add-btn" onclick="openLibraryPage()">📚 Go to My Library</button></div>';
       body.innerHTML = html;
       return;
     }
@@ -8936,14 +8936,14 @@
     (wpShowAll ? lib : lib.filter(r => picked.indexOf(r.id) >= 0)).forEach(r => {
       const on = picked.indexOf(r.id) >= 0;
       const sum = wpSummary(r);
-      // Which days is this routine scheduled on? Show them only if it has any (else clean).
+      // Which days is this exercise scheduled on? Show them only if it has any (else clean).
       const schDays = days.filter(function(d){ return (sel[d] || []).indexOf(r.id) >= 0; });
       const daysBadge = schDays.length
         ? '<span class="wp-pick-days">' + schDays.map(function(d){ return '<span class="wp-pd' + (d === weekPlanDay ? ' cur' : '') + '">' + d.slice(0,2) + '</span>'; }).join('') + '</span>'
         : '';
       html += '<button class="wp-pick' + (on ? ' on' : '') + '" onclick="wpToggle(\'' + r.id + '\')">'
         + '<span class="wp-pick-check">' + (on ? '✓' : '＋') + '</span>'
-        + '<span class="wp-pick-main"><span class="wp-pick-name">' + escapeHtml(r.name || "Unnamed routine") + '</span>'
+        + '<span class="wp-pick-main"><span class="wp-pick-name">' + escapeHtml(r.name || "Unnamed exercise") + '</span>'
         + (sum ? '<span class="wp-pick-sum">' + escapeHtml(sum) + '</span>' : '')
         + daysBadge + '</span></button>';
     });
@@ -8988,9 +8988,9 @@
   // From Today's MOWES rest-day → jump to the picker on the day you're viewing.
   function sessionAddRoutine(){ openWeekPlanPage(sessionSelDay); }
   window.sessionAddRoutine = sessionAddRoutine;
-  // ---- Quick edit: tap a routine card on Today's page to tweak its numbers on the spot. ----
-  // "From now on" edits the saved routine; "Just for today" stores a one-day override that
-  // resets on its own tomorrow (Today's Session rebuilds from the saved routines each time).
+  // ---- Quick edit: tap a exercise card on Today's page to tweak its numbers on the spot. ----
+  // "From now on" edits the saved exercise; "Just for today" stores a one-day override that
+  // resets on its own tomorrow (Today's Session rebuilds from the saved exercises each time).
   const TODAY_OVR_KEY = "mowes_today_overrides_v1";
   function todayDateKey(){ const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
   function loadTodayOvr(){
@@ -9024,7 +9024,7 @@
     qeditScope = ovr ? "today" : "always";              // if today already has an override, start there
     qeditWorking = JSON.parse(JSON.stringify(ovr || r.details || {}));
     qeditMode = (qeditWorking.time && qeditWorking.time.on) ? "time" : "reps";
-    document.getElementById("qeditTitle").textContent = r.name || "Edit routine";
+    document.getElementById("qeditTitle").textContent = r.name || "Edit exercise";
     syncQeditScope();
     qeditRenderBody();
     document.getElementById("qeditOverlay").classList.add("show");
@@ -9090,8 +9090,8 @@
     document.querySelectorAll("#qeditOverlay .qedit-scope-btn").forEach(function(b){ b.classList.toggle("on", b.dataset.scope === qeditScope); });
     const hint = document.getElementById("qeditScopeHint");
     if (hint) hint.textContent = (qeditScope === "today")
-      ? "Only for today — tomorrow goes back to your saved routine."
-      : "Updates your saved routine, so every day uses these numbers.";
+      ? "Only for today — tomorrow goes back to your saved exercise."
+      : "Updates your saved exercise, so every day uses these numbers.";
   }
   function qeditSave(){
     qeditCollect();
@@ -9138,7 +9138,7 @@
     if ((sel[day] || []).length) return false;
     return days.some(d => (sel[d] || []).length > 0);
   }
-  // One-time: move any routines the user already built on the old day-by-day plan into
+  // One-time: move any exercises the user already built on the old day-by-day plan into
   // the Library, and reference them in the new weekly picks — so nothing is lost.
   function ensureWeekMigrated(){
     if (localStorage.getItem(WEEK_MIGRATED_KEY)) return;
@@ -9147,7 +9147,7 @@
       const sel = loadWeekSel();
       const hasContent = w => days.some(d => (w[d] || []).some(r => r && (r.name || "").trim()));
       let changed = false;
-      // Migrate EVERY routine sheet — the main one plus any extra sheet pages (e.g. the
+      // Migrate EVERY exercise sheet — the main one plus any extra sheet pages (e.g. the
       // Walk/Run page). Reading only the main sheet used to drop days that live on another
       // sheet (like the sample plan's Tue/Thu Run & Walk), leaving them as blank rest days.
       const sheetKeys = [];
@@ -9200,8 +9200,8 @@
   let sessionIdx = -1, sessionPhase = "work", sessionRemain = 0, sessionTimer = null, sessionLapDone = 0, sessionRestLong = false, sessionEndAt = 0;
   let sessionLastNowKey = ""; // tracks which step is spotlighted, so the zoom only plays on a change
   let sessionHalfShown = false, coachCloudTimer = null; // halfway coach-cloud push
-  let doneDeckOpen = false; // the done routines: collapsed playing-card stack vs. expanded list
-  // The finished routines as a "playing card" stack: top card fully shown, a thin
+  let doneDeckOpen = false; // the done exercises: collapsed playing-card stack vs. expanded list
+  // The finished exercises as a "playing card" stack: top card fully shown, a thin
   // edge-line peeking behind for each one under it. Always ~one card of space.
   function buildDoneDeck(list){
     const n = list.length, top = list[n - 1];
@@ -9412,13 +9412,13 @@
     });
     return out;
   }
-  // Turn ONE routine (Library or sheet shape — they're identical) into session steps.
+  // Turn ONE exercise (Library or sheet shape — they're identical) into session steps.
   function routineToSteps(r, rid){
     const out = [];
     if (!r || !(r.name || "").trim()) return out;
     const cat = exerciseCategory(r.name);
     const det = r.details || {}, reps = det.reps || {};
-    // Per-routine rest the user set: between its sets, and after the whole routine.
+    // Per-routine rest the user set: between its sets, and after the whole exercise.
     const restBetween = parseInt(reps.rest, 10) || 0, restAfter = parseInt(reps.restAfter, 10) || 0;
     const video = (reps.video || "").trim(); // how-to / follow-along / companion clip
     if (reps.on && reps.sets){
@@ -9461,11 +9461,11 @@
     const steps = [];
     ensureWeekMigrated();
     const lib = getLibrary();
-    // NEW model: once you have routines in your Library, the day runs whatever you
+    // NEW model: once you have exercises in your Library, the day runs whatever you
     // PICKED for it in My Weekly Plan. A day with nothing picked = a rest day (no steps).
     // Once the one-time migration has run, the Library IS the source — even when
     // it is empty. Falling through to the old day-by-day sheets meant emptying
-    // your Library still left yesterday's routines on Today's.
+    // your Library still left yesterday's exercises on Today's.
     if (lib.length || localStorage.getItem(WEEK_MIGRATED_KEY)){
       const sel = loadWeekSel();
       // "Just for today" tweaks only apply to the real today (the day you're actually on).
@@ -9480,10 +9480,10 @@
       // an unassigned week shouldn't show an empty screen — but that put exercises
       // in front of Eugenio that he had never chosen anywhere, which is the one
       // thing this app must not do. An unassigned day shows "Nothing set yet"
-      // with a ＋ Routines button, which is honest and one tap from fixing.
+      // with a ＋ Exercises button, which is honest and one tap from fixing.
       return wrapWarmCool(steps);
     }
-    // OLD model (no Library yet): build from the routine sheet pages; brand-new users
+    // OLD model (no Library yet): build from the exercise sheet pages; brand-new users
     // fall back to the ready-made guided-start starter session.
     if (!LEAN_MODE || PAGES_ON.weekly) pages.filter(p => p.type === "sheet").forEach(pg => {
       let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
@@ -9519,8 +9519,8 @@
     return m + "/" + da + "/" + d.getFullYear();
   }
   // Build the blue "now" area for the current step as an HTML string. It's dropped
-  // INTO the routine list at the current step's spot (done routines end up above it,
-  // not-yet-done routines below it), so the blue marker slides down as you finish.
+  // INTO the exercise list at the current step's spot (done exercises end up above it,
+  // not-yet-done exercises below it), so the blue marker slides down as you finish.
   function sessionNowInline(st){
     let cls = "session-now on", html;
     const meta = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name) + ' · ' + escapeHtml(st.label);
@@ -9770,7 +9770,7 @@
   function trainersShownAsPage(){ const el = document.getElementById("trainersOverlay"); return !!(el && el.classList.contains("show")); }
   window.openTrainersPage = openTrainersPage; window.leaveTrainersPage = leaveTrainersPage;
 
-  // Coach greeting for the day you're viewing: names the routine(s), greets a rest day,
+  // Coach greeting for the day you're viewing: names the exercise(s), greets a rest day,
   // or nudges you to set one up. Returns null when there's nothing worth saying.
   function sessionCoachInfo(day, isToday){
     const sel = loadWeekSel(), lib = getLibrary();
@@ -9801,8 +9801,8 @@
       ]), isWorkout: false };
       return { cls:"rest", text: when + " is a Rest Day 😌", isWorkout: false };
     }
-    // No routines picked for this day (and no library yet, or just an empty day).
-    if (isToday) return { cls:"", text: "Nothing planned for today yet — tap ＋ Routines to set it up.", isWorkout: false };
+    // No exercises picked for this day (and no library yet, or just an empty day).
+    if (isToday) return { cls:"", text: "Nothing planned for today yet — tap ＋ Exercises to set it up.", isWorkout: false };
     return null;
   }
   function renderSession(){
@@ -9845,7 +9845,7 @@
           '<div class="restday-actions">' +
             '<button class="sa-btn restday-gear" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings"><span class="sa-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span><span class="sa-lbl">Settings</span></button>' +
             '<span class="sa-bar"></span>' +
-            '<button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a routine" aria-label="Add a routine"><span class="sa-ic">＋</span><span class="sa-lbl">Routines</span></button>' +
+            '<button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a exercise" aria-label="Add a exercise"><span class="sa-ic">＋</span><span class="sa-lbl">Exercises</span></button>' +
           '</div>';
       }
       if (btn) btn.style.display = "none";
@@ -9907,16 +9907,16 @@
         nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
         detailLine = st.detail || "";
       } else {
-        // Cardio intervals (e.g. Run & Walk): routine name is the small header, the
+        // Cardio intervals (e.g. Run & Walk): exercise name is the small header, the
         // interval (Run / Walk) is the big name.
         tagLine = st.name;
         nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.label || st.name);
         detailLine = st.detail || "";
       }
-      // Warm-up / cool-down are fixed moves; every other card taps open to edit its routine.
+      // Warm-up / cool-down are fixed moves; every other card taps open to edit its exercise.
       const editable = (st.type !== "warmup" && st.type !== "cooldown");
       const mainAttr = editable
-        ? ' class="session-step-main tappable" title="Tap to edit this routine" onclick="sessionEditRoutine(\'' + st.rid + '\')"'
+        ? ' class="session-step-main tappable" title="Tap to edit this exercise" onclick="sessionEditRoutine(\'' + st.rid + '\')"'
         : ' class="session-step-main"';
       const rowHtml = '<div class="' + cls + '"><div class="session-step-num">' + (exNum + 1) + '</div><div' + mainAttr + '>'
         + (tagLine ? '<div class="session-step-tag">' + escapeHtml(tagLine) + '</div>' : '')
@@ -9932,7 +9932,7 @@
       exNum++;
       i = j + 1;
     }
-    // Done routines collapse into a playing-card stack (tap to expand). While a workout
+    // Done exercises collapse into a playing-card stack (tap to expand). While a workout
     // is running it sits BELOW the magnified running card so the running card rides up top.
     let deckHtml = "";
     if (doneList.length){
@@ -10068,10 +10068,10 @@
       rest = sessionRestVal; sessionRestLong = false;
       sessionRestMsg = (nxt.type === "cooldown") ? "Cooling down 🧘" : "Rest";
     } else if (cur.rid === nxt.rid){
-      // Between sets of the same routine — use the routine's own "Between Sets" if set.
+      // Between sets of the same exercise — use the exercise's own "Between Sets" if set.
       rest = (cur.restBetween > 0) ? cur.restBetween : sessionRestVal; sessionRestLong = false; sessionRestMsg = "Rest";
     } else if (cur.type === nxt.type){
-      // Moving to the next exercise — use the routine's "After Routine" rest if set.
+      // Moving to the next exercise — use the exercise's "After Exercise" rest if set.
       rest = (cur.restAfter > 0) ? cur.restAfter : sessionExRestVal; sessionRestLong = true; sessionRestMsg = "Rest before next exercise";
     } else {
       rest = (cur.restAfter > 0) ? cur.restAfter : sessionTypeRestVal; sessionRestLong = true; sessionRestMsg = "Rest — switching to a new muscle group";
@@ -10560,7 +10560,7 @@
     const gearText = gear.length === 1 ? gear[0] : gear.slice(0, -1).join(", ") + " and " + gear[gear.length - 1];
     const expText = { beginner:"Keep it simple and steady — no rush.", some:"A solid mix works well for you.", experienced:"Push the weight and pace when you're ready." }[a.experience] || "";
     const body = "With " + gearText + ", and aiming to " + goalText + " " + daysText + " — here's a good start. " + expText + " Try about " + exercises.length + " exercises, " + setsWord + " each:";
-    const nextStep = "Add these on your Weight Routine page (flip there with the bottom bar), then tap “Let’s go! 💪” to start your day.";
+    const nextStep = "Add these on your Weight Exercise page (flip there with the bottom bar), then tap “Let’s go! 💪” to start your day.";
     return { body: body, exercises: exercises, nextStep: nextStep };
   }
   // The last screen of the set-up: three doors, no list.
@@ -10636,8 +10636,8 @@
   }
   window.onbToggleExercise = onbToggleExercise;
   // ---- Build the new person's week from their guided-start picks ----
-  // Turn each chosen exercise into a real, editable routine, then spread those
-  // routines across the week based on how many days they said they'd train (the
+  // Turn each chosen exercise into a real, editable exercise, then spread those
+  // exercises across the week based on how many days they said they'd train (the
   // rest become rest days). This is what makes the guided start end on a filled-in
   // week instead of the same single workout every day.
   function routineFromExerciseName(name){
@@ -10829,7 +10829,7 @@
   window.showWelcome = showWelcome;
 
   // ---- Today's Plan page (2nd page): auto-lists today's workouts ----
-  // Pulls from EVERY weekly routine (exercise-sheet) page, for the current day.
+  // Pulls from EVERY weekly exercise (exercise-sheet) page, for the current day.
   function planIcon(id){ return id === "default" ? "💪" : id === "p_ex_walkrun" ? "🚶" : "📋"; }
   function todaysRoutinesFor(pageId){
     let allWeeks = {};
@@ -10839,8 +10839,8 @@
       const past = Object.keys(allWeeks).filter(k => k < currentWeekKey).sort();
       week = past.length ? allWeeks[past[past.length - 1]] : null;
     }
-    const routines = week ? (week[todayKey] || []) : [];
-    return routines.filter(r => r && r.name && String(r.name).trim());
+    const exercises = week ? (week[todayKey] || []) : [];
+    return exercises.filter(r => r && r.name && String(r.name).trim());
   }
   function planRoutineSummary(r){
     const d = r.details || {};
@@ -10856,7 +10856,7 @@
     if (d.distance && d.distance.on && d.distance.val) return String(d.distance.val);
     return "";
   }
-  // ---- Surprise routine: MOWES smart-picks today's plan from your library ----
+  // ---- Surprise exercise: MOWES smart-picks today's plan from your library ----
   function surpriseCount(){
     let a = {}; try { a = JSON.parse(localStorage.getItem("mowes_onboarding_answers_v1") || "{}") || {}; } catch(e){}
     const times = Array.isArray(a.time) ? a.time : (a.time ? [a.time] : []);
@@ -10898,13 +10898,13 @@
     let store = {}; try { store = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}") || {}; } catch(e){}
     return store[currentWeekKey + "|" + todayKey] || [];
   }
-  // Which muscle groups were worked on a given day (from that day's saved surprise + routines).
+  // Which muscle groups were worked on a given day (from that day's saved surprise + exercises).
   function musclesWorkedOn(dayKey){
     const set = {};
     // yesterday's saved surprise picks
     let store = {}; try { store = JSON.parse(localStorage.getItem("mowes_surprise_v1") || "{}") || {}; } catch(e){}
     (store[currentWeekKey + "|" + dayKey] || []).forEach(name => { set[exerciseCategory(name).type] = 1; });
-    // routines actually assigned to that day, across every sheet page
+    // exercises actually assigned to that day, across every sheet page
     pages.filter(p => p.type === "sheet").forEach(pg => {
       let all = {}; try { all = JSON.parse(localStorage.getItem(sheetKeyFor(pg.id)) || "{}") || {}; } catch(e){}
       const week = all[currentWeekKey] || {};
@@ -10948,7 +10948,7 @@
       return;
     }
     if (!generateSurprise()){
-      alert("First build a few routines on your pages (💪 Weights, 🚶 Runs & Walks…). Then MOWES can surprise you with a plan picked from them. 🙂");
+      alert("First build a few exercises on your pages (💪 Weights, 🚶 Runs & Walks…). Then MOWES can surprise you with a plan picked from them. 🙂");
       return;
     }
     renderPlan();
@@ -10977,7 +10977,7 @@
       title.textContent = "⭐ Your starter exercises";
       group.appendChild(title);
       const hint = document.createElement("div"); hint.className = "plan-pick-note";
-      hint.textContent = "Tap one to set its reps/weight and make it a routine.";
+      hint.textContent = "Tap one to set its reps/weight and make it a exercise.";
       group.appendChild(hint);
       picks.forEach(name => {
         const item = document.createElement("button"); item.className = "plan-item plan-pick";
@@ -11006,16 +11006,16 @@
       });
       list.appendChild(group);
     }
-    // 2) The routines they've added for today on their routine pages.
+    // 2) The exercises they've added for today on their exercise pages.
     pages.filter(p => p.type === "sheet").forEach(pg => {
-      const routines = todaysRoutinesFor(pg.id);
-      if (!routines.length) return;
+      const exercises = todaysRoutinesFor(pg.id);
+      if (!exercises.length) return;
       anything = true;
       const group = document.createElement("div"); group.className = "plan-group";
       const title = document.createElement("div"); title.className = "plan-group-title";
       title.textContent = planIcon(pg.id) + " " + pageName(pg.id);
       group.appendChild(title);
-      routines.forEach(r => {
+      exercises.forEach(r => {
         const item = document.createElement("div"); item.className = "plan-item";
         const nm = document.createElement("span"); nm.className = "plan-item-name"; nm.textContent = r.name;
         item.appendChild(nm);
@@ -11031,8 +11031,8 @@
       list.appendChild(empty);
     }
   }
-  // Tap a starter exercise → it graduates into a real routine on the Weight
-  // Routine page (today), and we take you there to set its reps/weight.
+  // Tap a starter exercise → it graduates into a real exercise on the Weight
+  // Exercise page (today), and we take you there to set its reps/weight.
   function addStarterAsRoutine(name){
     // Drop it from the starter picks (and today's pick-done), so there's no double.
     let picks = [];
@@ -11040,17 +11040,17 @@
     picks = picks.filter(p => p !== name);
     try { localStorage.setItem("mowes_picked_exercises_v1", JSON.stringify(picks)); } catch(e){}
     togglePickDone(name, false);
-    // Go to the Weight Routine page (loads it fresh, selects today).
+    // Go to the Weight Exercise page (loads it fresh, selects today).
     leaveCoverPage(); leavePlanPage(); leaveSetupPage();
     switchToPage("default");
     selectedDay = todayKey;
-    // Add the routine for today, with its sets table already open to fill in.
+    // Add the exercise for today, with its sets table already open to fill in.
     const r = blankRoutine(); r.name = name; r.details.reps.on = true;
     if (!weekData[todayKey]) weekData[todayKey] = [];
     const day = weekData[todayKey];
     if (day.length === 1 && !(day[0].name || "").trim()) day[0] = r; else day.push(r);
     renderRoutines(); saveData(); renderPageBar();
-    // Scroll to the new routine so they can start on it.
+    // Scroll to the new exercise so they can start on it.
     setTimeout(() => {
       const cards = document.querySelectorAll("#routineList .routine-card");
       const last = cards[cards.length - 1];
@@ -11066,7 +11066,7 @@
   function hidePlan(){ document.getElementById("planOverlay").classList.remove("show"); }
   function planNext(){
     leavePlanPage();
-    // Go STRAIGHT to the routines with a clean page-outline reveal. We do NOT
+    // Go STRAIGHT to the exercises with a clean page-outline reveal. We do NOT
     // peel the Today's Thought overlay here, so the Thought never flashes on the
     // way in — it stays quiet until you tap the "💭 Thought" tab.
     if (coverTimer) { clearTimeout(coverTimer); coverTimer = null; }
@@ -11121,13 +11121,13 @@
   }
   // Cover: swipe left = forward to Today's Plan
   onBookSwipe(document.getElementById("welcomeOverlay"), dir => { if (dir === "fwd") dismissWelcome(); });
-  // Today's Plan: swipe = flip pages via the bottom bar (right = Cover, left = routines)
+  // Today's Plan: swipe = flip pages via the bottom bar (right = Cover, left = exercises)
   onBookSwipe(document.getElementById("planOverlay"), dir => pageBarStep(dir === "fwd" ? 1 : -1));
   // Today's Thought: swipe left = into the workspace, swipe right = back to Today's Session
   onBookSwipe(document.getElementById("coverOverlay"), dir => { if (dir === "fwd") openApp(); else openSessionPage(); });
   // (The bottom page bar scrolls natively now — swipe to browse, tap a page to go.)
 
-  // Auto-save: any typing, toggle, or button tap in the routines saves your work
+  // Auto-save: any typing, toggle, or button tap in the exercises saves your work
   const routineListEl = document.getElementById("routineList");
   ["input", "change", "click"].forEach(evt => {
     routineListEl.addEventListener(evt, () => { captureDay(); saveData(); });
@@ -11140,9 +11140,9 @@
     selectDay(days[ni]);
   }
 
-  // Swipe on the routines area: right = day before, left = day after
+  // Swipe on the exercises area: right = day before, left = day after
   (function(){
-    const area = document.querySelector(".routines");
+    const area = document.querySelector(".exercises");
     let sx = 0, sy = 0, tracking = false;
     area.addEventListener("touchstart", e => {
       if (e.touches.length !== 1) { tracking = false; return; }
@@ -11163,17 +11163,17 @@
   })();
 
   // Same "back" gesture, but for edge-swipes that START in the side margin
-  // (outside the routine cards). Only active on the workspace page.
+  // (outside the exercise cards). Only active on the workspace page.
   (function(){
     let sx = 0, sy = 0, tracking = false, inCards = false;
     document.addEventListener("touchstart", e => {
       if (e.touches.length !== 1) { tracking = false; return; }
       sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
-      inCards = !!(e.target.closest && e.target.closest(".routines"));
+      inCards = !!(e.target.closest && e.target.closest(".exercises"));
     }, { passive: true });
     document.addEventListener("touchend", e => {
       if (!tracking) return; tracking = false;
-      if (inCards) return; // the routines handler already covers edge-swipes there
+      if (inCards) return; // the exercises handler already covers edge-swipes there
       const w = document.getElementById("welcomeOverlay");
       const c = document.getElementById("coverOverlay");
       const p = document.getElementById("planOverlay");
@@ -11183,7 +11183,7 @@
     }, { passive: true });
   })();
 
-  // Long-press a routine card, then drag it up or down to reorder
+  // Long-press a exercise card, then drag it up or down to reorder
   (function(){
     const list = document.getElementById("routineList");
     let dragging = null, placeholder = null, holdTimer = null;
@@ -11263,12 +11263,12 @@
     list.addEventListener("touchcancel", onEnd, { passive: true });
   })();
 
-  // Brand-new device → start with the 5 starter routines (runs once; after all
+  // Brand-new device → start with the 5 starter exercises (runs once; after all
   // definitions are initialized, so it's safe here at the end of startup).
   // The Library is NOT pre-filled any more. A new phone used to receive twenty
-  // starter routines nobody chose, which is why it looked full of other
+  // starter exercises nobody chose, which is why it looked full of other
   // people's exercises. It now holds exactly what you ticked in the guided
-  // start plus whatever you add. "Start over with the starter routines" is
+  // start plus whatever you add. "Start over with the starter exercises" is
   // still there for when you actually want them.
   try { var _gs = document.getElementById("goalsSupport"); if (_gs) _gs.innerHTML = supportSetHTML('Is <span class="mowes-beat">MOWES</span> ' + curlWordHTML('coaching', 'coach-red') + ' you?'); } catch(e){}
   try { var _bs = document.getElementById("bodySupport"); if (_bs) _bs.innerHTML = supportSetHTML('Feeling the <span class="mowes-beat">MOWES</span> ' + curlWordHTML('change', 'coach-red') + '?'); } catch(e){}
