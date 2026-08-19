@@ -3183,10 +3183,9 @@
     <div class="cover-settings" id="coverSettings" onclick="if(event.target===this) closeCoverSettings()">
       <div class="cover-settings-card">
         <div class="cs-group">
-          <div class="cs-cap">Cover</div>
-          <div class="cs-seg" id="csShowSeg">
-            <button type="button" class="cs-seg-btn" data-v="show" onclick="setCoverShow(true)" aria-label="Show cover">👁️</button>
-            <button type="button" class="cs-seg-btn" data-v="hide" onclick="setCoverShow(false)" aria-label="Hide cover">🙈</button>
+          <div class="cs-cap">Schedule</div>
+          <div class="cs-seg">
+            <button type="button" class="cs-seg-btn" onclick="closeCoverSettings(); openSchedulePage();" aria-label="Workout Schedule">⏰</button>
           </div>
         </div>
         <div class="cs-group">
@@ -3528,11 +3527,6 @@
       <button class="build-tile" onclick="openWeekPlanPage()">
         <div class="build-tile-icon">🗓️</div>
         <div class="build-tile-text"><div class="build-tile-name">My Weekly Plan</div></div>
-        <div class="build-tile-arrow">›</div>
-      </button>
-      <button class="build-tile" onclick="openSchedulePage()">
-        <div class="build-tile-icon">⏰</div>
-        <div class="build-tile-text"><div class="build-tile-name">Workout Schedule</div></div>
         <div class="build-tile-arrow">›</div>
       </button>
       <!-- The two you visit now and then, paired side by side and smaller than
@@ -7987,14 +7981,8 @@
     });
     // Bring-the-Cover-back switch: the Cover's own gear vanishes once it's hidden,
     // so this is the one place a user can turn the welcome page on again.
-    const asleep = coverIsAsleep();
-    html += '<div class="setup-toggle-row">'
-      + '<div><div class="setup-label">Cover page</div>'
-      + '<div class="setup-toggle-sub">Show or hide the welcome page</div></div>'
-      + '<div class="cs-seg" id="setupCoverSeg">'
-      + '<button type="button" class="cs-seg-btn' + (asleep ? '' : ' on') + '" data-v="show" onclick="setCoverShow(true)" aria-label="Show cover">👁️</button>'
-      + '<button type="button" class="cs-seg-btn' + (asleep ? ' on' : '') + '" data-v="hide" onclick="setCoverShow(false)" aria-label="Hide cover">🙈</button>'
-      + '</div></div>';
+    // No hide-the-Cover switch here either. This page is asleep, and waking it
+    // with a second copy of that switch would rebuild the same trap.
     body.innerHTML = html;
   }
 
@@ -10720,9 +10708,10 @@
   const WELCOME_AUTO_MS = 6000; // show the Thought for ~6s, then glide into Today's
   const COVER_SLEEP_KEY = "mowes_cover_sleep_v1";
   let welcomeAutoTimer = null;
-  function coverIsAsleep(){
-    try { return localStorage.getItem(COVER_SLEEP_KEY) === "1"; } catch(e){ return false; }
-  }
+  // The Cover never sleeps. The settings gear lives on it, so hiding the Cover
+  // hid the way into the settings — including the switch to bring it back. The
+  // hide option is gone, and anyone who set it before is no longer held to it.
+  function coverIsAsleep(){ return false; }
   function stopWelcomeAutoAdvance(){
     if (welcomeAutoTimer){ clearTimeout(welcomeAutoTimer); welcomeAutoTimer = null; }
   }
@@ -10748,14 +10737,9 @@
     syncCoverSettingsUI();
   }
   function syncCoverSettingsUI(){
-    const asleep = coverIsAsleep(), mode = coverStartMode();
-    const showSeg = document.getElementById("csShowSeg");
-    if (showSeg) showSeg.querySelectorAll(".cs-seg-btn").forEach(b => b.classList.toggle("on", b.dataset.v === (asleep ? "hide" : "show")));
+    const mode = coverStartMode();
     const startSeg = document.getElementById("csStartSeg");
     if (startSeg) startSeg.querySelectorAll(".cs-seg-btn").forEach(b => b.classList.toggle("on", b.dataset.v === mode));
-    // Keep the My Set-up copy of the show/hide toggle in step with the Cover's own.
-    const setupSeg = document.getElementById("setupCoverSeg");
-    if (setupSeg) setupSeg.querySelectorAll(".cs-seg-btn").forEach(b => b.classList.toggle("on", b.dataset.v === (asleep ? "hide" : "show")));
   }
   function renderCsTopics(){
     const wrap = document.getElementById("csTopics");
