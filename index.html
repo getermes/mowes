@@ -2209,10 +2209,13 @@
   /* The two-door question: type your own on the left, or open the list on the
      right. Nothing else on screen until you choose a door. */
   .onb-two { display: flex; gap: 10px; }
-  .onb-two button { flex: 1; min-width: 0; background: #fff; border: 2px dashed #c7cdf0;
-    border-radius: 14px; padding: 18px 10px; color: #5b6cff; font-weight: 800; font-size: 15px;
-    cursor: pointer; line-height: 1.3; }
-  .onb-two button.on { border-style: solid; background: #f2f4ff; }
+  .onb-two button { flex: 1; min-width: 0; border: none; border-radius: 14px;
+    padding: 18px 10px; color: #fff; font-weight: 800; font-size: 15px;
+    cursor: pointer; line-height: 1.3;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    box-shadow: 0 6px 16px rgba(91,108,255,0.28); }
+  /* The open door sits down, so you can see which one you're in. */
+  .onb-two button.on { box-shadow: inset 0 2px 6px rgba(0,0,0,0.18); filter: brightness(0.92); }
   .onb-two button:active { transform: scale(0.99); }
   .onb-typerow { display: flex; gap: 8px; margin-top: 12px; }
   .onb-typerow input { flex: 1; min-width: 0; font: inherit; padding: 14px; border-radius: 13px;
@@ -10377,7 +10380,10 @@
 
     const row = document.createElement("div");
     row.className = "onb-two";
-    [["type", "＋ Add your own"], ["list", "🔍 Suggestions"]].forEach(pair => {
+    // "My Equipment", not "My Exercises" — the box here takes Kettlebell or
+    // Treadmill, so naming it after exercises would send people looking for
+    // Push-ups.
+    [["type", "＋ My Equipment"], ["list", "🔍 Suggestions"]].forEach(pair => {
       const b = document.createElement("button");
       b.textContent = pair[1];
       if (onbDoor === pair[0]) b.classList.add("on");
