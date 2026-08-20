@@ -3478,7 +3478,7 @@
   <div class="body-overlay" id="bodyOverlay">
     <div class="body-inner">
       <div class="setup-title">📏 My Body &amp; Pics</div>
-      <button class="body-log-btn" onclick="openBodyLog()">＋ Log today</button>
+      <button class="body-log-btn" onclick="openBodyLog()">Log today</button>
       <div id="bodyHistory"></div>
       <!-- Progress photos gallery (folded in from the old Pictures page) -->
       <div class="body-pics-section">
@@ -3506,7 +3506,7 @@
       </div>
       <p class="body-log-date" id="bodyLogDate"></p>
       <div id="bodyLogFields"></div>
-      <button class="body-add-field" onclick="addBodyLogField()">＋ Add a measurement</button>
+      <button class="body-add-field" onclick="addBodyLogField()">Add a measurement</button>
       <div class="body-photo-row">
         <input type="file" id="bodyPhotoInput" accept="image/*" style="display:none" onchange="bodyPhotoChosen(this)">
         <button class="body-photo-btn" onclick="document.getElementById('bodyPhotoInput').click()">📷 Add a progress photo</button>
@@ -3520,7 +3520,7 @@
   <div class="goals-overlay" id="goalsOverlay">
     <div class="goals-inner">
       <div class="setup-title">🎯 My Goals &amp; Achievement</div>
-      <button class="goal-add-btn" onclick="openGoalForm()">＋ Add a goal</button>
+      <button class="goal-add-btn" onclick="openGoalForm()">Add a goal</button>
       <div id="goalsList"></div>
       <!-- Achievements: a progress report worked out from your Goals + My Body -->
       <div class="body-pics-section">
@@ -3605,7 +3605,8 @@
   <!-- Workout Schedule: set the time you plan to work out (same every day, or per day) -->
   <div class="library-overlay" id="scheduleOverlay">
     <div class="library-inner">
-      <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
+      <!-- Reached from the gear on the Cover, so back goes to the Cover. -->
+      <button class="build-back" onclick="openCoverPage()">‹ Cover</button>
       <div class="setup-title">⏰ Workout Schedule</div>
       <p class="lib-hint">When do you plan to work out? MOWES uses this to remind you.</p>
       <div id="scheduleBody"></div>
@@ -3701,7 +3702,7 @@
         <div class="rule-extra show" style="border-top:none;padding-top:12px;">
           <div class="rule-own-row">
             <input id="ruleOwnInput" type="text" placeholder="e.g. Always stretch after legs" onkeydown="if(event.key==='Enter')rulesAddOwn()">
-            <button class="rule-own-add" onclick="rulesAddOwn()">＋ Add</button>
+            <button class="rule-own-add" onclick="rulesAddOwn()">Add</button>
           </div>
           <div id="ruleOwnList"></div>
         </div>
@@ -3947,7 +3948,7 @@
         <div class="video-add">
           <input type="text" id="videoTitleInput" placeholder="Name it (e.g. Beginner squats)">
           <input type="text" id="videoUrlInput" placeholder="Paste a video link (YouTube, Facebook…)" enterkeyhint="done">
-          <button type="button" class="video-add-btn" onclick="addVideo()">＋ Add video</button>
+          <button type="button" class="video-add-btn" onclick="addVideo()">Add video</button>
         </div>
         <p class="video-empty" id="videoEmpty">No videos yet. Paste any exercise video link — YouTube, Facebook, Vimeo, TikTok — to save it here. Your links stay on your phone. 🔒</p>
         <div class="video-grid" id="videoGrid"></div>
@@ -4154,7 +4155,7 @@
         <button class="gps-btn" id="gpsStartBtn" onclick="toggleGps()">▶ Start</button>
         <div class="gps-done-actions" id="gpsDoneActions" style="display:none;">
           <button class="gps-btn gps-btn-alt" onclick="resetGps()">↺ Again</button>
-          <button class="gps-btn" onclick="addGpsToRoutine()">＋ Add to my exercise</button>
+          <button class="gps-btn" onclick="addGpsToRoutine()">Add to my exercise</button>
         </div>
         <button type="button" class="gps-history-link" id="gpsHistoryLink" onclick="openGpsHistory()">🕘 Past runs</button>
       </div>
@@ -5459,7 +5460,7 @@
     backup.onclick = () => { closePagesMenu(); openBackup(); };
     menu.appendChild(backup);
     const add = document.createElement("button");
-    add.className = "pm-add"; add.textContent = "＋ Add page";
+    add.className = "pm-add"; add.textContent = "Add page";
     add.onclick = () => { closePagesMenu(); addPage(); };
     menu.appendChild(add);
     document.body.appendChild(menu);
@@ -5929,7 +5930,7 @@
               <div class="sets-cols"></div>
               <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><button type="button" class="lap-measure-link" onclick="openLapMeasure(this)">📏 not sure? measure it</button><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
               <div class="sets-inline"></div>
-              <button class="sets-add-btn" onclick="addBuiltSets(this)">＋ ADD</button>
+              <button class="sets-add-btn" onclick="addBuiltSets(this)">ADD</button>
               <div class="sets-summary" style="display:none;"></div>
               <div class="sets-speed" style="display:none;"></div>
               <div class="rest-times">
@@ -6873,7 +6874,7 @@
           head.onclick = () => row.classList.toggle("open");
           const body = document.createElement("div"); body.className = "suggest-body";
           const how = document.createElement("p"); how.className = "suggest-how"; how.textContent = ex.how;
-          const add = document.createElement("button"); add.type = "button"; add.className = "suggest-add"; add.textContent = "＋ Add to my exercise";
+          const add = document.createElement("button"); add.type = "button"; add.className = "suggest-add"; add.textContent = "Add to my exercise";
           add.onclick = () => {
             addSuggestionToRoutine(ex.name);
             const done = document.createElement("span"); done.className = "suggest-added"; done.textContent = "✓ Added!";
@@ -8595,7 +8596,7 @@
               <div class="sets-cols"></div>
               <div class="lap-row" style="display:none;"><span>🏃 1 lap =</span><input class="lap-input" type="number" min="0" step="any" inputmode="decimal" placeholder="—" oninput="lapChanged(this)"><span class="lap-unit">mi</span><button type="button" class="lap-measure-link" onclick="openLapMeasure(this)">📏 not sure? measure it</button><span class="lap-hint">→ auto distance from your reps (laps)</span></div>
               <div class="sets-inline"></div>
-              <button class="sets-add-btn" onclick="addBuiltSets(this)">＋ ADD</button>
+              <button class="sets-add-btn" onclick="addBuiltSets(this)">ADD</button>
               <div class="sets-summary" style="display:none;"></div>
               <div class="sets-speed" style="display:none;"></div>
               <div class="rest-times">
@@ -8618,7 +8619,7 @@
             <div class="sets-block">
               <div class="lib-intervals-hint">Add each part in order — e.g. Walk · 10 min, then Run · 20 min, then Walk · 10 min…</div>
               <div class="intervals-list"></div>
-              <button class="add-interval" onclick="addInterval(this)">＋ Add part</button>
+              <button class="add-interval" onclick="addInterval(this)">Add part</button>
             </div>
           </div>
         </div>`;
@@ -8639,7 +8640,7 @@
     libraryRoutines.forEach(r => { const g = LIB_GROUP_META[r.group] ? r.group : "__mine__"; buckets[g].push(r); });
     // Only drawers with something in them are on screen. An empty drawer is a
     // row that does nothing, and four of them in a row is just clutter — they
-    // wait behind "＋ Another drawer" until you call for one.
+    // wait behind "Another drawer" until you call for one.
     const hidden = [];
     LIB_GROUP_ORDER.forEach(g => {
       const items = buckets[g];
@@ -8683,7 +8684,7 @@
       const add = document.createElement("button");
       add.type = "button";
       add.className = "lib-drawer-add";
-      add.textContent = "＋ New exercise in " + meta.name;
+      add.textContent = "New exercise in " + meta.name;
       add.onclick = () => libAddRoutineTo(g === "__mine__" ? "" : g);
       body.appendChild(add);
       drawer.appendChild(body);
@@ -8699,7 +8700,7 @@
       const add = document.createElement("button");
       add.type = "button";
       add.className = "lib-guide";
-      add.textContent = "＋ Add my first exercise";
+      add.textContent = "Add my first exercise";
       add.onclick = function(){ libAddRoutineTo(""); };
       list.appendChild(add);
       const guide = document.createElement("button");
@@ -8714,7 +8715,7 @@
       const more = document.createElement("button");
       more.type = "button";
       more.className = "lib-more";
-      more.textContent = libShowEmpty ? "‹ Fewer drawers" : "＋ Another drawer";
+      more.textContent = libShowEmpty ? "‹ Fewer drawers" : "Another drawer";
       more.onclick = () => { libShowEmpty = !libShowEmpty; renderLibrary(); };
       list.appendChild(more);
     } else if (libShowEmpty){
@@ -8959,13 +8960,16 @@
       body.innerHTML = html;
       return;
     }
+    // A day with exercises shows only those. A day with none has nothing to
+    // hide, so the list is already open — one tap puts an exercise on the day.
+    const wpOpen = wpShowAll || !picked.length;
     html += picked.length
       ? ''
-      : '<div class="wp-note wp-rest">🌴 Rest day</div>';
+      : '<div class="wp-note wp-rest">🌴 Rest day — tap an exercise below to put it on ' + escapeHtml(full) + '.</div>';
     html += '<div class="wp-picks">';
     // A day shows what is ON it. The whole library used to be listed here every
     // time — about twenty rows to tell you the two things you do on Monday.
-    (wpShowAll ? lib : lib.filter(r => picked.indexOf(r.id) >= 0)).forEach(r => {
+    (wpOpen ? lib : lib.filter(r => picked.indexOf(r.id) >= 0)).forEach(r => {
       const on = picked.indexOf(r.id) >= 0;
       const sum = wpSummary(r);
       // Which days is this exercise scheduled on? Show them only if it has any (else clean).
@@ -8980,8 +8984,10 @@
         + daysBadge + '</span></button>';
     });
     html += '</div>';
-    html += '<button class="wp-more" onclick="wpToggleAll()">'
-         + (wpShowAll ? '‹ Done' : '＋ Add') + '</button>';
+    if (picked.length){
+      html += '<button class="wp-more" onclick="wpToggleAll()">'
+           + (wpShowAll ? '‹ Done' : 'Add') + '</button>';
+    }
     // The week days live in one place now — the row up top. Tapping a rest day
     // there gives it this day's plan, so the second row of days is gone.
     if (picked.length){
@@ -9103,7 +9109,7 @@
           + '<label class="qedit-fld" style="margin-bottom:8px"><span>Name (e.g. Run / Walk)</span><div class="qedit-inrow">'
           + '<input type="text" data-k="label" value="' + escapeHtml(row.label || "") + '" placeholder="Run"></div></label>'
           + '<div class="qedit-grid">' + qeditFldHtml("Time", "min", row.min, "min") + qeditFldHtml("Distance", "miles", row.miles, "mi") + '</div></div>';
-      }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddPart()">＋ Add part</button>';
+      }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddPart()">Add part</button>';
     } else {
       if (!det.reps) det.reps = { sets: [] };
       const wU = det.reps.weightUnit || "lbs", dU = det.reps.distUnit || "mi";
@@ -9115,7 +9121,7 @@
           + qeditFldHtml("Time", "time", s.time, "min")
           + qeditFldHtml("Distance", "distance", s.distance, dU)
           + '</div></div>';
-      }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddSet()">＋ Add set</button>';
+      }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddSet()">Add set</button>';
     }
   }
   // Read the on-screen inputs back into the working copy (so typing survives Add/Save).
@@ -10421,9 +10427,9 @@
       cont.disabled = !(Array.isArray(arr) && arr.length);
       cont.onclick = onbContinue;
       choices.appendChild(cont);
-      // "＋ Add your own" sits BELOW Continue (it's the less-common action).
+      // "Add your own" sits BELOW Continue (it's the less-common action).
       const add = document.createElement("button");
-      add.className = "onb-add-own"; add.textContent = "＋ Add your own";
+      add.className = "onb-add-own"; add.textContent = "Add your own";
       add.onclick = onbAddCustom;
       choices.appendChild(add);
     }
