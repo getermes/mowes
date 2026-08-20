@@ -2623,6 +2623,19 @@
   .session-settings { display: none; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: 16px; margin-bottom: 4px; font-size: 12.5px; color: #6a7088; }
   .session-inner.settings-open .session-settings { display: flex; margin-top: 14px; }
   .session-settings input { width: 52px; border: 2px solid #e6e8f0; border-radius: 8px; padding: 5px; text-align: center; font-size: 13px; }
+  /* Warm-up / cool-down live in the gear too, so they're easy to find and stay
+     reachable once the sun is punched and the little flank buttons tuck away. */
+  .session-wc { flex: 0 0 100%; display: flex; justify-content: center; gap: 10px; margin-top: 2px; }
+  .session-wc-btn { display: inline-flex; align-items: center; gap: 7px; border: 2px solid #e6e8f0; background: #fff;
+    color: #9aa0b8; border-radius: 999px; padding: 9px 15px; font-size: 12.5px; font-weight: 800; line-height: 1;
+    cursor: pointer; white-space: nowrap; transition: background .2s, color .2s, border-color .2s; }
+  .session-wc-btn .wc-state { font-size: 11px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase;
+    border-radius: 999px; padding: 3px 8px; background: #f0f1f7; color: #9aa0b8; }
+  .session-wc-btn.warmup.on { background: #FBDCD8; border-color: #f2c3bd; color: #d24a42; }
+  .session-wc-btn.warmup.on .wc-state { background: #fff; color: #d24a42; }
+  .session-wc-btn.cooldown.on { background: #DBF1E5; border-color: #bfe4d1; color: #2a9d6f; }
+  .session-wc-btn.cooldown.on .wc-state { background: #fff; color: #2a9d6f; }
+  .session-wc-btn:active { transform: scale(0.96); }
   .session-toggles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 18px; margin: -4px 0 14px; }
   .session-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #4a5068; font-weight: 600; cursor: pointer; }
   .session-toggle input { width: 18px; height: 18px; accent-color: #5b6cff; cursor: pointer; }
@@ -3343,6 +3356,10 @@
         <label>Rest <input id="sessionRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
         <label>Between ex. <input id="sessionExRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
         <label>New muscle <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> sec</label>
+        <div class="session-wc">
+          <button type="button" class="session-wc-btn warmup" id="sessionWarmupGear" onclick="sessionToggleWarmup()">🤸 Warm-up<span class="wc-state" id="sessionWarmupState">On</span></button>
+          <button type="button" class="session-wc-btn cooldown" id="sessionCooldownGear" onclick="sessionToggleCooldown()">🧘 Cool-down<span class="wc-state" id="sessionCooldownState">On</span></button>
+        </div>
       </div>
       <p class="setup-note">🔒 Runs on your phone.</p>
       <div class="msupport-compact msupport-auto"></div>
@@ -7879,6 +7896,8 @@
   // On the last screen: null = the "what next?" choice, "suggest" = the list.
   let onbNextChoice = null;
   let onbPicked = new Set(), onbExerciseList = [];
+  // The last screen's answer: warm-up + cool-down on or off (both together).
+  let onbWarmCoolOn = true;
   const PICKED_EXERCISES_KEY = "mowes_picked_exercises_v1";
   function needsOnboarding(){ try { return !localStorage.getItem(ONBOARDING_KEY); } catch(e){ return false; } }
   // Run the guided start again. The only door used to be the My Set-up page, and
@@ -9357,7 +9376,20 @@
     const wb = document.getElementById("sessionWarmupBtn"), cb = document.getElementById("sessionCooldownBtn");
     if (wb) wb.classList.toggle("on", sessionWarmupOn);
     if (cb) cb.classList.toggle("on", sessionCooldownOn);
+    // Same two switches, second home: the ⚙️ gear card.
+    const wg = document.getElementById("sessionWarmupGear"), cg = document.getElementById("sessionCooldownGear");
+    if (wg) wg.classList.toggle("on", sessionWarmupOn);
+    if (cg) cg.classList.toggle("on", sessionCooldownOn);
+    const ws = document.getElementById("sessionWarmupState"), cs = document.getElementById("sessionCooldownState");
+    if (ws) ws.textContent = sessionWarmupOn ? "On" : "Off";
+    if (cs) cs.textContent = sessionCooldownOn ? "On" : "Off";
   }
+  // One switch for both — used by the last screen of the guided start.
+  function setWarmCoolBoth(on){
+    sessionWarmupOn = !!on; sessionCooldownOn = !!on;
+    sessionPersistSettings(); syncFlankBtns();
+  }
+  window.setWarmCoolBoth = setWarmCoolBoth;
   function sessionToggleWarmup(){ sessionWarmupOn = !sessionWarmupOn; sessionPersistSettings(); syncFlankBtns(); if (!sessionRunning) renderSession(); }
   function sessionToggleCooldown(){ sessionCooldownOn = !sessionCooldownOn; sessionPersistSettings(); syncFlankBtns(); if (!sessionRunning) renderSession(); }
   window.sessionToggleWarmup = sessionToggleWarmup; window.sessionToggleCooldown = sessionToggleCooldown;
@@ -10501,6 +10533,7 @@
   }
   function onbPrev(){
     if (onbSingleEdit){ cancelSingleEdit(); return; } // Back = cancel this one edit
+    if (onbSuggesting && onbNextChoice === "warmcool"){ onbNextChoice = "suggest"; renderOnbSuggestion(); return; }
     if (onbSuggesting && onbNextChoice === "suggest"){ onbNextChoice = null; renderOnbNext(); return; }
     if (onbSuggesting){ onbSuggesting = false; onbNextChoice = null; renderOnbStep(); return; }
     if (onbStep > 0){ onbStep--; onbDoor = null; renderOnbStep(); }
@@ -10615,7 +10648,7 @@
       });
     });
     html += '</div>';
-    html += '<button class="onb-go" onclick="finishOnboarding()">' + (onbEditMode ? "Save my setup ✓" : "Take me to my plan →") + '</button>';
+    html += '<button class="onb-go" onclick="onbGoWarmCool()">Continue →</button>';
     document.getElementById("onbChoices").innerHTML = html;
     const back = document.getElementById("onbBack");
     if (back) back.hidden = false;
@@ -10629,6 +10662,41 @@
     renderOnbSuggestion();
   }
   window.onbToggleExercise = onbToggleExercise;
+
+  // Last screen of the set-up. A warm-up before and a stretch after are the two
+  // things a brand-new person doesn't know to ask for — so we ask, once, instead
+  // of quietly adding them and letting them wonder what those extra steps are.
+  function onbGoWarmCool(){
+    onbWarmCoolOn = (typeof sessionWarmupOn === "boolean") ? (sessionWarmupOn || sessionCooldownOn) : true;
+    onbNextChoice = "warmcool";
+    renderOnbWarmCool();
+  }
+  window.onbGoWarmCool = onbGoWarmCool;
+  function onbSetWarmCool(on){ onbWarmCoolOn = !!on; renderOnbWarmCool(); }
+  window.onbSetWarmCool = onbSetWarmCool;
+  function renderOnbWarmCool(){
+    document.getElementById("onbEmoji").textContent = "🤸";
+    document.getElementById("onbTitle").textContent = "Warm-up & cool-down?";
+    const sub = document.getElementById("onbSub");
+    sub.textContent = "About 30 seconds each — an easy warm-up before your exercises, and a gentle stretch after. You can switch this any time in ⚙️ Settings.";
+    sub.style.display = "";
+    const opts = [
+      ["✅", "Yes, add both", "Recommended — warms you up and eases you down", true],
+      ["⚡", "No, just my exercises", "Straight into the workout", false]
+    ];
+    let html = "";
+    opts.forEach(function(o){
+      html += '<button type="button" class="onb-choice' + (onbWarmCoolOn === o[3] ? ' picked' : '') + '" onclick="onbSetWarmCool(' + o[3] + ')">'
+           + '<span class="onb-c-emoji">' + o[0] + '</span>'
+           + '<span class="onb-c-text"><span class="onb-c-label">' + o[1] + '</span><span class="onb-c-desc">' + o[2] + '</span></span></button>';
+    });
+    html += '<button class="onb-go" onclick="finishOnboarding()">' + (onbEditMode ? "Save my setup ✓" : "Take me to my plan →") + '</button>';
+    document.getElementById("onbChoices").innerHTML = html;
+    const back = document.getElementById("onbBack");
+    if (back){ back.hidden = false; back.textContent = "‹ Back"; }
+    const prog = document.getElementById("onbProgress");
+    if (prog){ prog.innerHTML = ""; ONB_QUESTIONS.forEach(function(){ const d = document.createElement("div"); d.className = "onb-dot done"; prog.appendChild(d); }); }
+  }
   // ---- Build the new person's week from their guided-start picks ----
   // Turn each chosen exercise into a real, editable exercise, then spread those
   // exercises across the week based on how many days they said they'd train (the
@@ -10699,6 +10767,7 @@
     return true;
   }
   function finishOnboarding(){
+    try { setWarmCoolBoth(onbWarmCoolOn); } catch(e){}
     try {
       localStorage.setItem(ONB_ANSWERS_KEY, JSON.stringify(onbAnswers));
       localStorage.setItem(PICKED_EXERCISES_KEY, JSON.stringify([...onbPicked]));
