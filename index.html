@@ -10744,6 +10744,11 @@
     }
     return out;
   }
+  // The app used to spread the picks across the week for you. It doesn't any more:
+  // the set-up now hands you over to My Weekly Plan so YOU choose the days for each
+  // exercise. The spreading is only switched off, not gone — flip this to true and
+  // the week fills itself in again exactly as it used to.
+  const SPREAD_WEEK_ON = false;
   function buildWeekFromPicks(){
     const picks = [...onbPicked].filter(n => (n || "").trim());
     if (!picks.length) return false; // nothing picked → today's starter fallback handles it
@@ -10755,11 +10760,13 @@
       if (!match){ match = routineFromExerciseName(name); match.id = genLibId(); lib.push(match); }
       if (ids.indexOf(match.id) < 0) ids.push(match.id);
     });
-    const a = onbAnswers || {};
-    const n = a.days === "2-3" ? 3 : a.days === "4-5" ? 5 : a.days === "daily" ? 7 : 3;
-    const wDays = spreadWorkoutDays(n);
-    days.forEach(d => { sel[d] = []; });           // start clean
-    wDays.forEach(d => { sel[d] = ids.slice(); });  // same set of moves on each workout day
+    days.forEach(d => { sel[d] = []; });           // start clean — nothing is chosen for you
+    if (SPREAD_WEEK_ON){
+      const a = onbAnswers || {};
+      const n = a.days === "2-3" ? 3 : a.days === "4-5" ? 5 : a.days === "daily" ? 7 : 3;
+      const wDays = spreadWorkoutDays(n);
+      wDays.forEach(d => { sel[d] = ids.slice(); });  // same set of moves on each workout day
+    }
     writeLibraryStore(lib);
     saveWeekSel(sel);
     // The user's own plan wins — don't let the sample-plan migration add days on top.
@@ -10775,7 +10782,9 @@
     } catch(e){}
     hideOnboarding();
     if (onbEditMode){ onbEditMode = false; openSetupPage(); } // editing → back to My Setup
-    else { try { buildWeekFromPicks(); } catch(e){} openSessionPage(); } // first-time → filled week → Today's Session
+    // First-time: their picks land in My Library, then we open My Weekly Plan so they
+    // choose which days each exercise falls on. Today's page comes after, from the bar.
+    else { try { buildWeekFromPicks(); } catch(e){} openWeekPlanPage(); }
   }
   window.onbPick = onbPick; window.onbToggle = onbToggle; window.onbContinue = onbContinue; window.onbPrev = onbPrev; window.finishOnboarding = finishOnboarding;
 
