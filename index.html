@@ -2131,10 +2131,11 @@
 
   /* Guided start (onboarding) */
   .onb-overlay { position: fixed; inset: 0; z-index: 9700; display: none; overflow-y: auto;
-    align-items: flex-start; justify-content: center; padding: 48px 20px 40px;
+    align-items: flex-start; justify-content: center; padding: 48px 20px 0;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .onb-overlay.show { display: flex; }
-  .onb-box { max-width: 380px; width: 100%; text-align: center; }
+  .onb-box { max-width: 380px; width: 100%; text-align: center;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .onb-emoji { font-size: 46px; }
   .onb-title { font-size: 26px; font-weight: 900; color: #3a4066; margin: 8px 0 6px; }
   .onb-sub { color: #6a7088; font-size: 15px; line-height: 1.5; margin-bottom: 22px; }
@@ -2174,9 +2175,14 @@
   .onb-pick.on .onb-pick-box { background: #27b98a; border-color: #27b98a; }
   .onb-pick-name { font-weight: 700; color: #3a4066; font-size: 15px; }
   .onb-nextstep { text-align: left; font-size: 13.5px; color: #6a7088; line-height: 1.5; margin: 14px 2px 4px; }
+  /* Continue never leaves the screen. It used to sit at the end of the list, so a
+     long question meant scrolling to find out what happens next. Now it rides
+     along the bottom and only settles into the page once you reach the end. */
   .onb-go { display: block; width: 100%; margin-top: 16px; border: none; border-radius: 14px; padding: 16px;
     font-size: 16px; font-weight: 800; color: #fff; cursor: pointer;
-    background: linear-gradient(135deg, #5b6cff, #7a5bff); box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
+    position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 6;
+    background: linear-gradient(135deg, #5b6cff, #7a5bff);
+    box-shadow: 0 8px 24px rgba(60,64,102,0.30), 0 2px 8px rgba(60,64,102,0.18); }
   .onb-go:active { transform: scale(0.99); }
   /* Waiting on a choice — look waiting, so no one taps a dead button. */
   .onb-go:disabled { opacity: 0.4; box-shadow: none; cursor: default; }
