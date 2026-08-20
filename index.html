@@ -2523,6 +2523,15 @@
   .wp-pick-days { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
   .wp-pd { font-size: 11px; font-weight: 800; color: #3a7a4a; background: #e7f6ea; border-radius: 6px; padding: 2px 6px; letter-spacing: .2px; }
   .wp-pd.cur { background: #6bbf7b; color: #fff; }
+  /* Line under the day name when a rest day just took another day's plan. */
+  .wp-same { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 2px 10px;
+    font-size: 13px; font-weight: 700; color: #3a7a4a; background: #e7f6ea; border-radius: 12px; padding: 9px 12px; }
+  .wp-same-undo { margin-left: auto; border: 1px solid #bcdcc4; background: #fff; color: #3a7a4a;
+    border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .wp-same-undo:active { background: #eef8f0; }
+  /* Quiet hint that the day row up top is how a plan spreads to other days. */
+  .wp-spread { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #c3cbef;
+    font-size: 13px; color: #666; line-height: 1.5; }
   .wp-copy { margin-top: 18px; padding-top: 14px; border-top: 1px dashed #c3cbef; }
   .wp-copy-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 8px; }
   .wp-copy-days { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -8887,6 +8896,7 @@
   const WEEK_MIGRATED_KEY = "mowes_week_migrated_v1";
   let weekPlanDay = todayKey;
   let wpShowAll = false; // is the full library open under the day's picks?
+  let wpMatchedFrom = ""; // the day we just copied from, so the new day can say so
   function loadWeekSel(){
     let o = {};
     try { o = JSON.parse(localStorage.getItem(WEEK_SEL_KEY) || "{}") || {}; } catch(e){ o = {}; }
@@ -8932,6 +8942,12 @@
     const full = fullNames[weekPlanDay] || weekPlanDay;
     const picked = sel[weekPlanDay] || [];
     let html = '<div class="wp-dayhead">' + escapeHtml(full) + (weekPlanDay === todayKey ? ' <span class="wp-todaytag">Today</span>' : '') + '</div>';
+    // Landed here by tapping a rest day up top: say where the plan came from, and
+    // leave one tap to undo it in case the day was meant to stay a rest day.
+    if (wpMatchedFrom){
+      html += '<div class="wp-same"><span>✓ Same as ' + escapeHtml(fullNames[wpMatchedFrom] || wpMatchedFrom) + '</span>'
+           + '<button class="wp-same-undo" onclick="wpMakeRest()">🌴 Make it a rest day</button></div>';
+    }
     if (!lib.length){
       html += '<div class="lib-empty">No exercises yet.<br><br><button class="lib-add-btn" onclick="openLibraryPage()">📚 Go to My Library</button></div>';
       body.innerHTML = html;
@@ -8960,14 +8976,36 @@
     html += '</div>';
     html += '<button class="wp-more" onclick="wpToggleAll()">'
          + (wpShowAll ? '‹ Done' : '＋ Add') + '</button>';
+    // The week days live in one place now — the row up top. Tapping a rest day
+    // there gives it this day's plan, so the second row of days is gone.
     if (picked.length){
-      html += '<div class="wp-copy"><div class="wp-copy-title">📋 Copy to:</div><div class="wp-copy-days">';
-      days.forEach(d => { if (d === weekPlanDay) return; html += '<button class="wp-copy-day" onclick="wpCopyTo(\'' + d + '\')">' + d + '</button>'; });
-      html += '</div><div class="wp-copy-msg" id="wpCopyMsg"></div></div>';
+      html += '<div class="wp-spread">Tap a 🌴 day up top to give it this same plan.</div>';
     }
     body.innerHTML = html;
   }
-  function wpSelectDay(d){ weekPlanDay = d; wpShowAll = false; renderWeekPlan(); }
+  function wpSelectDay(d){
+    const sel = loadWeekSel();
+    const here = (sel[weekPlanDay] || []).slice();
+    const there = sel[d] || [];
+    // Tap a rest day while this day has a plan and that day takes the same plan.
+    // A day that already has exercises is only opened — never written over.
+    if (d !== weekPlanDay && here.length && !there.length){
+      sel[d] = here;
+      saveWeekSel(sel);
+      wpMatchedFrom = weekPlanDay;
+    } else {
+      wpMatchedFrom = "";
+    }
+    weekPlanDay = d; wpShowAll = false; renderWeekPlan();
+  }
+  function wpMakeRest(){
+    const sel = loadWeekSel();
+    sel[weekPlanDay] = [];
+    saveWeekSel(sel);
+    wpMatchedFrom = "";
+    renderWeekPlan();
+  }
+  window.wpMakeRest = wpMakeRest;
   function wpToggleAll(){ wpShowAll = !wpShowAll; renderWeekPlan(); }
   window.wpToggleAll = wpToggleAll;
   function wpToggle(id){
@@ -8976,6 +9014,7 @@
     const j = a.indexOf(id);
     if (j >= 0) a.splice(j, 1); else a.push(id);
     saveWeekSel(sel);
+    wpMatchedFrom = "";
     renderWeekPlan();
   }
   function wpCopyTo(target){
@@ -8991,6 +9030,7 @@
     appOpened = true;
     leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveSchedulePage();
     weekPlanDay = (day && days.indexOf(day) >= 0) ? day : todayKey;
+    wpMatchedFrom = "";
     document.getElementById("weekPlanOverlay").classList.add("show");
     renderWeekPlan();
     renderPageBar();
