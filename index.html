@@ -11036,6 +11036,16 @@
   // exercises across the week based on how many days they said they'd train (the
   // rest become rest days). This is what makes the guided start end on a filled-in
   // week instead of the same single workout every day.
+  // A dumbbell row that opens without a Weight box is a card you have to go and
+  // fix before you can use it. What an exercise obviously counts should already
+  // be switched on: dumbbell row → Sets, Reps, Weight. Push-ups → Sets, Reps.
+  const WEIGHTED_RE = /dumbbell|barbell|kettlebell|goblet|weighted|deadlift|bench press|machine/;
+  function isWeightedMove(name){
+    const n = (name || "").trim().toLowerCase();
+    const gear = (EQUIP_MOVES.dumbbells || []).concat(EQUIP_MOVES.barbell || []);
+    if (gear.some(function(m){ return m.toLowerCase() === n; })) return true;
+    return WEIGHTED_RE.test(n);
+  }
   function routineFromExerciseName(name){
     const r = blankRoutine();
     r.name = name;
@@ -11045,12 +11055,16 @@
       r.details.time.on = true;
       r.details.time.rows = [{ label: name, min: "20", miles: "", done:false }];
     } else if (cat.type === "core" || lname.indexOf("plank") >= 0 || lname.indexOf("hold") >= 0){
+      // A plank is held, not counted — Sets and Time, no reps.
       r.details.reps.on = true;
+      r.details.reps.showSets = true;
       r.details.reps.cols = { reps:false, weight:false, time:true, distance:false };
       r.details.reps.sets = [{ reps:"", weight:"", time:"1", distance:"", done:false }];
     } else {
+      const wt = isWeightedMove(name);
       r.details.reps.on = true;
-      r.details.reps.cols = { reps:true, weight:false, time:false, distance:false };
+      r.details.reps.showSets = true;
+      r.details.reps.cols = { reps:true, weight:wt, time:false, distance:false };
       r.details.reps.sets = [
         { reps:"12", weight:"", time:"", distance:"", done:false },
         { reps:"12", weight:"", time:"", distance:"", done:false },
