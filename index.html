@@ -2343,7 +2343,7 @@
   .ach-verdict.behind { background: #fdf1e7; color: #b06a00; }
   .ach-empty { text-align: center; color: #777; font-size: 14px; line-height: 1.6; padding: 30px 8px; }
 
-  /* My Library — build & keep your exercises once (feeds My Weekly Plan) */
+  /* Library — build & keep your exercises once (feeds My Weekly Plan) */
   .library-overlay { position: fixed; inset: 0; z-index: 1000; display: none; overflow-y: auto;
     background: linear-gradient(180deg, #d3ddfb 0%, #dadcf6 55%, #d6def9 100%); }
   .library-overlay.show { display: block; }
@@ -2379,7 +2379,7 @@
   .lib-group { font-size: 15px; font-weight: 800; color: #3a4699; margin: 20px 2px 8px; padding-bottom: 6px;
     border-bottom: 2px solid rgba(90,104,214,0.18); }
   .lib-group:first-child { margin-top: 4px; }
-  /* My Library = a cabinet of drawers. Each category is a drawer you tap to open. */
+  /* Library = a cabinet of drawers. Each category is a drawer you tap to open. */
   .lib-drawer { border: 1px solid #e2e6f5; border-radius: 14px; background: #fbfcff; margin: 10px 0; overflow: hidden; }
   .lib-drawer.open { border-color: #c3cbf0; box-shadow: 0 4px 12px rgba(60,90,140,0.08); }
   .lib-drawer-head { width: 100%; display: flex; align-items: center; gap: 10px; padding: 14px; border: none; background: transparent; cursor: pointer; text-align: left; }
@@ -2741,7 +2741,7 @@
     color: #5b6cff; font-weight: 800; font-size: 13px; border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; cursor: pointer; }
   .session-step-num { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: #eef0fb; color: #5b6cff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
   .session-step-main { flex: 1 1 auto; min-width: 0; }
-  /* Tap-to-edit: the card's name area opens the exercise in My Library. */
+  /* Tap-to-edit: the card's name area opens the exercise in Library. */
   .session-step-main.tappable { cursor: pointer; border-radius: 8px; margin: -4px -6px; padding: 4px 6px; transition: background .15s; }
   .session-step-main.tappable:active { background: #eef1ff; }
   .session-step-edit { font-size: 12px; opacity: 0.5; margin-left: 3px; vertical-align: middle; }
@@ -3569,7 +3569,7 @@
       <div class="build-pair">
         <button class="build-tile build-tile-half" onclick="openLibraryPage()">
           <div class="build-tile-icon">📚</div>
-          <div class="build-tile-name">My Library</div>
+          <div class="build-tile-name">Library</div>
         </button>
         <button class="build-tile build-tile-half" onclick="openShareProgram()">
           <div class="build-tile-icon">📤</div>
@@ -3580,13 +3580,13 @@
     </div>
   </div>
 
-  <!-- My Library: build & keep your exercise exercises once, then use them in My Weekly Plan -->
+  <!-- Library: the shelf you go to to find an exercise; My Weekly Plan draws from it -->
   <div class="library-overlay" id="libraryOverlay">
     <div class="library-inner">
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
-      <div class="setup-title">📚 My Library</div>
+      <div class="setup-title">📚 Library</div>
       <div id="libraryList"></div>
-      <button class="lib-reset-btn" onclick="libEmptyAll()">🗑️ Empty my Library</button>
+      <button class="lib-reset-btn" onclick="libEmptyAll()">🗑️ Empty the Library</button>
       <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
@@ -5064,8 +5064,8 @@
   // below is still built and still works; it's only hidden, and ?full shows it
   // all. Switch pages back on ONE at a time, once each has earned its place.
   const PAGES_ON = {
-    build: true,    // 🛠️ Build MOWES — one page that holds My Library + My Weekly Plan
-    library: true,  // 📚 My Library — lives inside Build MOWES
+    build: true,    // 🛠️ Build MOWES — one page that holds Library + My Weekly Plan
+    library: true,  // 📚 Library — lives inside Build MOWES
     weekly: true,   // 🗓️ My Weekly Plan — lives inside Build MOWES
     setup: false,   // ⚙️ My Set-up — off; the guided start is Phase 2
     rules: false,   // 📜 My Rules — off
@@ -5086,7 +5086,7 @@
     }
     // Lean core (Cover + Today's Session) plus any pages we've switched back on so far.
     const stops = base.slice();
-    // Right after Today's MOWES: one "Build MOWES" page holding My Library + My Weekly Plan.
+    // Right after Today's MOWES: one "Build MOWES" page holding Library + My Weekly Plan.
     if (PAGES_ON.build) stops.push({ build:true, name:"Build MOWES", icon:"🛠️ " });
     if (PAGES_ON.trainers) stops.push({ trainers:true, name:"Trainers", icon:"🏋️ " });
     if (PAGES_ON.goals) stops.push({ goals:true, name:"My Goals & Achievement", icon:"🎯 " });
@@ -5115,7 +5115,7 @@
     const stops = pageBarStops();
     if (setupShownAsPage()) return stops.findIndex(s => s.setup);
     if (trainersShownAsPage()) return stops.findIndex(s => s.trainers);
-    // My Library / My Weekly Plan live inside Build MOWES → keep that chip highlighted.
+    // Library / My Weekly Plan live inside Build MOWES → keep that chip highlighted.
     const buildIdx = stops.findIndex(s => s.build);
     if (buildIdx >= 0 && (buildShownAsPage() || libraryShownAsPage() || weekPlanShownAsPage() || scheduleShownAsPage())) return buildIdx;
     if (libraryShownAsPage()) return stops.findIndex(s => s.library);
@@ -7151,7 +7151,7 @@
     }
   }
   function openShareProgram(){
-    if (!getLibrary().length){ alert("Build at least one exercise in My Library first — then you can share it."); return; }
+    if (!getLibrary().length){ alert("Build at least one exercise in the Library first — then you can share it."); return; }
     const link = programShareLink();
     const inp = document.getElementById("shareProgramLink"); if (inp) inp.value = link;
     const note = document.getElementById("shareProgramNote");
@@ -7215,7 +7215,7 @@
     document.getElementById("importProgramOverlay").classList.remove("open");
     const p = _pendingProgram; _pendingProgram = null;
     if (!p) return;
-    if (importProgramPayload(p)){ alert("✅ Program added! You'll find the new exercises in My Library and on your Weekly Plan."); location.reload(); }
+    if (importProgramPayload(p)){ alert("✅ Program added! You'll find the new exercises in the Library and on your Weekly Plan."); location.reload(); }
     else { alert("Sorry — that shared program couldn't be read."); }
   }
   function cancelImportProgram(){ document.getElementById("importProgramOverlay").classList.remove("open"); _pendingProgram = null; }
@@ -8445,7 +8445,7 @@
   window.rulesToggleMax = rulesToggleMax; window.rulesSetMaxMin = rulesSetMaxMin;
   window.rulesAddOwn = rulesAddOwn; window.rulesDeleteOwn = rulesDeleteOwn; window.rulesToggleOwn = rulesToggleOwn;
 
-  // ---- My Library: build & keep your exercises once (STEP 1 of My Weekly Plan) ----
+  // ---- Library: build & keep your exercises once (STEP 1 of My Weekly Plan) ----
   // A library exercise is the SAME shape as a day exercise (blankRoutine), so it can be
   // dropped straight into a weekly day later. We reuse the exact routine-card + reps
   // form (renderSets / readRepsFromDom); the shared captureDay()/saveData() are routed
@@ -8453,7 +8453,7 @@
   const LIBRARY_KEY = "mowes_library_v1";
   const LIBRARY_SEEDED_KEY = "mowes_library_seeded_v1";
   let libraryRoutines = [];
-  let libOpenGroup = null; // which drawer (category) is open in My Library
+  let libOpenGroup = null; // which drawer (category) is open in Library
   let libShowEmpty = false; // are the empty drawers being shown right now?
   let libIdSeq = 0;
   // Each library exercise gets a stable id so a weekly day can REFERENCE it (edit the
@@ -8956,7 +8956,7 @@
            + '<button class="wp-same-undo" onclick="wpMakeRest()">🌴 Make it a rest day</button></div>';
     }
     if (!lib.length){
-      html += '<div class="lib-empty">No exercises yet.<br><br><button class="lib-add-btn" onclick="openLibraryPage()">📚 Go to My Library</button></div>';
+      html += '<div class="lib-empty">No exercises yet.<br><br><button class="lib-add-btn" onclick="openLibraryPage()">📚 Go to the Library</button></div>';
       body.innerHTML = html;
       return;
     }
@@ -9239,7 +9239,7 @@
   window.wpSelectDay = wpSelectDay; window.wpToggle = wpToggle; window.wpCopyTo = wpCopyTo;
   window.openWeekPlanPage = openWeekPlanPage;
 
-  // ---- Build MOWES: the home page that holds My Library + My Weekly Plan ----
+  // ---- Build MOWES: the home page that holds Library + My Weekly Plan ----
   function openBuildPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
@@ -10834,7 +10834,7 @@
     } catch(e){}
     hideOnboarding();
     if (onbEditMode){ onbEditMode = false; openSetupPage(); } // editing → back to My Setup
-    // First-time: their picks land in My Library, then we open My Weekly Plan so they
+    // First-time: their picks land in Library, then we open My Weekly Plan so they
     // choose which days each exercise falls on. Today's page comes after, from the bar.
     else { try { buildWeekFromPicks(); } catch(e){} openWeekPlanPage(); }
   }
