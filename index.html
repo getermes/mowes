@@ -2144,6 +2144,9 @@
     background: #fff; border: 2px solid #e6e8f0; border-radius: 16px; padding: 16px; cursor: pointer;
     box-shadow: 0 4px 14px rgba(60,64,102,0.08); }
   .onb-choice:active { transform: scale(0.99); border-color: #5b6cff; }
+  /* The door we'd point at. Someone with nothing of their own yet should be
+     led to the one that shows them something, not left to weigh three. */
+  .onb-choice.lead { border-color: #5b6cff; box-shadow: 0 6px 18px rgba(91,108,255,0.22); }
   .onb-choice.picked { border-color: #5b6cff; background: #eef1ff; }
   .onb-choice.picked::after { content: "✓"; margin-left: auto; color: #5b6cff; font-weight: 900; font-size: 20px; }
   .onb-c-emoji { font-size: 28px; flex: 0 0 auto; }
@@ -10931,12 +10934,12 @@
     // Suggestions first: a brand-new person has nothing to build from yet, so the
     // door that shows them something goes on top. Building your own sits under it.
     const doors = [
-      ["🔍", "See suggestions to choose from", "onbGoSuggestions()"],
+      ["🔍", "See suggestions to choose from", "onbGoSuggestions()", true],
       ["📝", "Create my own exercises", "onbGoLibrary()"],
       ["🌙", "Not now — I'll set it up later", "onbSkipForNow()"]
     ];
     document.getElementById("onbChoices").innerHTML = doors.map(function(d){
-      return '<button type="button" class="onb-choice" onclick="' + d[2] + '">'
+      return '<button type="button" class="onb-choice' + (d[3] ? ' lead' : '') + '" onclick="' + d[2] + '">'
            + '<span class="onb-c-emoji">' + d[0] + '</span>'
            + '<span class="onb-c-text"><span class="onb-c-label">' + d[1] + '</span></span></button>';
     }).join("");
