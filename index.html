@@ -2477,6 +2477,8 @@
     background: #eef1fc; color: #5a68d6; }
   .wp-day.active .wp-day-cnt { background: rgba(255,255,255,0.9); color: #5a68d6; }
   .wp-day-rest { font-size: 12px; opacity: 0.85; }
+  /* The exercise's own icon, sitting off the name rather than against it. */
+  .ex-ic { display: inline-block; margin-right: 7px; }
   .wp-dayhead { font-size: 20px; font-weight: 800; color: #3a4699; margin: 6px 2px 2px; }
   .wp-todaytag { font-size: 12px; font-weight: 700; color: #fff; background: #6bbf7b; border-radius: 8px; padding: 2px 8px; vertical-align: middle; }
   .wp-note { font-size: 13px; color: #666; margin: 4px 2px 12px; line-height: 1.5; }
@@ -9038,7 +9040,7 @@
         : '';
       html += '<button class="wp-pick' + (on ? ' on' : '') + '" onclick="wpToggle(\'' + r.id + '\')">'
         + '<span class="wp-pick-check">' + (on ? '✓' : '＋') + '</span>'
-        + '<span class="wp-pick-main"><span class="wp-pick-name">' + escapeHtml(r.name || "Unnamed exercise") + '</span>'
+        + '<span class="wp-pick-main"><span class="wp-pick-name"><span class="ex-ic">' + exerciseCategory(r.name).icon + '</span>' + escapeHtml(r.name || "Unnamed exercise") + '</span>'
         + (sum ? '<span class="wp-pick-sum">' + escapeHtml(sum) + '</span>' : '')
         + daysBadge + '</span></button>';
     });
@@ -9174,7 +9176,9 @@
     // weight box just because the exercise before it had one.
     if (qeditFromWeek && !cardWasFilled(id)) applyCardMem(id);
     qeditMode = (qeditWorking.time && qeditWorking.time.on) ? "time" : "reps";
-    document.getElementById("qeditTitle").textContent = r.name || "Edit exercise";
+    document.getElementById("qeditTitle").textContent = r.name
+      ? (exerciseCategory(r.name).icon + " " + r.name)
+      : "Edit exercise";
     syncQeditScope();
     qeditRenderDays();
     qeditRenderBody();
@@ -9579,7 +9583,7 @@
     return '<button type="button" class="find-row' + (have ? ' have' : '') + '"'
       + (have ? ' disabled' : ' onclick="findAdd(' + JSON.stringify(name).replace(/"/g, "&quot;") + ')"') + '>'
       + '<span class="find-mark">' + (have ? '✓' : '＋') + '</span>'
-      + '<span class="find-name">' + escapeHtml(name) + '</span>'
+      + '<span class="find-name"><span class="ex-ic">' + exerciseCategory(name).icon + '</span>' + escapeHtml(name) + '</span>'
       + (have ? '<span class="find-note">In your Library</span>' : '')
       + '</button>';
   }
