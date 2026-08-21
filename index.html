@@ -2893,6 +2893,9 @@
   .qedit-add { width: 100%; border: 2px dashed #cdd3ec; background: #f7f8fe; color: #5b6cff; font-weight: 800; font-size: 14px;
     border-radius: 12px; padding: 10px; cursor: pointer; }
   .qedit-add:active { transform: scale(0.99); }
+  /* The same pills the sheet uses, so the card speaks the same language. */
+  .qedit-cols { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .qedit-cols-hint { font-size: 12px; color: #8a90ad; margin: -6px 0 12px; line-height: 1.4; }
   /* Which days this exercise falls on — asked right where you set it up. */
   .qedit-days { margin-top: 6px; padding-top: 12px; border-top: 1px solid #eef0f7; }
   .qedit-days-label { font-size: 13px; font-weight: 800; color: #3a4066; margin-bottom: 8px; }
@@ -9215,16 +9218,52 @@
       if (!det.reps) det.reps = { sets: [] };
       const wU = det.reps.weightUnit || "lbs", dU = det.reps.distUnit || "mi";
       const sets = det.reps.sets || (det.reps.sets = []);
-      body.innerHTML = sets.map(function(s, i){
-        return '<div class="qedit-set" data-i="' + i + '"><div class="qedit-set-title">Set ' + (i+1) + '</div><div class="qedit-grid">'
-          + qeditFldHtml("Reps", "reps", s.reps, "")
-          + qeditFldHtml("Weight", "weight", s.weight, wU)
-          + qeditFldHtml("Time", "time", s.time, "min")
-          + qeditFldHtml("Distance", "distance", s.distance, dU)
-          + '</div></div>';
+      const cols = qeditCols();
+      // The pills first: what are you counting on this exercise? Only what you
+      // switch on gets a box to fill in — the same choice the sheet gives you.
+      const labels = { reps:"Reps/laps", weight:"Weight", distance:"Dist", time:"Time" };
+      let html = '<div class="qedit-cols">' + ["reps","weight","distance","time"].map(function(k){
+        return '<button type="button" class="col-toggle' + (cols[k] ? ' on' : '')
+          + '" onclick="qeditToggleCol(\'' + k + '\')">' + labels[k] + '</button>';
+      }).join("") + '</div>';
+      if (!["reps","weight","distance","time"].some(function(k){ return cols[k]; })){
+        html += '<div class="qedit-cols-hint">Nothing switched on yet — tap what this exercise counts.</div>';
+      }
+      html += sets.map(function(s, i){
+        let flds = "";
+        if (cols.reps)     flds += qeditFldHtml("Reps", "reps", s.reps, "");
+        if (cols.weight)   flds += qeditFldHtml("Weight", "weight", s.weight, wU);
+        if (cols.time)     flds += qeditFldHtml("Time", "time", s.time, "min");
+        if (cols.distance) flds += qeditFldHtml("Distance", "distance", s.distance, dU);
+        return '<div class="qedit-set" data-i="' + i + '"><div class="qedit-set-title">Set ' + (i+1) + '</div>'
+          + '<div class="qedit-grid">' + flds + '</div></div>';
       }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddSet()">Add set</button>';
+      body.innerHTML = html;
     }
   }
+  // What this exercise counts. Falls back to whatever the sets already carry, so
+  // an exercise made before the pills existed opens with the right ones lit.
+  function qeditCols(){
+    const det = qeditWorking || (qeditWorking = {});
+    if (!det.reps) det.reps = { sets: [] };
+    if (!det.reps.cols){
+      const sets = det.reps.sets || [];
+      det.reps.cols = {
+        reps:     sets.some(function(s){ return s.reps; }) || !sets.some(function(s){ return s.weight || s.time || s.distance; }),
+        weight:   sets.some(function(s){ return s.weight; }),
+        time:     sets.some(function(s){ return s.time; }),
+        distance: sets.some(function(s){ return s.distance; })
+      };
+    }
+    return det.reps.cols;
+  }
+  function qeditToggleCol(k){
+    qeditCollect();
+    const cols = qeditCols();
+    cols[k] = !cols[k];
+    qeditRenderBody();
+  }
+  window.qeditToggleCol = qeditToggleCol;
   // Read the on-screen inputs back into the working copy (so typing survives Add/Save).
   function qeditCollect(){
     const body = document.getElementById("qeditBody");
@@ -9238,9 +9277,17 @@
       if (!det.time) det.time = { on:true, rows:[] };
       det.time.on = true; det.time.rows = rows;
     } else {
-      const sets = [];
-      cards.forEach(function(c){ sets.push({ reps: grab(c,"reps"), weight: grab(c,"weight"), time: grab(c,"time"), distance: grab(c,"distance"), done:false }); });
       if (!det.reps) det.reps = {};
+      const prev = det.reps.sets || [];
+      // A field that is switched off has no box on screen — keep what it held
+      // rather than wiping it, in case the pill goes back on.
+      const keep = function(card, k, i){
+        const el = card.querySelector('[data-k="' + k + '"]');
+        if (el) return el.value.trim();
+        return (prev[i] && prev[i][k] != null) ? prev[i][k] : "";
+      };
+      const sets = [];
+      cards.forEach(function(c, i){ sets.push({ reps: keep(c,"reps",i), weight: keep(c,"weight",i), time: keep(c,"time",i), distance: keep(c,"distance",i), done:false }); });
       det.reps.on = true; det.reps.sets = sets;
     }
   }
@@ -9261,10 +9308,10 @@
   function qeditSave(){
     qeditCollect();
     const det = qeditWorking;
-    // Turn on any column the user actually filled, so the Library editor shows it too.
-    if (qeditMode !== "time" && det.reps){
-      const cols = det.reps.cols || (det.reps.cols = { reps:true, weight:false, time:false, distance:false });
-      ["reps","weight","time","distance"].forEach(function(k){ if ((det.reps.sets || []).some(function(s){ return s[k]; })) cols[k] = true; });
+    // The pills say which columns this exercise uses — that choice stands, even
+    // if a switched-off field still holds an old number underneath.
+    if (qeditMode !== "time" && det.reps && !det.reps.cols){
+      det.reps.cols = { reps:true, weight:false, time:false, distance:false };
     }
     if (qeditScope === "today"){
       setTodayOvr(qeditId, det);
