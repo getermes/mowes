@@ -2376,6 +2376,26 @@
     background: #fff; border: 2px dashed #c7cdf0; border-radius: 14px;
     color: #5b6cff; font-weight: 800; font-size: 15px; }
   .lib-more:active { transform: scale(0.99); }
+  /* Find exercises — the shelf beyond your own. Search up top, browse below. */
+  .find-search { width: 100%; box-sizing: border-box; margin: 4px 0 6px; padding: 14px 16px;
+    border: 2px solid #cfd6ff; border-radius: 14px; background: #fff; color: #3a4066;
+    font-size: 16px; font-weight: 600; -webkit-appearance: none; }
+  .find-search:focus { outline: none; border-color: #5b6cff; }
+  .find-group { font-size: 14px; font-weight: 800; color: #3a4699; margin: 18px 2px 8px; }
+  .find-group .find-yours { font-size: 11px; font-weight: 800; color: #fff; background: #6bbf7b;
+    border-radius: 8px; padding: 2px 7px; margin-left: 7px; vertical-align: middle; }
+  .find-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: #fff; border: none; border-radius: 14px; padding: 14px; margin-bottom: 8px; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(60,64,102,0.06); }
+  .find-row:active { transform: scale(0.995); }
+  .find-row.have { background: #eef6f0; box-shadow: none; cursor: default; }
+  .find-mark { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 15px; font-weight: 900;
+    background: #eef0ff; color: #5b6cff; }
+  .find-row.have .find-mark { background: #6bbf7b; color: #fff; }
+  .find-name { flex: 1 1 auto; font-size: 15px; font-weight: 800; color: #3a4066; }
+  .find-note { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: #3a7a4a; }
+  .find-none { text-align: center; color: #7a80a0; font-size: 14px; line-height: 1.6; padding: 26px 8px; }
   .lib-group { font-size: 15px; font-weight: 800; color: #3a4699; margin: 20px 2px 8px; padding-bottom: 6px;
     border-bottom: 2px solid rgba(90,104,214,0.18); }
   .lib-group:first-child { margin-top: 4px; }
@@ -2873,6 +2893,15 @@
   .qedit-add { width: 100%; border: 2px dashed #cdd3ec; background: #f7f8fe; color: #5b6cff; font-weight: 800; font-size: 14px;
     border-radius: 12px; padding: 10px; cursor: pointer; }
   .qedit-add:active { transform: scale(0.99); }
+  /* Which days this exercise falls on — asked right where you set it up. */
+  .qedit-days { margin-top: 6px; padding-top: 12px; border-top: 1px solid #eef0f7; }
+  .qedit-days-label { font-size: 13px; font-weight: 800; color: #3a4066; margin-bottom: 8px; }
+  .qedit-days-row { display: flex; gap: 5px; }
+  .qedit-day { flex: 1 1 0; min-width: 0; border: 2px solid #e6e8f0; background: #fff; color: #8a90ad;
+    font-weight: 800; font-size: 12px; border-radius: 10px; padding: 9px 2px; cursor: pointer; }
+  .qedit-day.on { border-color: #5b6cff; background: #eef0ff; color: #4550cc; }
+  .qedit-day:active { transform: scale(0.96); }
+  .qedit-days-hint { font-size: 12px; color: #8a90ad; margin-top: 7px; line-height: 1.4; }
   .qedit-scope { margin-top: 6px; padding-top: 12px; border-top: 1px solid #eef0f7; }
   .qedit-scope-label { font-size: 13px; font-weight: 800; color: #3a4066; margin-bottom: 7px; }
   .qedit-scope-toggle { display: flex; gap: 8px; }
@@ -3416,6 +3445,11 @@
         <button class="qedit-x" onclick="qeditClose()" aria-label="Close">✕</button>
       </div>
       <div class="qedit-body" id="qeditBody"></div>
+      <div class="qedit-days" id="qeditDays" hidden>
+        <div class="qedit-days-label">Which days?</div>
+        <div class="qedit-days-row" id="qeditDaysRow"></div>
+        <div class="qedit-days-hint" id="qeditDaysHint"></div>
+      </div>
       <div class="qedit-scope">
         <div class="qedit-scope-label">Apply this change:</div>
         <div class="qedit-scope-toggle">
@@ -3586,7 +3620,21 @@
       <button class="build-back" onclick="openBuildPage()">‹ Build MOWES</button>
       <div class="setup-title">📚 Library</div>
       <div id="libraryList"></div>
+      <button class="lib-more" onclick="openFindPage()">🔍 Find more exercises</button>
       <button class="lib-reset-btn" onclick="libEmptyAll()">🗑️ Empty the Library</button>
+      <div class="msupport-compact msupport-auto"></div>
+    </div>
+  </div>
+
+  <!-- Find exercises: the shelf beyond your own. Search by name or browse by gear. -->
+  <div class="library-overlay" id="findOverlay">
+    <div class="library-inner">
+      <button class="build-back" onclick="openLibraryPage()">‹ Library</button>
+      <div class="setup-title">🔍 Find exercises</div>
+      <p class="lib-hint">Search by name, or look through what fits your gear. Tap one and it joins your Library.</p>
+      <input type="search" id="findSearch" class="find-search" placeholder="Search exercises…"
+             oninput="renderFind()" autocomplete="off" aria-label="Search exercises">
+      <div id="findList"></div>
       <div class="msupport-compact msupport-auto"></div>
     </div>
   </div>
@@ -5136,7 +5184,7 @@
   function openCoverPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     const el = document.getElementById("welcomeOverlay");
     el.classList.add("cover-as-page", "show");
     renderPageBar();
@@ -5148,7 +5196,7 @@
   function openPlanPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leaveCoverPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     renderPlan();
     const el = document.getElementById("planOverlay");
     el.classList.add("plan-as-page", "show");
@@ -5161,7 +5209,7 @@
   function openSetupPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leaveCoverPage(); leavePlanPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     renderSetup();
     document.getElementById("setupOverlay").classList.add("show");
     renderPageBar();
@@ -5188,7 +5236,7 @@
     if (s.weekplan){ openWeekPlanPage(); return; }
     if (s.rules){ openRulesPage(); return; }
     if (s.setup){ openSetupPage(); return; }
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     // Instant switch (no page-flip animation) so the bar is never covered.
     if (s.id !== activePageId) switchToPage(s.id);
     else renderPageBar();
@@ -8141,7 +8189,7 @@
   function openBodyPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     loadBodyPics();
     renderBody();
     renderBodyPics();
@@ -8254,7 +8302,7 @@
   function openGoalsPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     renderGoals();
     renderAch();
     document.getElementById("goalsOverlay").classList.add("show");
@@ -8434,7 +8482,7 @@
   function openRulesPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     renderRules();
     document.getElementById("rulesOverlay").classList.add("show");
     renderPageBar();
@@ -8874,7 +8922,7 @@
   function openLibraryPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage();
     loadLibrary();
     document.getElementById("libraryOverlay").classList.add("show");
     renderLibrary();
@@ -8960,9 +9008,12 @@
       body.innerHTML = html;
       return;
     }
-    // A day with exercises shows only those. A day with none has nothing to
-    // hide, so the list is already open — one tap puts an exercise on the day.
-    const wpOpen = wpShowAll || !picked.length;
+    // Every day shows the whole Library. The check mark is the difference: on
+    // means this exercise is on this day. This is the page where the week gets
+    // edited, so what you can switch on has to be in front of you. Turn this
+    // back on to show only the day's own picks with Add to reach the rest.
+    const WP_SHOW_PICKED_ONLY = false;
+    const wpOpen = !WP_SHOW_PICKED_ONLY || wpShowAll || !picked.length;
     html += picked.length
       ? ''
       : '<div class="wp-note wp-rest">🌴 Rest day — tap an exercise below to put it on ' + escapeHtml(full) + '.</div>';
@@ -8984,7 +9035,7 @@
         + daysBadge + '</span></button>';
     });
     html += '</div>';
-    if (picked.length){
+    if (WP_SHOW_PICKED_ONLY && picked.length){
       html += '<button class="wp-more" onclick="wpToggleAll()">'
            + (wpShowAll ? '‹ Done' : 'Add') + '</button>';
     }
@@ -9024,10 +9075,14 @@
     const sel = loadWeekSel();
     const a = sel[weekPlanDay];
     const j = a.indexOf(id);
+    const turningOn = j < 0;
     if (j >= 0) a.splice(j, 1); else a.push(id);
     saveWeekSel(sel);
     wpMatchedFrom = "";
     renderWeekPlan();
+    // Switched on: the card opens so the sets, reps, weight, time and distance
+    // get filled in right there, instead of being hunted down later.
+    if (turningOn && typeof openQuickEdit === "function") openQuickEdit(id, true);
   }
   function wpCopyTo(target){
     const sel = loadWeekSel();
@@ -9066,6 +9121,10 @@
   function clearTodayOvr(id){ const o = loadTodayOvr(); if (o.ovr && o.ovr[id] != null){ delete o.ovr[id]; try { localStorage.setItem(TODAY_OVR_KEY, JSON.stringify(o)); } catch(e){} } }
 
   let qeditId = null, qeditMode = "reps", qeditScope = "always", qeditWorking = null;
+  // Opened from My Weekly Plan, "just for today" means nothing — you are setting
+  // up Wednesday, not today. The scope toggle stays out of the way there.
+  let qeditFromWeek = false;
+  let qeditDaysSel = [];   // the days this exercise is set on, while the card is open
   function sessionEditRoutine(rid){
     if (!rid || rid === "__warmup__" || rid === "__cooldown__") return;
     if (rid.indexOf("lib:") === 0){
@@ -9077,21 +9136,63 @@
   }
   window.sessionEditRoutine = sessionEditRoutine;
 
-  function openQuickEdit(id){
+  function openQuickEdit(id, fromWeek){
     qeditId = id;
+    qeditFromWeek = !!fromWeek;
     loadLibrary();
     const r = (libraryRoutines || []).find(x => x && x.id === id);
     if (!r){ openLibraryPage(); return; }
     const ovr = todayOvrMap()[id];
-    qeditScope = ovr ? "today" : "always";              // if today already has an override, start there
+    qeditScope = qeditFromWeek ? "always" : (ovr ? "today" : "always");   // if today already has an override, start there
     qeditWorking = JSON.parse(JSON.stringify(ovr || r.details || {}));
     qeditMode = (qeditWorking.time && qeditWorking.time.on) ? "time" : "reps";
     document.getElementById("qeditTitle").textContent = r.name || "Edit exercise";
     syncQeditScope();
+    qeditRenderDays();
     qeditRenderBody();
     document.getElementById("qeditOverlay").classList.add("show");
   }
   window.openQuickEdit = openQuickEdit;
+
+  // The days row: set the numbers and the days in one place, so an exercise you
+  // do three times a week is three taps here instead of three trips to the week.
+  function qeditRenderDays(){
+    const wrap = document.getElementById("qeditDays");
+    if (!wrap) return;
+    wrap.hidden = !qeditFromWeek;
+    if (!qeditFromWeek) return;
+    const sel = loadWeekSel();
+    qeditDaysSel = days.filter(function(d){ return (sel[d] || []).indexOf(qeditId) >= 0; });
+    const row = document.getElementById("qeditDaysRow");
+    if (row){
+      row.innerHTML = days.map(function(d){
+        return '<button type="button" class="qedit-day' + (qeditDaysSel.indexOf(d) >= 0 ? ' on' : '') + '"'
+          + ' onclick="qeditToggleDay(\'' + d + '\')">' + d + '</button>';
+      }).join("");
+    }
+    qeditSyncDaysHint();
+  }
+  function qeditSyncDaysHint(){
+    const hint = document.getElementById("qeditDaysHint");
+    if (!hint) return;
+    hint.textContent = qeditDaysSel.length
+      ? "On " + qeditDaysSel.length + (qeditDaysSel.length === 1 ? " day a week." : " days a week.")
+      : "Not on any day yet — tap the days you want it.";
+  }
+  function qeditToggleDay(d){
+    const sel = loadWeekSel();
+    const a = sel[d] || (sel[d] = []);
+    const j = a.indexOf(qeditId);
+    if (j >= 0) a.splice(j, 1); else a.push(qeditId);
+    saveWeekSel(sel);
+    qeditDaysSel = days.filter(function(x){ return (sel[x] || []).indexOf(qeditId) >= 0; });
+    const row = document.getElementById("qeditDaysRow");
+    if (row){
+      [].forEach.call(row.children, function(b){ b.classList.toggle("on", qeditDaysSel.indexOf(b.textContent) >= 0); });
+    }
+    qeditSyncDaysHint();
+  }
+  window.qeditToggleDay = qeditToggleDay;
 
   function qeditFldHtml(label, key, val, unit){
     const v = (val == null) ? "" : val;
@@ -9149,6 +9250,8 @@
   function qeditSetScope(scope){ qeditScope = (scope === "today") ? "today" : "always"; syncQeditScope(); }
   window.qeditSetScope = qeditSetScope;
   function syncQeditScope(){
+    const scope = document.querySelector("#qeditOverlay .qedit-scope");
+    if (scope) scope.hidden = qeditFromWeek;
     document.querySelectorAll("#qeditOverlay .qedit-scope-btn").forEach(function(b){ b.classList.toggle("on", b.dataset.scope === qeditScope); });
     const hint = document.getElementById("qeditScopeHint");
     if (hint) hint.textContent = (qeditScope === "today")
@@ -9175,7 +9278,13 @@
     if (typeof renderSession === "function") renderSession();
   }
   window.qeditSave = qeditSave;
-  function qeditClose(){ const el = document.getElementById("qeditOverlay"); if (el) el.classList.remove("show"); qeditId = null; qeditWorking = null; }
+  function qeditClose(){
+    const el = document.getElementById("qeditOverlay"); if (el) el.classList.remove("show");
+    qeditId = null; qeditWorking = null; qeditFromWeek = false; qeditDaysSel = [];
+    // The week page is right underneath — let it pick up the new numbers.
+    const wp = document.getElementById("weekPlanOverlay");
+    if (wp && wp.classList.contains("show") && typeof renderWeekPlan === "function") renderWeekPlan();
+  }
   window.qeditClose = qeditClose;
   // The ⚙️ gear tucks the 4 pacing settings away; tap to show/hide them.
   function toggleSessionSettings(){
@@ -9238,6 +9347,85 @@
   }
   window.wpSelectDay = wpSelectDay; window.wpToggle = wpToggle; window.wpCopyTo = wpCopyTo;
   window.openWeekPlanPage = openWeekPlanPage;
+
+  // ---- Find exercises: the shelf beyond your own ----
+  // The Library holds what you have. This is where you go and get more — the
+  // same exercises the set-up offers, searchable, with your own gear on top.
+  function findAllGroups(){
+    let a = {};
+    try { a = JSON.parse(localStorage.getItem(ONB_ANSWERS_KEY) || "{}") || {}; } catch(e){ a = {}; }
+    let mine = Array.isArray(a.equipment) ? a.equipment.slice() : (a.equipment ? [a.equipment] : []);
+    const keys = Object.keys(EQUIP_MOVES);
+    mine = mine.filter(k => keys.indexOf(k) >= 0);
+    const ordered = mine.concat(keys.filter(k => mine.indexOf(k) < 0));
+    return ordered.map(k => ({
+      key: k,
+      name: EQUIP_GROUP_NAME[k] || k,
+      mine: mine.indexOf(k) >= 0,
+      moves: (EQUIP_MOVES[k] || []).slice()
+    }));
+  }
+  function findHave(name){
+    const t = (name || "").trim().toLowerCase();
+    return getLibrary().some(r => (r.name || "").trim().toLowerCase() === t);
+  }
+  function findRow(name){
+    const have = findHave(name);
+    return '<button type="button" class="find-row' + (have ? ' have' : '') + '"'
+      + (have ? ' disabled' : ' onclick="findAdd(' + JSON.stringify(name).replace(/"/g, "&quot;") + ')"') + '>'
+      + '<span class="find-mark">' + (have ? '✓' : '＋') + '</span>'
+      + '<span class="find-name">' + escapeHtml(name) + '</span>'
+      + (have ? '<span class="find-note">In your Library</span>' : '')
+      + '</button>';
+  }
+  function renderFind(){
+    const list = document.getElementById("findList");
+    if (!list) return;
+    const box = document.getElementById("findSearch");
+    const q = ((box && box.value) || "").trim().toLowerCase();
+    const groups = findAllGroups();
+    let html = "";
+    if (q){
+      // Searching flattens the shelves — you want the name, not where it sits.
+      const hits = [];
+      groups.forEach(g => g.moves.forEach(m => {
+        if (m.toLowerCase().indexOf(q) >= 0 && hits.indexOf(m) < 0) hits.push(m);
+      }));
+      html = hits.length
+        ? hits.map(findRow).join("")
+        : '<div class="find-none">Nothing by that name.<br>Try a shorter word — or build your own back in the Library.</div>';
+    } else {
+      groups.forEach(g => {
+        html += '<div class="find-group">' + escapeHtml(g.name)
+             + (g.mine ? '<span class="find-yours">yours</span>' : '') + '</div>';
+        html += g.moves.map(findRow).join("");
+      });
+    }
+    list.innerHTML = html;
+  }
+  function findAdd(name){
+    const lib = getLibrary();
+    if (!findHave(name)){
+      const r = routineFromExerciseName(name);
+      r.id = genLibId();
+      lib.push(r);
+      writeLibraryStore(lib);
+    }
+    renderFind();
+  }
+  function openFindPage(){
+    if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
+    appOpened = true;
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage();
+    leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    document.getElementById("findOverlay").classList.add("show");
+    const box = document.getElementById("findSearch");
+    if (box) box.value = "";
+    renderFind();
+    renderPageBar();
+  }
+  function leaveFindPage(){ const el = document.getElementById("findOverlay"); if (el) el.classList.remove("show"); }
+  window.openFindPage = openFindPage; window.renderFind = renderFind; window.findAdd = findAdd;
 
   // ---- Build MOWES: the home page that holds Library + My Weekly Plan ----
   function openBuildPage(){
@@ -9794,7 +9982,7 @@
   function openSchedulePage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     document.getElementById("scheduleOverlay").classList.add("show");
     renderSchedule();
     const rl = document.getElementById("reminderLead"); if (rl) rl.value = String(loadReminderLead());
@@ -9836,7 +10024,7 @@
   function openTrainersPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveSchedulePage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveSessionPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage(); leaveSchedulePage();
     document.getElementById("trainersOverlay").classList.add("show");
     renderTrainers();
     renderPageBar();
@@ -10336,7 +10524,7 @@
   function openSessionPage(){
     if (typeof coverTimer !== "undefined" && coverTimer){ clearTimeout(coverTimer); coverTimer = null; }
     appOpened = true;
-    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage();
+    leaveCoverPage(); leavePlanPage(); leaveSetupPage(); leaveBodyPage(); leaveGoalsPage(); leaveAchPage(); leaveRulesPage(); leaveLibraryPage(); leaveWeekPlanPage(); leaveBuildPage(); leaveFindPage();
     sessionSelDay = todayKey; sessionDayOffset = 0; sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionDone = {}; sessionSkipped = {}; sessionRunning = false;
     if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionLoadSettings();
