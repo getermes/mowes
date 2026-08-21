@@ -9273,12 +9273,27 @@
     const det = qeditWorking || (qeditWorking = {});
     if (qeditMode === "time"){
       const rows = (det.time && det.time.rows) || [];
-      body.innerHTML = rows.map(function(row, i){
+      const tc = qeditTimeCols();
+      // A run can be planned by the clock or by the ground covered. Same pills as
+      // everywhere else. A box you switch off keeps its number — the distance is
+      // still there for your history even when you plan by time.
+      let html = '<div class="sets-cols qedit-cols">'
+        + '<button type="button" class="col-toggle' + (tc.time ? ' on' : '') + '" onclick="qeditToggleTimeCol(\'time\')">Time</button>'
+        + '<button type="button" class="col-toggle' + (tc.distance ? ' on' : '') + '" onclick="qeditToggleTimeCol(\'distance\')">Dist</button>'
+        + '</div>';
+      if (!tc.time && !tc.distance){
+        html += '<div class="qedit-cols-hint">Nothing switched on yet — tap what this one goes by.</div>';
+      }
+      html += rows.map(function(row, i){
+        let flds = "";
+        if (tc.time)     flds += qeditFldHtml("Time", "min", row.min, "min");
+        if (tc.distance) flds += qeditFldHtml("Distance", "miles", row.miles, det.time.distUnit === "km" ? "km" : "mi");
         return '<div class="qedit-set" data-i="' + i + '"><div class="qedit-set-title">Part ' + (i+1) + '</div>'
           + '<label class="qedit-fld" style="margin-bottom:8px"><span>Name (e.g. Run / Walk)</span><div class="qedit-inrow">'
           + '<input type="text" data-k="label" value="' + escapeHtml(row.label || "") + '" placeholder="Run"></div></label>'
-          + '<div class="qedit-grid">' + qeditFldHtml("Time", "min", row.min, "min") + qeditFldHtml("Distance", "miles", row.miles, "mi") + '</div></div>';
+          + '<div class="qedit-grid">' + flds + '</div></div>';
       }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddPart()">Add part</button>';
+      body.innerHTML = html;
     } else {
       if (!det.reps) det.reps = { sets: [] };
       const wU = det.reps.weightUnit || "lbs", dU = det.reps.distUnit || "mi";
@@ -9330,6 +9345,21 @@
       body.innerHTML = html;
     }
   }
+  // Which boxes a run card shows. Anything saved before the pills existed keeps
+  // both, so nobody loses a box they were using.
+  function qeditTimeCols(){
+    const det = qeditWorking || (qeditWorking = {});
+    if (!det.time) det.time = { on:true, rows:[] };
+    if (!det.time.cols) det.time.cols = { time:true, distance:true };
+    return det.time.cols;
+  }
+  function qeditToggleTimeCol(k){
+    qeditCollect();
+    const tc = qeditTimeCols();
+    tc[k] = !tc[k];
+    qeditRenderBody();
+  }
+  window.qeditToggleTimeCol = qeditToggleTimeCol;
   function qeditShowSets(){
     const det = qeditWorking || (qeditWorking = {});
     if (!det.reps) det.reps = { sets: [] };
@@ -9382,9 +9412,16 @@
     const cards = body.querySelectorAll(".qedit-set");
     const grab = function(card, k){ const el = card.querySelector('[data-k="' + k + '"]'); return el ? el.value.trim() : ""; };
     if (qeditMode === "time"){
-      const rows = [];
-      cards.forEach(function(c){ rows.push({ label: grab(c,"label"), min: grab(c,"min"), miles: grab(c,"miles"), done:false }); });
       if (!det.time) det.time = { on:true, rows:[] };
+      const prev = det.time.rows || [];
+      // The distance you are not planning by is still your distance — hold it.
+      const keep = function(card, k, i){
+        const el = card.querySelector('[data-k="' + k + '"]');
+        if (el) return el.value.trim();
+        return (prev[i] && prev[i][k] != null) ? prev[i][k] : "";
+      };
+      const rows = [];
+      cards.forEach(function(c, i){ rows.push({ label: keep(c,"label",i), min: keep(c,"min",i), miles: keep(c,"miles",i), done:false }); });
       det.time.on = true; det.time.rows = rows;
     } else {
       if (!det.reps) det.reps = {};
