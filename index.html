@@ -10928,9 +10928,11 @@
     document.getElementById("onbTitle").textContent = "What do you want to do next?";
     const sub = document.getElementById("onbSub");
     sub.textContent = ""; sub.style.display = "none";
+    // Suggestions first: a brand-new person has nothing to build from yet, so the
+    // door that shows them something goes on top. Building your own sits under it.
     const doors = [
-      ["📝", "Create my own exercises", "onbGoLibrary()"],
       ["🔍", "See suggestions to choose from", "onbGoSuggestions()"],
+      ["📝", "Create my own exercises", "onbGoLibrary()"],
       ["🌙", "Not now — I'll set it up later", "onbSkipForNow()"]
     ];
     document.getElementById("onbChoices").innerHTML = doors.map(function(d){
@@ -11116,7 +11118,17 @@
     if (onbEditMode){ onbEditMode = false; openSetupPage(); } // editing → back to My Setup
     // First-time: their picks land in Library, then we open My Weekly Plan so they
     // choose which days each exercise falls on. Today's page comes after, from the bar.
-    else { try { buildWeekFromPicks(); } catch(e){} openWeekPlanPage(); }
+    else {
+      try { buildWeekFromPicks(); } catch(e){} 
+      openWeekPlanPage();
+      // Landing on an empty week left you looking at a list with nothing to do.
+      // The set-up carries one step further: the first exercise's card opens,
+      // ready for the sets and the days. Only here, on the way in.
+      try {
+        const first = (getLibrary() || [])[0];
+        if (first && typeof openQuickEdit === "function") openQuickEdit(first.id, true);
+      } catch(e){}
+    }
   }
   window.onbPick = onbPick; window.onbToggle = onbToggle; window.onbContinue = onbContinue; window.onbPrev = onbPrev; window.finishOnboarding = finishOnboarding;
 
