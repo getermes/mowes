@@ -9133,6 +9133,22 @@
   // up Wednesday, not today. The scope toggle stays out of the way there.
   let qeditFromWeek = false;
   let qeditDaysSel = [];   // the days this exercise is set on, while the card is open
+  // What you typed on the last card you filled in from the week — the numbers,
+  // and the days you put it on. The next new exercise starts from there instead
+  // of from nothing. Kept on the phone like everything else.
+  const CARD_MEM_KEY = "mowes_card_memory_v1";
+  const CARD_FILLED_KEY = "mowes_card_filled_v1";
+  function loadCardMem(){ try { return JSON.parse(localStorage.getItem(CARD_MEM_KEY) || "null"); } catch(e){ return null; } }
+  function saveCardMem(m){ try { localStorage.setItem(CARD_MEM_KEY, JSON.stringify(m)); } catch(e){} }
+  function cardFilledIds(){ try { return JSON.parse(localStorage.getItem(CARD_FILLED_KEY) || "[]") || []; } catch(e){ return []; } }
+  function markCardFilled(id){
+    const a = cardFilledIds();
+    if (a.indexOf(id) < 0){ a.push(id); try { localStorage.setItem(CARD_FILLED_KEY, JSON.stringify(a)); } catch(e){} }
+  }
+  function cardWasFilled(id){ return cardFilledIds().indexOf(id) >= 0; }
+  // A card only inherits from a card of its own kind: a run does not want
+  // "4 sets of 15 at 8 lbs", and a bench press does not want a distance.
+  function cardKind(det){ return (det && det.time && det.time.on) ? "time" : "reps"; }
   function sessionEditRoutine(rid){
     if (!rid || rid === "__warmup__" || rid === "__cooldown__") return;
     if (rid.indexOf("lib:") === 0){
@@ -9153,6 +9169,10 @@
     const ovr = todayOvrMap()[id];
     qeditScope = qeditFromWeek ? "always" : (ovr ? "today" : "always");   // if today already has an override, start there
     qeditWorking = JSON.parse(JSON.stringify(ovr || r.details || {}));
+    // Never filled in before, opened from the week: take last card's numbers and
+    // days. The pills stay as this exercise set them — a push-up does not grow a
+    // weight box just because the exercise before it had one.
+    if (qeditFromWeek && !cardWasFilled(id)) applyCardMem(id);
     qeditMode = (qeditWorking.time && qeditWorking.time.on) ? "time" : "reps";
     document.getElementById("qeditTitle").textContent = r.name || "Edit exercise";
     syncQeditScope();
@@ -9178,6 +9198,55 @@
           + ' onclick="qeditToggleDay(\'' + d + '\')">' + d + '</button>';
       }).join("");
     }
+  }
+  function applyCardMem(id){
+    const mem = loadCardMem();
+    const det = qeditWorking || {};
+    if (!mem) return;
+    // The numbers only cross between cards of the same kind. The days cross
+    // either way — a run on the week you already set is still that week.
+    if (mem.kind === cardKind(det) && mem.kind === "reps"){
+      if (!det.reps) return;
+      const cols = det.reps.cols || {};
+      const first = (det.reps.sets && det.reps.sets[0]) || {};
+      const vals = mem.vals || {};
+      // Only fill the boxes this exercise actually has.
+      ["reps","weight","time","distance"].forEach(function(k){
+        if (cols[k] && vals[k]) first[k] = vals[k];
+      });
+      const count = Math.max(1, Math.min(20, parseInt(mem.count, 10) || 1));
+      const sets = [];
+      for (let i = 0; i < count; i++) sets.push({ reps:first.reps || "", weight:first.weight || "", time:first.time || "", distance:first.distance || "", done:false });
+      det.reps.sets = sets;
+      if (mem.showSets != null) det.reps.showSets = !!mem.showSets;
+      if (mem.weightUnit) det.reps.weightUnit = mem.weightUnit;
+      if (mem.distUnit) det.reps.distUnit = mem.distUnit;
+    }
+    // The same days, so a three-day week does not get rebuilt exercise by exercise.
+    if (Array.isArray(mem.days) && mem.days.length){
+      const sel = loadWeekSel();
+      mem.days.forEach(function(d){
+        if (days.indexOf(d) < 0) return;
+        const a = sel[d] || (sel[d] = []);
+        if (a.indexOf(id) < 0) a.push(id);
+      });
+      saveWeekSel(sel);
+    }
+  }
+  function rememberCard(id, det){
+    const kind = cardKind(det);
+    const sel = loadWeekSel();
+    const mem = { kind: kind, days: days.filter(function(d){ return (sel[d] || []).indexOf(id) >= 0; }) };
+    if (kind === "reps" && det.reps){
+      const first = (det.reps.sets && det.reps.sets[0]) || {};
+      mem.vals = { reps:first.reps || "", weight:first.weight || "", time:first.time || "", distance:first.distance || "" };
+      mem.count = (det.reps.sets && det.reps.sets.length) || 1;
+      mem.showSets = det.reps.showSets !== false;
+      mem.weightUnit = det.reps.weightUnit || "lbs";
+      mem.distUnit = det.reps.distUnit || "mi";
+    }
+    saveCardMem(mem);
+    markCardFilled(id);
   }
   function qeditToggleDay(d){
     const sel = loadWeekSel();
@@ -9372,6 +9441,7 @@
       if (r){ r.details = det; saveLibrary(); }
       clearTodayOvr(qeditId); // a permanent edit supersedes any leftover just-for-today tweak
     }
+    if (qeditFromWeek){ try { rememberCard(qeditId, det); } catch(e){} }
     qeditClose();
     if (typeof renderSession === "function") renderSession();
   }
