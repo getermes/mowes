@@ -2836,9 +2836,9 @@
   .restday-next:active { transform: translateY(1px); }
   /* Row under the green card: settings gear (left) + a small Add button (right). */
   /* Rest day uses the SAME two-square barbell as the Today's-page action row below. */
-  .restday-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 300px; margin: 18px auto 0; }
+  .restday-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 330px; margin: 18px auto 0; }
   /* Today's-page action row: two square buttons (Settings ⚙️ + Add ＋) joined by a bar. */
-  .session-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 300px; margin: 18px auto 4px; }
+  .session-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 330px; margin: 18px auto 4px; }
   .session-inner.rest-mode .session-actions { display: none; }  /* rest days use their own row */
   .sa-btn { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
     width: 74px; height: 66px; border: none; border-radius: 16px; background: #eef1fc; cursor: pointer;
@@ -2901,6 +2901,9 @@
   .qedit-inrow input { flex: 1 1 auto; width: 100%; border: 2px solid #e6e8f0; border-radius: 9px; padding: 8px; font-size: 15px; text-align: center; }
   .qedit-inrow input:focus { border-color: #5b6cff; outline: none; }
   .qedit-unit { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: #9aa0b5; }
+  .qedit-measure { display: block; margin: -4px 0 12px; padding: 8px 14px; border: 1px solid #d8dcf0;
+    border-radius: 999px; background: #fff; color: #5b6cff; font-size: 13px; font-weight: 800; cursor: pointer; }
+  .qedit-measure:active { background: #f2f4ff; }
   .qedit-add { width: 100%; border: 2px dashed #cdd3ec; background: #f7f8fe; color: #5b6cff; font-weight: 800; font-size: 14px;
     border-radius: 12px; padding: 10px; cursor: pointer; }
   .qedit-add:active { transform: scale(0.99); }
@@ -3283,7 +3286,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">MOWES <span id="appVersion">v54</span></div>
+        <div class="cs-version">MOWES <span id="appVersion">v55</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -3414,6 +3417,10 @@
         <span class="sa-bar"></span>
         <button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a exercise" aria-label="Add a exercise">
           <span class="sa-ic">＋</span><span class="sa-lbl">Exercises</span>
+        </button>
+        <span class="sa-bar"></span>
+        <button class="sa-btn sa-measure" onclick="openGps()" title="Measure a walk or run" aria-label="Measure a walk or run">
+          <span class="sa-ic">📍</span><span class="sa-lbl">Measure</span>
         </button>
       </div>
       <div class="session-settings">
@@ -5133,7 +5140,7 @@
     build: true,    // 🛠️ Build MOWES — one page that holds Library + My Weekly Plan
     library: true,  // 📚 Library — lives inside Build MOWES
     weekly: true,   // 🗓️ My Weekly Plan — lives inside Build MOWES
-    setup: false,   // ⚙️ My Set-up — off; the guided start is Phase 2
+    setup: true,    // ⚙️ My Set-up — on; change Equipment (and the rest) after the guided start
     rules: false,   // 📜 My Rules — off
     goals: false,   // 🎯 My Goals & Achievement — off
     body:  false,   // 📏 My Body & Pics — off
@@ -9297,6 +9304,9 @@
       if (!tc.time && !tc.distance){
         html += '<div class="qedit-cols-hint">Nothing switched on yet — tap what this one goes by.</div>';
       }
+      if (tc.distance){
+        html += '<button type="button" class="qedit-measure" onclick="openGps()" title="Measure it with GPS">📍 Measure a walk / run</button>';
+      }
       html += rows.map(function(row, i){
         let flds = "";
         if (tc.time)     flds += qeditFldHtml("Time", "min", row.min, "min");
@@ -9347,7 +9357,8 @@
       if (cols.distance){
         html += '<div class="si-row"><span class="si-label">Dist</span>'
              + '<input class="si-input qedit-si" data-col="distance" type="number" min="0" step="any" inputmode="decimal" placeholder="dist" value="' + escapeHtml(first.distance == null ? "" : first.distance) + '">'
-             + unitBtn("distance", dU) + '</div>';
+             + unitBtn("distance", dU)
+             + '<button type="button" class="si-measure" onclick="openGps()" title="Measure it with GPS">📍 Measure</button></div>';
       }
       if (cols.time){
         html += '<div class="si-row"><span class="si-label">Time</span>'
@@ -9576,7 +9587,7 @@
     const open = inner.classList.toggle("settings-open");
     const gear = inner.querySelector(".restday-gear");
     if (gear) gear.classList.toggle("on", open);
-    const saGear = inner.querySelector(".session-actions .sa-btn:not(.sa-add)");
+    const saGear = inner.querySelector(".session-actions .sa-btn:not(.sa-add):not(.sa-measure)");
     if (saGear) saGear.classList.toggle("on", open);
   }
   window.toggleSessionSettings = toggleSessionSettings;
@@ -10392,6 +10403,9 @@
             '<button class="sa-btn restday-gear" onclick="toggleSessionSettings()" title="Session settings" aria-label="Session settings"><span class="sa-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span><span class="sa-lbl">Settings</span></button>' +
             '<span class="sa-bar"></span>' +
             '<button class="sa-btn sa-add" onclick="sessionAddRoutine()" title="Add a exercise" aria-label="Add a exercise"><span class="sa-ic">＋</span><span class="sa-lbl">Exercises</span></button>' +
+            '<span class="sa-bar"></span>' +
+            // A rest day is exactly when a walk happens. Measure it from here.
+            '<button class="sa-btn sa-measure" onclick="openGps()" title="Measure a walk or run" aria-label="Measure a walk or run"><span class="sa-ic">📍</span><span class="sa-lbl">Measure</span></button>' +
           '</div>';
       }
       if (btn) btn.style.display = "none";
