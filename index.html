@@ -2888,7 +2888,10 @@
   .qedit-x { flex: 0 0 auto; border: none; background: #f0f2fb; color: #6a7088; width: 32px; height: 32px; border-radius: 50%;
     font-size: 15px; font-weight: 800; cursor: pointer; }
   .qedit-x:active { transform: scale(0.94); }
-  .qedit-body { overflow-y: auto; }
+  .qedit-body { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+  /* When the card runs out of room, only the scrolling middle gives way.
+     The title, the Apply row and the Save button keep their full size. */
+  .qedit-head, .qedit-days, .qedit-scope, .qedit-actions { flex: 0 0 auto; }
   .qedit-set { border: 1px solid #eef0f7; border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; }
   .qedit-set-title { font-size: 12px; font-weight: 800; color: #9aa0b5; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
   .qedit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
@@ -9183,6 +9186,7 @@
     qeditRenderDays();
     qeditRenderBody();
     document.getElementById("qeditOverlay").classList.add("show");
+    qeditFitViewport();
   }
   window.openQuickEdit = openQuickEdit;
 
@@ -9294,7 +9298,7 @@
         if (tc.distance) flds += qeditFldHtml("Distance", "miles", row.miles, det.time.distUnit === "km" ? "km" : "mi");
         return '<div class="qedit-set" data-i="' + i + '"><div class="qedit-set-title">Part ' + (i+1) + '</div>'
           + '<label class="qedit-fld" style="margin-bottom:8px"><span>Name (e.g. Run / Walk)</span><div class="qedit-inrow">'
-          + '<input type="text" data-k="label" value="' + escapeHtml(row.label || "") + '" placeholder="Run"></div></label>'
+          + '<input type="text" data-k="label" autocomplete="off" autocorrect="off" spellcheck="false" value="' + escapeHtml(row.label || "") + '" placeholder="Run"></div></label>'
           + '<div class="qedit-grid">' + flds + '</div></div>';
       }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddPart()">Add part</button>';
       body.innerHTML = html;
@@ -9461,9 +9465,42 @@
     if (!body) return;
     const parts = body.querySelectorAll(".qedit-set");
     const last = parts[parts.length - 1];
-    const inp = last && last.querySelector('input[data-k="label"]');
+    if (!last) return;
+    // Put the new part at the top of the view, not the bottom — with the keyboard
+    // up there is little room, and its name box is what you need first.
+    const bring = function(){
+      const bR = body.getBoundingClientRect(), lR = last.getBoundingClientRect();
+      body.scrollTop += (lR.top - bR.top) - 6;
+    };
+    const inp = last.querySelector('input[data-k="label"]');
     if (inp){ try { inp.focus({ preventScroll:true }); } catch(e){ inp.focus(); } }
-    body.scrollTop = body.scrollHeight;
+    bring();
+    // The keyboard takes a moment to slide up and it shrinks the card. Come back
+    // once it has settled so the new part is still the one you are looking at.
+    setTimeout(bring, 400);
+  }
+  // On a phone the keyboard slides over the page instead of shrinking it, so a
+  // card centred in the window ends up half underneath. Fit the card to the part
+  // of the screen you can actually see and it lifts itself clear.
+  function qeditFitViewport(){
+    const vv = window.visualViewport, ov = document.getElementById("qeditOverlay");
+    if (!vv || !ov) return;
+    const card = ov.querySelector(".qedit-card");
+    if (!ov.classList.contains("show")){
+      ov.style.height = ""; ov.style.top = "";
+      if (card) card.style.maxHeight = "";
+      return;
+    }
+    ov.style.top = vv.offsetTop + "px";
+    ov.style.height = vv.height + "px";
+    // The card's own height limit is measured against the whole screen, which
+    // still counts the strip the keyboard is sitting on. Measure it against
+    // what is left instead, so the card never runs off the bottom.
+    if (card) card.style.maxHeight = Math.max(220, vv.height - 36) + "px";
+  }
+  if (window.visualViewport){
+    window.visualViewport.addEventListener("resize", qeditFitViewport);
+    window.visualViewport.addEventListener("scroll", qeditFitViewport);
   }
   window.qeditAddSet = qeditAddSet; window.qeditAddPart = qeditAddPart;
   function qeditSetScope(scope){ qeditScope = (scope === "today") ? "today" : "always"; syncQeditScope(); }
@@ -9499,7 +9536,11 @@
   }
   window.qeditSave = qeditSave;
   function qeditClose(){
-    const el = document.getElementById("qeditOverlay"); if (el) el.classList.remove("show");
+    const el = document.getElementById("qeditOverlay");
+    if (el){
+      el.classList.remove("show"); el.style.height = ""; el.style.top = "";
+      const c = el.querySelector(".qedit-card"); if (c) c.style.maxHeight = "";
+    }
     qeditId = null; qeditWorking = null; qeditFromWeek = false; qeditDaysSel = [];
     // The week page is right underneath — let it pick up the new numbers.
     const wp = document.getElementById("weekPlanOverlay");
