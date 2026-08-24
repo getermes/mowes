@@ -9453,7 +9453,18 @@
     }
   }
   function qeditAddSet(){ qeditCollect(); qeditWorking.reps.sets.push({ reps:"", weight:"", time:"", distance:"", done:false }); qeditRenderBody(); }
-  function qeditAddPart(){ qeditCollect(); if (!qeditWorking.time) qeditWorking.time = { on:true, rows:[] }; qeditWorking.time.rows.push({ label:"", min:"", miles:"", done:false }); qeditRenderBody(); }
+  function qeditAddPart(){ qeditCollect(); if (!qeditWorking.time) qeditWorking.time = { on:true, rows:[] }; qeditWorking.time.rows.push({ label:"", min:"", miles:"", done:false }); qeditRenderBody(); qeditShowLastPart(); }
+  // A new part is no use if it lands below the fold. Bring the card down to it and
+  // put the cursor in its name box, so the next thing you do is type.
+  function qeditShowLastPart(){
+    const body = document.getElementById("qeditBody");
+    if (!body) return;
+    const parts = body.querySelectorAll(".qedit-set");
+    const last = parts[parts.length - 1];
+    const inp = last && last.querySelector('input[data-k="label"]');
+    if (inp){ try { inp.focus({ preventScroll:true }); } catch(e){ inp.focus(); } }
+    body.scrollTop = body.scrollHeight;
+  }
   window.qeditAddSet = qeditAddSet; window.qeditAddPart = qeditAddPart;
   function qeditSetScope(scope){ qeditScope = (scope === "today") ? "today" : "always"; syncQeditScope(); }
   window.qeditSetScope = qeditSetScope;
