@@ -2911,6 +2911,11 @@
   .qedit-cols::-webkit-scrollbar { display: none; }
   .qedit-cols .col-toggle { padding: 5px 10px; }
   .qedit-cols-hint { font-size: 12px; color: #8a90ad; margin: -6px 0 12px; line-height: 1.4; }
+  /* With the keyboard up, half the phone is gone. The card keeps its title,
+     the boxes you are typing in, and Save. The days row and the Apply row
+     step aside and come straight back when the keyboard goes away. */
+  .qedit-overlay.kb-up .qedit-days,
+  .qedit-overlay.kb-up .qedit-scope { display: none; }
   /* Which days this exercise falls on — asked right where you set it up. */
   .qedit-days { margin-top: 4px; }
   .qedit-days-row { display: flex; gap: 4px; }
@@ -9297,8 +9302,8 @@
         if (tc.time)     flds += qeditFldHtml("Time", "min", row.min, "min");
         if (tc.distance) flds += qeditFldHtml("Distance", "miles", row.miles, det.time.distUnit === "km" ? "km" : "mi");
         return '<div class="qedit-set" data-i="' + i + '"><div class="qedit-set-title">Part ' + (i+1) + '</div>'
-          + '<label class="qedit-fld" style="margin-bottom:8px"><span>Name (e.g. Run / Walk)</span><div class="qedit-inrow">'
-          + '<input type="text" data-k="label" autocomplete="off" autocorrect="off" spellcheck="false" value="' + escapeHtml(row.label || "") + '" placeholder="Run"></div></label>'
+          + '<div class="qedit-fld" style="margin-bottom:8px"><span>Name (e.g. Run / Walk)</span><div class="qedit-inrow">'
+          + '<input type="text" data-k="label" autocomplete="off" autocorrect="off" spellcheck="false" value="' + escapeHtml(row.label || "") + '" placeholder="Run"></div></div>'
           + '<div class="qedit-grid">' + flds + '</div></div>';
       }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddPart()">Add part</button>';
       body.innerHTML = html;
@@ -9493,11 +9498,28 @@
     }
     ov.style.top = vv.offsetTop + "px";
     ov.style.height = vv.height + "px";
+    // A keyboard is up when a good chunk of the screen has gone missing.
+    ov.classList.toggle("kb-up", vv.height < window.innerHeight - 120);
     // The card's own height limit is measured against the whole screen, which
     // still counts the strip the keyboard is sitting on. Measure it against
     // what is left instead, so the card never runs off the bottom.
     if (card) card.style.maxHeight = Math.max(220, vv.height - 36) + "px";
+    qeditKeepInView();
   }
+  // Tap a box near the bottom and the shrinking card would slide it under the
+  // Save button. Whatever you tapped stays where you can see it.
+  function qeditKeepInView(){
+    const body = document.getElementById("qeditBody"), el = document.activeElement;
+    if (!body || !el || !body.contains(el)) return;
+    const bR = body.getBoundingClientRect(), eR = el.getBoundingClientRect();
+    if (eR.top < bR.top + 4) body.scrollTop += eR.top - bR.top - 8;
+    else if (eR.bottom > bR.bottom - 4) body.scrollTop += eR.bottom - bR.bottom + 8;
+  }
+  document.addEventListener("focusin", function(e){
+    const body = document.getElementById("qeditBody");
+    if (!body || !body.contains(e.target)) return;
+    setTimeout(qeditKeepInView, 320); // after the keyboard has finished sliding up
+  });
   if (window.visualViewport){
     window.visualViewport.addEventListener("resize", qeditFitViewport);
     window.visualViewport.addEventListener("scroll", qeditFitViewport);
@@ -9538,7 +9560,7 @@
   function qeditClose(){
     const el = document.getElementById("qeditOverlay");
     if (el){
-      el.classList.remove("show"); el.style.height = ""; el.style.top = "";
+      el.classList.remove("show", "kb-up"); el.style.height = ""; el.style.top = "";
       const c = el.querySelector(".qedit-card"); if (c) c.style.maxHeight = "";
     }
     qeditId = null; qeditWorking = null; qeditFromWeek = false; qeditDaysSel = [];
