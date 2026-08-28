@@ -3297,7 +3297,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">PIPES <span id="appVersion">v58</span></div>
+        <div class="cs-version">PIPES <span id="appVersion">v59</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -8845,7 +8845,7 @@
       const guide = document.createElement("button");
       guide.type = "button";
       guide.className = "lib-more";
-      guide.textContent = "👋 Walk me through the set-up";
+      guide.textContent = "👋 Guíame en la preparación";
       guide.onclick = startGuidedSetup;
       list.appendChild(guide);
     }
@@ -9281,7 +9281,7 @@
     if (row){
       row.innerHTML = days.map(function(d){
         return '<button type="button" class="qedit-day' + (qeditDaysSel.indexOf(d) >= 0 ? ' on' : '') + '"'
-          + ' onclick="qeditToggleDay(\'' + d + '\')">' + dayShort(d) + '</button>';
+          + ' data-day="' + d + '" onclick="qeditToggleDay(\'' + d + '\')">' + dayShort(d) + '</button>';
       }).join("");
     }
   }
@@ -9343,7 +9343,7 @@
     qeditDaysSel = days.filter(function(x){ return (sel[x] || []).indexOf(qeditId) >= 0; });
     const row = document.getElementById("qeditDaysRow");
     if (row){
-      [].forEach.call(row.children, function(b){ b.classList.toggle("on", qeditDaysSel.indexOf(b.textContent) >= 0); });
+      [].forEach.call(row.children, function(b){ b.classList.toggle("on", qeditDaysSel.indexOf(b.dataset.day) >= 0); });
     }
   }
   window.qeditToggleDay = qeditToggleDay;
