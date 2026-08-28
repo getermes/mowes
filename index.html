@@ -3297,7 +3297,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">MOWES <span id="appVersion">v58</span></div>
+        <div class="cs-version">MOWES <span id="appVersion">v59</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -9285,7 +9285,7 @@
     if (row){
       row.innerHTML = days.map(function(d){
         return '<button type="button" class="qedit-day' + (qeditDaysSel.indexOf(d) >= 0 ? ' on' : '') + '"'
-          + ' onclick="qeditToggleDay(\'' + d + '\')">' + d + '</button>';
+          + ' data-day="' + d + '" onclick="qeditToggleDay(\'' + d + '\')">' + d + '</button>';
       }).join("");
     }
   }
@@ -9347,7 +9347,9 @@
     qeditDaysSel = days.filter(function(x){ return (sel[x] || []).indexOf(qeditId) >= 0; });
     const row = document.getElementById("qeditDaysRow");
     if (row){
-      [].forEach.call(row.children, function(b){ b.classList.toggle("on", qeditDaysSel.indexOf(b.textContent) >= 0); });
+      // Match on the day the button CARRIES, never on what it says. The label is
+      // free to change (or be translated) without the highlight quietly breaking.
+      [].forEach.call(row.children, function(b){ b.classList.toggle("on", qeditDaysSel.indexOf(b.dataset.day) >= 0); });
     }
   }
   window.qeditToggleDay = qeditToggleDay;
