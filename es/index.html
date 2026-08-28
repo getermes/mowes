@@ -3297,7 +3297,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">PIPES <span id="appVersion">v60</span></div>
+        <div class="cs-version">PIPES <span id="appVersion">v61</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -3630,7 +3630,7 @@
   <!-- Build PIPES: the home for setting up your workouts (Library + Weekly Plan) -->
   <div class="library-overlay" id="buildOverlay">
     <div class="library-inner">
-      <div class="setup-title">🛠️ Arma tu PIPES</div>
+      <div class="setup-title">🛠️ Crea tu PIPES</div>
       <button class="build-tile" onclick="openWeekPlanPage()">
         <div class="build-tile-icon">🗓️</div>
         <div class="build-tile-text"><div class="build-tile-name">Mi plan semanal</div></div>
@@ -3650,7 +3650,7 @@
   <!-- Library: the shelf you go to to find an exercise; My Weekly Plan draws from it -->
   <div class="library-overlay" id="libraryOverlay">
     <div class="library-inner">
-      <button class="build-back" onclick="openBuildPage()">‹ Arma tu PIPES</button>
+      <button class="build-back" onclick="openBuildPage()">‹ Crea tu PIPES</button>
       <div class="setup-title">📚 Biblioteca</div>
       <div id="libraryList"></div>
       <button class="lib-more" onclick="openFindPage()">🔍 Buscar más ejercicios</button>
@@ -3675,7 +3675,7 @@
   <!-- My Weekly Plan: pick which Library exercises to do each day -->
   <div class="library-overlay" id="weekPlanOverlay">
     <div class="library-inner">
-      <button class="build-back" onclick="openBuildPage()">‹ Arma tu PIPES</button>
+      <button class="build-back" onclick="openBuildPage()">‹ Crea tu PIPES</button>
       <div class="setup-title">🗓️ Mi plan semanal</div>
       <div class="wp-days" id="wpDays"></div>
       <div id="wpBody"></div>
@@ -9099,7 +9099,7 @@
       const cnt = (sel[d] || []).length;
       const active = d === weekPlanDay, isToday = d === todayKey;
       const mark = cnt ? ('<span class="wp-day-cnt">' + cnt + '</span>') : '<span class="wp-day-rest">🌴</span>';
-      return '<button class="wp-day' + (active ? ' active' : '') + (isToday ? ' today' : '') + '" onclick="wpSelectDay(\'' + d + '\')">' + d + mark + '</button>';
+      return '<button class="wp-day' + (active ? ' active' : '') + (isToday ? ' today' : '') + '" onclick="wpSelectDay(\'' + d + '\')">' + dayShort(d) + mark + '</button>';
     }).join("");
     const full = fullNames[weekPlanDay] || weekPlanDay;
     const picked = sel[weekPlanDay] || [];
