@@ -3297,7 +3297,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">PIPES <span id="appVersion">v62</span></div>
+        <div class="cs-version">PIPES <span id="appVersion">v63</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -3443,7 +3443,7 @@
         <label>Músculo nuevo <input id="sessionTypeRest" type="number" min="0" step="1" inputmode="numeric" onchange="sessionSaveSettings()"> seg</label>
         <div class="session-wc">
           <button type="button" class="session-wc-btn warmup" id="sessionWarmupGear" onclick="sessionToggleWarmup()">🤸 Calentamiento<span class="wc-state" id="sessionWarmupState">On</span></button>
-          <button type="button" class="session-wc-btn cooldown" id="sessionCooldownGear" onclick="sessionToggleCooldown()">🧘 Estiramiento<span class="wc-state" id="sessionCooldownState">On</span></button>
+          <button type="button" class="session-wc-btn cooldown" id="sessionCooldownGear" onclick="sessionToggleCooldown()">🧘 Enfriamiento<span class="wc-state" id="sessionCooldownState">On</span></button>
         </div>
       </div>
       <p class="setup-note">🔒 Funciona en tu teléfono.</p>
@@ -4404,7 +4404,7 @@
     return {
       name: "",
       details: {
-        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", rest:0, restAfter:0, showSets:true, showVideo:false, video:"", sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
+        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"km", rest:0, restAfter:0, showSets:true, showVideo:false, video:"", sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
         time:     { on:false, rows:[ {label:"", min:"", miles:"", done:false} ] },
         weight:   { on:false, val:"" },
         distance: { on:false, val:"" }
@@ -5019,7 +5019,7 @@
     if (!p || !p.at) return "";
     try {
       const d = new Date(p.at);
-      return d.toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" })
+      return d.toLocaleDateString("es", { month:"short", day:"numeric", year:"numeric" })
         + " · " + d.toLocaleTimeString(undefined, { hour:"numeric", minute:"2-digit" });
     } catch(e){ return ""; }
   }
@@ -5435,7 +5435,7 @@
         const det = r.details || {};
         const reps = det.reps || {};
         if (reps.on && reps.sets && reps.sets.length){
-          const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {};
+          const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "km", cols = reps.cols || {};
           reps.sets.forEach((s, si) => {
             if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
             const parts = [];
@@ -5789,7 +5789,7 @@
     const start = new Date(key + "T00:00:00");
     const end = new Date(start); end.setDate(end.getDate() + 6);
     const opt = { month:"short", day:"numeric" };
-    return start.toLocaleDateString(undefined, opt) + " – " + end.toLocaleDateString(undefined, opt) + ", " + end.getFullYear();
+    return start.toLocaleDateString("es", opt) + " – " + end.toLocaleDateString("es", opt) + ", " + end.getFullYear();
   }
   function routineIsEmpty(r){
     if (r.name && r.name.trim()) return false;
@@ -5806,7 +5806,7 @@
       const sets = det.reps.sets || [];
       const cols = (det.reps.cols) ? SET_COLS.filter(k => det.reps.cols[k]) : ["reps","weight"];
       const wUnit = ((det.reps.weightUnit || det.reps.unit) === "kg") ? "Kls" : "Lbs";
-      const dUnit = (det.reps.distUnit === "km") ? "km" : "mi";
+      const dUnit = (det.reps.distUnit === "mi") ? "mi" : "km";
       const colText = (s) => cols.map(k => {
         const v = s[k];
         if (v == null || String(v) === "") return null;
@@ -6035,7 +6035,7 @@
     reps: "p. ej. 12 reps / 3 series de 10",
     time: "p. ej. 30 seg / 2 min",
     weight: "p. ej. 20 lbs",
-    distance: "p. ej. 1 milla"
+    distance: "p. ej. 1 km"
   };
   const detailLabels = { reps:"Reps", time:"Tiempo", weight:"Peso", distance:"Distancia" };
 
@@ -6253,8 +6253,8 @@
   const SET_COLS = ["reps","weight","distance","time"];
   const SET_COL_INFO = {
     reps:     { toggle:"Reps/vueltas", ph:"reps", title:()=>"" },
-    weight:   { toggle:"Peso",      ph:"peso", title:(c)=> c.weightUnit==="kg" ? "Kls" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
-    distance: { toggle:"Dist",      ph:"dist", title:(c)=> c.distUnit==="km" ? "km" : (c.distUnit==="m" ? "m" : "mi"), unitKey:"distUnit", units:["mi","km","m"] },
+    weight:   { toggle:"Peso",      ph:"peso", title:(c)=> c.weightUnit==="kg" ? "Kg" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
+    distance: { toggle:"Dist",      ph:"dist", title:(c)=> c.distUnit==="mi" ? "mi" : (c.distUnit==="m" ? "m" : "km"), unitKey:"distUnit", units:["km","mi","m"] },
     time:     { toggle:"Tiempo",    ph:"min",  title:()=>"min" }
   };
   function activeCols(cfg){ return SET_COLS.filter(k => cfg.cols[k]); }
@@ -6267,7 +6267,7 @@
       cols: c ? { reps:!!c.reps, weight:!!c.weight, time:!!c.time, distance:!!c.distance }
               : { reps:true, weight:true, time:false, distance:false },
       weightUnit: ((d.weightUnit || d.unit) === "kg") ? "kg" : "lbs",
-      distUnit: (d.distUnit === "km") ? "km" : "mi",
+      distUnit: (d.distUnit === "mi" || d.distUnit === "m") ? d.distUnit : "km",
       rest: parseInt(d.rest, 10) || 0,
       restAfter: parseInt(d.restAfter, 10) || 0,
       lapLen: parseFloat(d.lapLen) || 0,
@@ -6295,7 +6295,7 @@
     const lapUnit = fieldEl.querySelector(".lap-unit");
     if (lapRow) lapRow.style.display = cfg.cols.distance ? "flex" : "none";
     if (lapInput) lapInput.value = cfg.lapLen ? cfg.lapLen : "";
-    if (lapUnit) lapUnit.textContent = (cfg.distUnit === "km") ? "km" : "mi";
+    if (lapUnit) lapUnit.textContent = (cfg.distUnit === "mi") ? "mi" : "km";
     updateSetsSummary(fieldEl);
   }
   // NEW entry model: one value per metric on its own line (Sets / Reps / Weight / …).
@@ -6368,7 +6368,7 @@
       if (k === "reps" && v.reps) parts.push(v.reps + " reps");
       else if (k === "weight" && v.weight) parts.push(v.weight + " " + (cfg.weightUnit === "kg" ? "kg" : "lbs"));
       else if (k === "time" && v.time) parts.push(v.time + " min");
-      else if (k === "distance" && v.distance) parts.push(v.distance + " " + (cfg.distUnit === "km" ? "km" : "mi"));
+      else if (k === "distance" && v.distance) parts.push(v.distance + " " + (cfg.distUnit === "mi" ? "mi" : "km"));
     });
     if (parts.length){
       el.textContent = "✓ " + count + " × " + parts.join(" · ");
@@ -7155,7 +7155,7 @@
       const unit = r.u || "mi", mins = (r.t || 0) / 60;
       const speed = (r.d > 0 && mins > 0) ? ((r.d * 60 / mins).toFixed(1) + " " + (unit === "km" ? "km/h" : "mph")) : "—";
       let dateStr = "";
-      try { if (r.at) dateStr = new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); } catch(e){}
+      try { if (r.at) dateStr = new Date(r.at).toLocaleDateString("es", { month: "short", day: "numeric", year: "numeric" }); } catch(e){}
       html += '<div class="gps-run"><div class="gps-run-main">'
         + '<div class="gps-run-dist">' + r.d.toFixed(2) + ' ' + escapeHtml(unit) + '</div>'
         + '<div class="gps-run-sub">⏱ ' + fmtTime(r.t || 0) + '  ·  ' + escapeHtml(speed) + '</div>'
@@ -7247,7 +7247,7 @@
       }
       const count = Object.keys(data).length;
       let when = "una fecha anterior";
-      try { if (parsed.savedAt) when = new Date(parsed.savedAt).toLocaleDateString(); } catch(e){}
+      try { if (parsed.savedAt) when = new Date(parsed.savedAt).toLocaleDateString("es"); } catch(e){}
       if (!confirm("¿Restaurar esta copia de seguridad del " + when + "?\n\nEsto REEMPLAZA todo lo que hay ahora en PIPES en este teléfono con la copia de seguridad (" + count + " elementos). Esto no se puede deshacer.")){
         input.value = ""; return;
       }
@@ -7459,7 +7459,7 @@
   function lapMeasureUnit(){
     const f = lapTargetInput && lapTargetInput.closest(".detail-field");
     const cfg = f && f._repsCfg;
-    return (cfg && cfg.distUnit === "km") ? "km" : "mi";
+    return (cfg && cfg.distUnit === "mi") ? "mi" : "km";
   }
   function computedLap(){
     const steps = parseFloat(document.getElementById("lmSteps").value) || 0;
@@ -8191,7 +8191,7 @@
   function openBodyLog(){
     bodyPhotoTemp = "";
     const dateEl = document.getElementById("bodyLogDate");
-    try { if (dateEl) dateEl.textContent = new Date().toLocaleDateString(undefined, { weekday:"long", month:"long", day:"numeric", year:"numeric" }); } catch(e){}
+    try { if (dateEl) dateEl.textContent = new Date().toLocaleDateString("es", { weekday:"long", month:"long", day:"numeric", year:"numeric" }); } catch(e){}
     const wrap = document.getElementById("bodyLogFields");
     const entries = loadBodyEntries();
     const last = entries[entries.length - 1];
@@ -8276,7 +8276,7 @@
     // newest first for display; compare each to the entry before it (older) for change
     for (let i = entries.length - 1; i >= 0; i--){
       const e = entries[i], prev = i > 0 ? entries[i - 1] : null;
-      let dateStr = e.date; try { dateStr = new Date(e.at || e.date).toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" }); } catch(err){}
+      let dateStr = e.date; try { dateStr = new Date(e.at || e.date).toLocaleDateString("es", { month:"short", day:"numeric", year:"numeric" }); } catch(err){}
       html += '<div class="body-entry"><div class="body-entry-date"><span>' + escapeHtml(dateStr) + '</span><button class="body-entry-del" title="Eliminar" onclick="deleteBodyEntry(\'' + escapeHtml(e.at || e.date) + '\')">✕</button></div>';
       (e.items || []).forEach(it => {
         let chg = "";
@@ -8384,7 +8384,7 @@
       const reached = (target >= start) ? current >= target : current <= target;
       const dl = goalDeadline(g), elapsed = dl ? goalElapsedFrac(g, dl) : 0;
       const onTrack = reached || progFrac >= elapsed - 0.001;
-      let byStr = ""; try { if (dl) byStr = dl.toLocaleDateString(undefined, { month:"short", year:"numeric" }); } catch(e){}
+      let byStr = ""; try { if (dl) byStr = dl.toLocaleDateString("es", { month:"short", year:"numeric" }); } catch(e){}
       const badge = reached ? '<span class="goal-badge done">🎉 ¡Alcanzada!</span>'
         : (onTrack ? '<span class="goal-badge ontrack">🟢 Vas bien</span>' : '<span class="goal-badge behind">🟠 Un poco atrás — sigue así</span>');
       html += '<div class="goal-card">'
@@ -8421,7 +8421,7 @@
   window.updateGoalCurrent = updateGoalCurrent; window.deleteGoal = deleteGoal;
 
   // ---- Achievements: progression report + next-month projections ----
-  function achDate(iso){ try { return new Date(iso).toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" }); } catch(e){ return ""; } }
+  function achDate(iso){ try { return new Date(iso).toLocaleDateString("es", { month:"short", day:"numeric", year:"numeric" }); } catch(e){ return ""; } }
   function achR1(n){ return Math.round(n * 10) / 10; }
   function renderAch(){
     const box = document.getElementById("achBody");
@@ -9084,7 +9084,7 @@
     const parts = [];
     if (cols.reps && s.reps) parts.push(s.reps + " reps");
     if (cols.weight && s.weight) parts.push(s.weight + " " + (reps.weightUnit === "kg" ? "kg" : "lbs"));
-    if (cols.distance && s.distance) parts.push(s.distance + " " + (reps.distUnit === "km" ? "km" : "mi"));
+    if (cols.distance && s.distance) parts.push(s.distance + " " + (reps.distUnit === "mi" ? "mi" : "km"));
     if (cols.time && s.time) parts.push(s.time + " min");
     return parts.length ? ((n > 1 ? (n + " × ") : "") + parts.join(" · ")) : "";
   }
@@ -9345,7 +9345,7 @@
       mem.count = (det.reps.sets && det.reps.sets.length) || 1;
       mem.showSets = det.reps.showSets !== false;
       mem.weightUnit = det.reps.weightUnit || "lbs";
-      mem.distUnit = det.reps.distUnit || "mi";
+      mem.distUnit = det.reps.distUnit || "km";
     }
     saveCardMem(mem);
     markCardFilled(id);
@@ -9391,17 +9391,17 @@
       }
       html += rows.map(function(row, i){
         let flds = "";
-        if (tc.time)     flds += qeditFldHtml("Time", "min", row.min, "min");
-        if (tc.distance) flds += qeditFldHtml("Distance", "miles", row.miles, det.time.distUnit === "km" ? "km" : "mi");
+        if (tc.time)     flds += qeditFldHtml("Tiempo", "min", row.min, "min");
+        if (tc.distance) flds += qeditFldHtml("Distancia", "miles", row.miles, det.time.distUnit === "mi" ? "mi" : "km");
         return '<div class="qedit-set" data-i="' + i + '"><div class="qedit-set-title">Parte ' + (i+1) + '</div>'
-          + '<div class="qedit-fld" style="margin-bottom:8px"><span>Name (e.g. Run / Walk)</span><div class="qedit-inrow">'
-          + '<input type="text" data-k="label" autocomplete="off" autocorrect="off" spellcheck="false" value="' + escapeHtml(row.label || "") + '" placeholder="Run"></div></div>'
+          + '<div class="qedit-fld" style="margin-bottom:8px"><span>Nombre (ej. Correr / Caminar)</span><div class="qedit-inrow">'
+          + '<input type="text" data-k="label" autocomplete="off" autocorrect="off" spellcheck="false" value="' + escapeHtml(row.label || "") + '" placeholder="Correr"></div></div>'
           + '<div class="qedit-grid">' + flds + '</div></div>';
       }).join("") + '<button type="button" class="qedit-add" onclick="qeditAddPart()">Agregar parte</button>';
       body.innerHTML = html;
     } else {
       if (!det.reps) det.reps = { sets: [] };
-      const wU = det.reps.weightUnit || "lbs", dU = det.reps.distUnit || "mi";
+      const wU = det.reps.weightUnit || "lbs", dU = det.reps.distUnit || "km";
       const cols = qeditCols();
       const showSets = qeditShowSets();
       const sets = det.reps.sets || (det.reps.sets = []);
@@ -9883,7 +9883,7 @@
     if (st.detail) lines.push("🎯 " + st.detail);
     if (st.kind === "timed"){ lines.push("⏱️ Serán " + sessionClock(sessionStepDuration(st))); }
     else if (st.kind === "laps"){ lines.push("🌀 " + st.laps + " vuelta" + (st.laps === 1 ? "" : "s") + " en camino"); }
-    else if (st.kind === "manual" && (parseFloat(st.dist) || 0) > 0){ lines.push("📍 " + st.dist + " " + (st.distUnit || "mi") + " por recorrer"); }
+    else if (st.kind === "manual" && (parseFloat(st.dist) || 0) > 0){ lines.push("📍 " + st.dist + " " + (st.distUnit || "km") + " por recorrer"); }
     // A friendly nudge that changes as the clock runs down.
     lines.push(sessionRemain <= 5 ? "¡Vamos allá! 🔥" : "Recupera el aliento, toma agua 💧");
     return lines;
@@ -10171,7 +10171,7 @@
       const cat = exerciseCategory(name);
       const rid = "__starter__:" + pi;
       if (cat.type === "cardio"){
-        out.push({ rid:rid, type:"cardio", name:name, label:"Ritmo fácil", detail:"20 min", reps:0, time:20, dist:0, distUnit:"mi", icon:cat.icon, kind:"timed", starter:true });
+        out.push({ rid:rid, type:"cardio", name:name, label:"Ritmo fácil", detail:"20 min", reps:0, time:20, dist:0, distUnit:"km", icon:cat.icon, kind:"timed", starter:true });
       } else if (cat.type === "core"){
         for (var i = 0; i < 3; i++) out.push({ rid:rid, type:cat.type, name:name, label:"Serie " + (i + 1), detail:"sostén 30 seg", reps:0, time:0, dist:0, icon:cat.icon, kind:"timed", fixedSec:30, starter:true });
       } else {
@@ -10190,7 +10190,7 @@
     const restBetween = parseInt(reps.rest, 10) || 0, restAfter = parseInt(reps.restAfter, 10) || 0;
     const video = (reps.video || "").trim(); // how-to / follow-along / companion clip
     if (reps.on && reps.sets){
-      const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
+      const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "km", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
       // Only the sets that actually have something in them; setIndex/setCount let the
       // Today's Session list collapse them into ONE line ("3 Set, 10 Rep") per exercise.
       const validSets = reps.sets.filter(s => s && (s.reps || s.weight || s.time || s.distance));
@@ -10213,7 +10213,7 @@
         const lbl = (row.label || "").toLowerCase();
         const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
         const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
-        out.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Parte " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : "manual", restBetween: restBetween, restAfter: restAfter, video: video });
+        out.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Parte " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "km", icon: icon, kind: nMin > 0 ? "timed" : "manual", restBetween: restBetween, restAfter: restAfter, video: video });
       });
     }
     return out;
@@ -10303,9 +10303,9 @@
       if (hasDist && sessionGpsActive){
         const done = sessionGpsDistInUnit(st), target = parseFloat(st.dist) || 0;
         const pct = target > 0 ? Math.min(100, Math.round(done / target * 100)) : 0;
-        inner += '<div class="session-now-timer">📍 ' + done.toFixed(2) + ' / ' + target + ' ' + escapeHtml(st.distUnit || 'mi') + '</div>'
+        inner += '<div class="session-now-timer">📍 ' + done.toFixed(2) + ' / ' + target + ' ' + escapeHtml(st.distUnit || 'km') + '</div>'
           + '<div class="session-gps-bar"><div class="session-gps-fill" style="width:' + pct + '%"></div></div>'
-          + sessionGpsToGoHtml(done, target, st.distUnit || 'mi')
+          + sessionGpsToGoHtml(done, target, st.distUnit || 'km')
           + '<div class="session-gps-msg" id="sessionGpsMsg">' + escapeHtml(sessionGpsMsgText || 'Obteniendo tu ubicación… empieza a moverte. 🏃') + '</div>'
           + '<button class="session-gps-btn stop" onclick="sessionGpsStop(true)">✕ Detener GPS</button>';
       } else if (hasDist){
@@ -10552,9 +10552,9 @@
       const list = names.join(" + ");
       if (isToday){
         const text = t
-          ? list + " a las " + fmtTime(t) + " hoy 💪 — ¡a por ello!"
+          ? list + " a las " + fmtTime(t) + " hoy 💪 — ¡Vamos!"
           : pick([
-              "Hoy toca tu " + list + " 💪 — ¡a por ello!",
+              "Hoy toca tu " + list + " 💪 — ¡Vamos!",
               "Hoy en el programa: " + list + " 🔥 Dale cuando estés listo.",
               list + " hoy 💪 Una sesión más cerca de tu meta."
             ]);
@@ -10860,7 +10860,7 @@
   }
   // ---- GPS auto-distance: measure an outdoor distance step and auto-advance at the target ----
   function sessionGpsUnitToM(u){ return (u === "km") ? 1000 : 1609.344; }
-  function sessionGpsDistInUnit(st){ return sessionGpsDistM / sessionGpsUnitToM((st && st.distUnit) || "mi"); }
+  function sessionGpsDistInUnit(st){ return sessionGpsDistM / sessionGpsUnitToM((st && st.distUnit) || "km"); }
   // Mid-run, what you want is not how far you've gone — it's how much is left.
   function sessionGpsToGoHtml(done, target, unit){
     if (!(target > 0)) return "";
@@ -10875,7 +10875,7 @@
     if (!st || st.kind !== "manual") return;
     if (!navigator.geolocation){ sessionGpsMsgText = "Este teléfono no puede usar el GPS aquí — toca ✓ Hecho en su lugar."; renderSession(); return; }
     sessionGpsDistM = 0; sessionGpsLast = null; sessionGpsActive = true;
-    sessionGpsTargetM = (parseFloat(st.dist) || 0) * sessionGpsUnitToM(st.distUnit || "mi");
+    sessionGpsTargetM = (parseFloat(st.dist) || 0) * sessionGpsUnitToM(st.distUnit || "km");
     sessionGpsMsgText = "Obteniendo tu ubicación… empieza a moverte. 🏃";
     if (sessionGpsWatch != null) navigator.geolocation.clearWatch(sessionGpsWatch);
     sessionGpsWatch = navigator.geolocation.watchPosition(onSessionGpsPos, onSessionGpsErr, { enableHighAccuracy:true, maximumAge:1000, timeout:20000 });
@@ -11195,9 +11195,9 @@
       const tr = document.createElement("div");
       tr.className = "onb-typerow";
       const inp = document.createElement("input");
-      inp.id = "onbTypeBox"; inp.placeholder = "Dumbbells"; inp.maxLength = 40;
+      inp.id = "onbTypeBox"; inp.placeholder = "Cuerda para saltar"; inp.maxLength = 40;
       inp.autocomplete = "off";
-      const go = document.createElement("button"); go.textContent = "Add";
+      const go = document.createElement("button"); go.textContent = "Agregar";
       const commit = () => {
         const name = (inp.value || "").trim();
         if (!name) return;
