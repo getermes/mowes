@@ -2742,11 +2742,15 @@
   }
   .session-gps-bar { height: 8px; border-radius: 6px; background: rgba(255,255,255,0.28); overflow: hidden; margin: 8px 0 6px; }
   .session-gps-fill { height: 100%; background: #fff; border-radius: 6px; transition: width 0.4s ease; }
-  .session-photo-nudge { margin: 12px auto 2px; max-width: 300px; font-size: 13px; line-height: 1.45;
-    background: rgba(255,255,255,0.16); border-radius: 14px; padding: 12px 14px; }
-  .session-photo-btn { display: block; margin: 10px auto 0; border: none; border-radius: 12px; padding: 9px 18px;
+  /* A watcher's line. Soft, never red, never a badge — and always dismissable. */
+  .watch-note { margin: 12px auto 2px; max-width: 320px; font-size: 13px; line-height: 1.45;
+    background: rgba(255,255,255,0.16); border-radius: 14px; padding: 12px 14px; text-align: center; }
+  .watch-text { margin-bottom: 10px; }
+  .watch-btn { display: block; margin: 0 auto; border: none; border-radius: 12px; padding: 9px 18px;
     font-size: 14px; font-weight: 800; color: #5b6cff; background: #fff; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.12); }
-  .session-photo-btn:active { transform: scale(0.98); }
+  .watch-btn:active { transform: scale(0.98); }
+  .watch-dismiss { display: block; margin: 8px auto 0; border: none; background: none; color: inherit;
+    opacity: 0.65; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; padding: 4px 8px; }
   .session-gps-togo { font-size: 15px; font-weight: 800; letter-spacing: 0.2px; margin: 0 0 4px; }
   .session-gps-togo.done { opacity: 0.95; }
   .session-gps-msg { font-size: 13px; opacity: 0.92; margin-bottom: 4px; }
@@ -3293,7 +3297,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">MOWES <span id="appVersion">v57</span></div>
+        <div class="cs-version">MOWES <span id="appVersion">v58</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -3407,6 +3411,8 @@
       <div class="session-daystrip" id="sessionDayStrip">
         <div class="session-daystrip-row" id="sessionDayRow"></div>
       </div>
+      <!-- Where a watcher speaks when you open Today's. Empty almost every day. -->
+      <div id="sessionWatch"></div>
       <div class="session-sun-wrap">
         <button class="session-start" id="sessionStartBtn" onclick="sessionToggle()">
           <span class="sun-rays"></span>
@@ -9950,7 +9956,110 @@
     celebTimer = setTimeout(closeCelebrate, 5000);
   }
   function closeCelebrate(){ const ov = document.getElementById("celebrateOverlay"); if (ov) ov.classList.remove("show"); }
-  function bumpWorkoutCount(){ let n = 0; try { n = parseInt(localStorage.getItem("mowes_workout_count_v1") || "0", 10) || 0; } catch(e){} n++; try { localStorage.setItem("mowes_workout_count_v1", String(n)); } catch(e){} return n; }
+  // ================= The watchers =================
+  // Small helpers that look at what MOWES already remembers, pick a moment, and
+  // say ONE thing you can walk past. They live on this phone. Nothing is sent
+  // anywhere, and nothing here talks to a server — that is the whole point.
+  //
+  // The law, enforced here so no watcher has to remember it:
+  //   1. Only ONE speaks at a time.
+  //   2. Never twice about the same thing inside its own quiet period.
+  //   3. Never guilt. A watcher offers; it never scolds, and it never blocks.
+  const WATCH_SEEN_KEY = "mowes_watch_seen_v1";
+  const LAST_WORKOUT_KEY = "mowes_last_workout_at";
+  function watchSeen(){ try { return JSON.parse(localStorage.getItem(WATCH_SEEN_KEY) || "{}") || {}; } catch(e){ return {}; } }
+  function watchMarkSeen(id){ const m = watchSeen(); m[id] = new Date().toISOString(); try { localStorage.setItem(WATCH_SEEN_KEY, JSON.stringify(m)); } catch(e){} }
+  function watchDaysSince(iso){ if (!iso) return null; const d = (Date.now() - new Date(iso).getTime()) / 86400000; return (isNaN(d) || d < 0) ? null : d; }
+  function watchQuiet(id, days){                  // has this one spoken recently?
+    const since = watchDaysSince(watchSeen()[id]);
+    return (since == null) || (since >= days);
+  }
+  function watchNum(key){ try { return parseInt(localStorage.getItem(key) || "0", 10) || 0; } catch(e){ return 0; } }
+
+  // Each watcher: when it may speak, how long it then stays quiet, and what it
+  // says. `check` returns null when it has nothing worth saying — the usual case.
+  const WATCHERS = [
+    {
+      id: "comeback",
+      moment: "open",
+      quietDays: 3,
+      // The moment people quit for good. Never mention the days as a failure —
+      // offer a SMALLER start, which is the opposite of what most apps do.
+      check: function(){
+        if (watchNum("mowes_workout_count_v1") < 2) return null;   // no habit to come back to yet
+        const away = watchDaysSince(localStorage.getItem(LAST_WORKOUT_KEY));
+        if (away == null || away < 9) return null;
+        return {
+          text: "Welcome back. Let's make today an easy one \u2014 a short version counts just as much.",
+          btn: "\ud83d\udc4b Start something small",
+          action: "watchStartSmall()"
+        };
+      }
+    },
+    {
+      id: "photo",
+      moment: "finish",
+      quietDays: PHOTO_NUDGE_DAYS,
+      check: function(){
+        if (!PAGES_ON.body) return null;
+        const last = localStorage.getItem(LAST_PHOTO_KEY);
+        if (last){
+          const days = watchDaysSince(last);
+          if (days == null || days < PHOTO_NUDGE_DAYS) return null;
+          return { text: "It\'s been " + Math.floor(days) + " days since your last photo. Take one \u2014 you\'ll want to see this later.",
+                   btn: "\ud83d\udcf8 Take a photo", action: "openBodyPage()" };
+        }
+        if (watchNum("mowes_workout_count_v1") < 3) return null;   // let the habit come first
+        return { text: "Take a photo today \u2014 in a month you\'ll be glad you have it to compare.",
+                 btn: "\ud83d\udcf8 Take a photo", action: "openBodyPage()" };
+      }
+    }
+  ];
+
+  // Ask the watchers for this moment. The first one with something to say wins;
+  // the rest stay quiet until next time. Returns HTML, or "" for silence.
+  function watchSpeak(moment){
+    try {
+      for (let i = 0; i < WATCHERS.length; i++){
+        const w = WATCHERS[i];
+        if (w.moment !== moment) continue;
+        if (!watchQuiet(w.id, w.quietDays)) continue;
+        let said = null;
+        try { said = w.check(); } catch(e){ said = null; }   // a broken watcher must never break the app
+        if (!said) continue;
+        watchMarkSeen(w.id);
+        return '<div class="watch-note" data-watcher="' + w.id + '">'
+             + '<div class="watch-text">' + said.text + '</div>'
+             + (said.btn ? '<button class="watch-btn" onclick="' + said.action + '">' + said.btn + '</button>' : '')
+             + '<button class="watch-dismiss" onclick="watchDismiss(this)" aria-label="No thanks">Not now</button>'
+             + '</div>';
+      }
+    } catch(e){}
+    return "";
+  }
+  function watchDismiss(el){ const box = el && el.closest(".watch-note"); if (box) box.remove(); }
+  window.watchDismiss = watchDismiss;
+
+  // "Start something small" has to mean it. Keep the warm-up, keep ONE exercise,
+  // keep the cool-down, and let the rest wait — using the same skip the user
+  // could tap themselves, so every one of them can be put back with a tap.
+  function watchStartSmall(){
+    try {
+      openSessionPage();
+      if (!sessionStepsArr || !sessionStepsArr.length) return;
+      const isReal = st => st && st.type !== "warmup" && st.type !== "cooldown";
+      const firstReal = sessionStepsArr.findIndex(isReal);
+      if (firstReal < 0) return;                       // nothing but warm-up today
+      const keep = sessionGroupRange(firstReal);
+      for (let i = keep[1] + 1; i < sessionStepsArr.length; i++){
+        if (isReal(sessionStepsArr[i])) sessionSkipped[i] = true;
+      }
+      renderSession();
+    } catch(e){}
+  }
+  window.watchStartSmall = watchStartSmall;
+
+  function bumpWorkoutCount(){ let n = 0; try { n = parseInt(localStorage.getItem("mowes_workout_count_v1") || "0", 10) || 0; } catch(e){} n++; try { localStorage.setItem("mowes_workout_count_v1", String(n)); localStorage.setItem(LAST_WORKOUT_KEY, new Date().toISOString()); } catch(e){} return n; }
   window.celebrate = celebrate; window.closeCelebrate = closeCelebrate;
   function sessionLoadSettings(){
     try { const s = JSON.parse(localStorage.getItem("mowes_session_settings_v1") || "{}") || {}; if (s.pace) sessionPaceVal = +s.pace; if (s.rest != null) sessionRestVal = +s.rest; if (s.exrest != null) sessionExRestVal = +s.exrest; if (s.typerest != null) sessionTypeRestVal = +s.typerest; if (s.warmup != null) sessionWarmupOn = !!s.warmup; if (s.cooldown != null) sessionCooldownOn = !!s.cooldown; } catch(e){}
@@ -10819,32 +10928,13 @@
     if (sessionPhase === "work") sessionCompleteStep();
     else sessionEnterWork(sessionIdx); // sessionIdx already points at the upcoming step
   }
-  // A photo from week one is the best proof that this is working. Ask now and
-  // then — never every time, never twice in a fortnight, and easy to ignore.
-  function photoNudgeHtml(){
-    try {
-      if (!PAGES_ON.body) return "";
-      const last = localStorage.getItem(LAST_PHOTO_KEY);
-      if (last){
-        const days = (Date.now() - new Date(last).getTime()) / 86400000;
-        if (!(days >= PHOTO_NUDGE_DAYS)) return "";
-        return '<div class="session-photo-nudge">It\'s been ' + Math.floor(days) + ' days since your last photo. Take one \u2014 you\'ll want to see this later.'
-             + '<button class="session-photo-btn" onclick="openBodyPage()">\ud83d\udcf8 Take a photo</button></div>';
-      }
-      // No photo yet: wait until the habit is real before asking at all.
-      const n = parseInt(localStorage.getItem("mowes_workout_count_v1") || "0", 10) || 0;
-      if (n < 3) return "";
-      return '<div class="session-photo-nudge">Take a photo today \u2014 in a month you\'ll be glad you have it to compare.'
-           + '<button class="session-photo-btn" onclick="openBodyPage()">\ud83d\udcf8 Take a photo</button></div>';
-    } catch(e){ return ""; }
-  }
   function sessionFinish(){
     sessionGpsStop(false);
     sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionLapDone = 0;
     renderSession();
     const now = document.getElementById("sessionNow");
-    if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>' + photoNudgeHtml() + supportSetHTML(); }
+    if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>' + watchSpeak("finish") + supportSetHTML(); }
     // Celebrate — and mark milestone workouts.
     const n = bumpWorkoutCount();
     // Quick end-of-workout report: what you just did + your streak.
@@ -10919,6 +11009,8 @@
     if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionLoadSettings();
     renderSession();
+    const _watch = document.getElementById("sessionWatch");
+    if (_watch) _watch.innerHTML = watchSpeak("open");
     document.getElementById("sessionOverlay").classList.add("show");
     renderPageBar();
     buildSunRays();
