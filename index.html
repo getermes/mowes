@@ -3297,7 +3297,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">MOWES <span id="appVersion">v59</span></div>
+        <div class="cs-version">MOWES <span id="appVersion">v60</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -4475,7 +4475,7 @@
   function saveData(){
     if (libraryShownAsPage()){ saveLibrary(); return; } // Library edits persist to their own store
     if (!currentPageIsSheet()) return; // only exercise-sheet pages have weeks
-    try { localStorage.setItem(sheetKeyFor(activePageId), JSON.stringify(allWeeks)); } catch(e){}
+    storeSet(sheetKeyFor(activePageId), JSON.stringify(allWeeks));
   }
   function loadAllWeeks(){
     allWeeks = {};
@@ -4925,6 +4925,22 @@
   // Everything MOWES knows lives in one small box on the phone (~5MB). Photos
   // are the only thing big enough to fill it, and a full box makes saving a
   // workout fail silently. So photos get their own ceiling, well under the box.
+  // Saving your WORK — exercises, the week, your history — must never fail in
+  // silence. Photos have their own ceiling above; this is the other half: if the
+  // phone refuses a write, say so once, plainly, instead of letting the screen
+  // show something the phone did not keep.
+  let storeWarned = false;
+  function storeSet(key, value){
+    try { localStorage.setItem(key, value); return true; }
+    catch(e){
+      if (!storeWarned){
+        storeWarned = true;
+        alert("\u26a0\ufe0f Your phone wouldn't save that \u2014 its storage for this app is full.\n\nRemove a few progress photos (\ud83d\udccf My Body & Pics) and try again. What you see on screen may not have been kept.");
+      }
+      return false;
+    }
+  }
+
   const PHOTO_BUDGET = 3 * 1024 * 1024;   // photos may use at most ~3MB
   const LAST_PHOTO_KEY = "mowes_last_photo_at";
   const PHOTO_NUDGE_DAYS = 14;            // a fortnight is long enough to see a change
@@ -4992,10 +5008,14 @@
     try { localStorage.setItem("mowes_body_pics_migrated_v1", "1"); } catch(e){}
   }
   function saveBodyPics(){
+    let stored = true;
     try { localStorage.setItem(BODY_PICS_KEY, JSON.stringify(bodyPicsData)); }
-    catch(e){ alert("Your phone's storage for this app is full — remove a few photos to add more."); }
+    catch(e){ stored = false; alert("Your phone's storage for this app is full — remove a few photos to add more."); }
     // A tiny marker of the newest photo's date, so the end-of-workout nudge can
-    // check "has it been a while?" without opening the whole album.
+    // check "has it been a while?" without opening the whole album. Only when the
+    // album really was written — otherwise we'd silence the reminder for a photo
+    // the phone never kept.
+    if (!stored) return;
     try {
       let newest = "";
       bodyPicsData.forEach(x => { if (x && x.at && x.at > newest) newest = x.at; });
@@ -8167,7 +8187,7 @@
   const BODY_DEFAULTS = [{ label:"Weight", unit:"lbs" }, { label:"Waist", unit:"in" }, { label:"Arms", unit:"in" }, { label:"Chest", unit:"in" }];
   let bodyPhotoTemp = "";
   function loadBodyEntries(){ try { return JSON.parse(localStorage.getItem("mowes_body_v1") || "[]") || []; } catch(e){ return []; } }
-  function saveBodyEntries(arr){ try { localStorage.setItem("mowes_body_v1", JSON.stringify(arr)); } catch(e){} }
+  function saveBodyEntries(arr){ storeSet("mowes_body_v1", JSON.stringify(arr)); }
   function bodyTodayStr(){ const d = new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
   function bodyFieldLabels(){
     const labels = BODY_DEFAULTS.map(x => ({ label:x.label, unit:x.unit }));
@@ -8603,7 +8623,7 @@
   // exercise once in the Library → every day that uses it updates too).
   function genLibId(){ libIdSeq++; return "r_" + Date.now().toString(36) + "_" + libIdSeq.toString(36) + Math.floor(Math.random()*1296).toString(36); }
   function readLibraryStore(){ try { const raw = localStorage.getItem(LIBRARY_KEY); const a = raw ? JSON.parse(raw) : []; return Array.isArray(a) ? a : []; } catch(e){ return []; } }
-  function writeLibraryStore(arr){ try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(arr)); } catch(e){} }
+  function writeLibraryStore(arr){ storeSet(LIBRARY_KEY, JSON.stringify(arr)); }
   function ensureLibIds(arr){ let changed = false; arr.forEach(r => { if (r && !r.id){ r.id = genLibId(); changed = true; } }); return changed; }
   function normalizeLibGroups(arr){ let changed = false; arr.forEach(r => { if (r && LIB_GROUP_REMAP[r.group]){ r.group = LIB_GROUP_REMAP[r.group]; changed = true; } }); return changed; }
   function getLibrary(){ const arr = readLibraryStore(); let ch = ensureLibIds(arr); if (normalizeLibGroups(arr)) ch = true; if (ch) writeLibraryStore(arr); return arr; }
@@ -9053,7 +9073,7 @@
     days.forEach(d => { if (!Array.isArray(o[d])) o[d] = []; });
     return o;
   }
-  function saveWeekSel(sel){ try { localStorage.setItem(WEEK_SEL_KEY, JSON.stringify(sel)); } catch(e){} }
+  function saveWeekSel(sel){ storeSet(WEEK_SEL_KEY, JSON.stringify(sel)); }
   // A short "3 × 12 reps · 8 lbs" line describing a exercise, for the pick list.
   function wpSummary(r){
     const tm = (r.details && r.details.time) || {};
@@ -9991,10 +10011,24 @@
         if (watchNum("mowes_workout_count_v1") < 2) return null;   // no habit to come back to yet
         const away = watchDaysSince(localStorage.getItem(LAST_WORKOUT_KEY));
         if (away == null || away < 9) return null;
-        return {
+        // Only offer what today can actually deliver. "Make it smaller" means
+        // nothing on a rest day or a one-exercise day — and a button that does
+        // nothing is worse than no button, especially for someone this close to
+        // leaving. So the welcome stays; the offer matches what is there.
+        const groups = todayExerciseGroups();
+        if (groups >= 2) return {
           text: "Welcome back. Let's make today an easy one \u2014 a short version counts just as much.",
           btn: "\ud83d\udc4b Start something small",
           action: "watchStartSmall()"
+        };
+        if (groups === 1) return {
+          text: "Welcome back. Today is a short one already \u2014 just the one exercise, whenever you're ready.",
+          btn: "", action: ""
+        };
+        return {
+          text: "Welcome back. Nothing is set for today \u2014 pick one thing, and that counts.",
+          btn: "\ud83d\uddd3\ufe0f Pick something for today",
+          action: "openWeekPlanPage()"
         };
       }
     },
@@ -10041,6 +10075,20 @@
   }
   function watchDismiss(el){ const box = el && el.closest(".watch-note"); if (box) box.remove(); }
   window.watchDismiss = watchDismiss;
+
+  // How many real exercises today holds (warm-up and cool-down don't count, and
+  // an exercise's sets count once). Drives what the comeback watcher may offer.
+  function todayExerciseGroups(){
+    try {
+      if (!sessionStepsArr || !sessionStepsArr.length) return 0;
+      const seen = new Set();
+      sessionStepsArr.forEach(function(st){
+        if (!st || st.type === "warmup" || st.type === "cooldown") return;
+        seen.add((st.rid || "") + "|" + (st.name || ""));
+      });
+      return seen.size;
+    } catch(e){ return 0; }
+  }
 
   // "Start something small" has to mean it. Keep the warm-up, keep ONE exercise,
   // keep the cool-down, and let the rest wait — using the same skip the user
@@ -10935,10 +10983,15 @@
     sessionRunning = false; if (sessionTimer){ clearInterval(sessionTimer); sessionTimer = null; }
     sessionIdx = -1; sessionRemain = 0; sessionPhase = "work"; sessionLapDone = 0;
     renderSession();
-    const now = document.getElementById("sessionNow");
-    if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>' + watchSpeak("finish") + supportSetHTML(); }
-    // Celebrate — and mark milestone workouts.
+    // Count the workout FIRST: a watcher that asks "how many workouts so far?"
+    // must be told about the one that just finished, not the one before it.
     const n = bumpWorkoutCount();
+    const now = document.getElementById("sessionNow");
+    if (now){ now.className = "session-now on"; now.innerHTML = '<div class="session-now-name">🎉 Done!</div><div class="session-now-detail">Great work today.</div>' + supportSetHTML(); }
+    // The note goes in its own box, not inside the Done card: renderSession()
+    // rebuilds that card, and a note that vanishes is still marked as spoken.
+    const _watchBox = document.getElementById("sessionWatch");
+    if (_watchBox) _watchBox.innerHTML = watchSpeak("finish");
     // Quick end-of-workout report: what you just did + your streak.
     const _doneEx = new Set();
     Object.keys(sessionDone).forEach(function(k){ const st = sessionStepsArr[k]; if (st) _doneEx.add((st.rid || "") + "|" + st.name); });
