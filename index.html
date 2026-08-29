@@ -3297,7 +3297,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">MOWES <span id="appVersion">v60</span></div>
+        <div class="cs-version">MOWES <span id="appVersion">v61</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -4404,11 +4404,37 @@
   const todayKey = days[(new Date().getDay() + 6) % 7];
   let selectedDay = todayKey;
 
+  // ---- Units: one app-wide choice ----
+  // The per-exercise unit label still works and still wins; this is only what a
+  // NEW exercise starts as. Before this, choosing kilos on one exercise never
+  // survived to the next one you built, which made the choice feel broken.
+  const UNITS_KEY = "mowes_units_v1";
+  let unitPref = { weight:"lbs", dist:"mi" };
+  try {
+    const _u = JSON.parse(localStorage.getItem(UNITS_KEY) || "null");
+    if (_u){
+      if (_u.weight === "kg" || _u.weight === "lbs") unitPref.weight = _u.weight;
+      if (_u.dist === "km" || _u.dist === "mi") unitPref.dist = _u.dist;
+    }
+  } catch(e){}
+  function defWeightUnit(){ return unitPref.weight; }
+  function defDistUnit(){ return unitPref.dist; }
+  // Keep a unit the exercise already carries; only fall back to the preference.
+  function normWeightUnit(u){ return (u === "kg" || u === "lbs") ? u : defWeightUnit(); }
+  function normDistUnit(u){ return (u === "km" || u === "mi" || u === "m") ? u : defDistUnit(); }
+  function toggleUnitPref(which){
+    if (which === "weight") unitPref.weight = (unitPref.weight === "kg") ? "lbs" : "kg";
+    else unitPref.dist = (unitPref.dist === "km") ? "mi" : "km";
+    try { localStorage.setItem(UNITS_KEY, JSON.stringify(unitPref)); } catch(e){}
+    renderSetup();
+  }
+  window.toggleUnitPref = toggleUnitPref;
+
   function blankRoutine(){
     return {
       name: "",
       details: {
-        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:"lbs", distUnit:"mi", rest:0, restAfter:0, showSets:true, showVideo:false, video:"", sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
+        reps:     { on:false, cols:{reps:true,weight:true,time:false,distance:false}, weightUnit:defWeightUnit(), distUnit:defDistUnit(), rest:0, restAfter:0, showSets:true, showVideo:false, video:"", sets:[ {reps:"", weight:"", time:"", distance:"", done:false} ] },
         time:     { on:false, rows:[ {label:"", min:"", miles:"", done:false} ] },
         weight:   { on:false, val:"" },
         distance: { on:false, val:"" }
@@ -5443,7 +5469,7 @@
         const det = r.details || {};
         const reps = det.reps || {};
         if (reps.on && reps.sets && reps.sets.length){
-          const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {};
+          const wUnit = reps.weightUnit || defWeightUnit(), dUnit = reps.distUnit || defDistUnit(), cols = reps.cols || {};
           reps.sets.forEach((s, si) => {
             if (!s || (!s.reps && !s.weight && !s.time && !s.distance)) return;
             const parts = [];
@@ -5813,7 +5839,7 @@
     if (det.reps && det.reps.on){
       const sets = det.reps.sets || [];
       const cols = (det.reps.cols) ? SET_COLS.filter(k => det.reps.cols[k]) : ["reps","weight"];
-      const wUnit = ((det.reps.weightUnit || det.reps.unit) === "kg") ? "Kls" : "Lbs";
+      const wUnit = ((det.reps.weightUnit || det.reps.unit) === "kg") ? "Kg" : "Lbs";
       const dUnit = (det.reps.distUnit === "km") ? "km" : "mi";
       const colText = (s) => cols.map(k => {
         const v = s[k];
@@ -6261,7 +6287,7 @@
   const SET_COLS = ["reps","weight","distance","time"];
   const SET_COL_INFO = {
     reps:     { toggle:"Reps/laps", ph:"reps", title:()=>"" },
-    weight:   { toggle:"Weight",    ph:"wt",   title:(c)=> c.weightUnit==="kg" ? "Kls" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
+    weight:   { toggle:"Weight",    ph:"wt",   title:(c)=> c.weightUnit==="kg" ? "Kg" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
     distance: { toggle:"Dist",      ph:"dist", title:(c)=> c.distUnit==="km" ? "km" : (c.distUnit==="m" ? "m" : "mi"), unitKey:"distUnit", units:["mi","km","m"] },
     time:     { toggle:"Time",      ph:"min",  title:()=>"min" }
   };
@@ -6274,8 +6300,8 @@
     const cfg = {
       cols: c ? { reps:!!c.reps, weight:!!c.weight, time:!!c.time, distance:!!c.distance }
               : { reps:true, weight:true, time:false, distance:false },
-      weightUnit: ((d.weightUnit || d.unit) === "kg") ? "kg" : "lbs",
-      distUnit: (d.distUnit === "km") ? "km" : "mi",
+      weightUnit: normWeightUnit(d.weightUnit || d.unit),
+      distUnit: normDistUnit(d.distUnit),
       rest: parseInt(d.rest, 10) || 0,
       restAfter: parseInt(d.restAfter, 10) || 0,
       lapLen: parseFloat(d.lapLen) || 0,
@@ -7413,7 +7439,7 @@
               doneWeeks.add(wk);
             };
             const reps = det.reps || {};
-            const unit = reps.weightUnit || "lbs";
+            const unit = reps.weightUnit || defWeightUnit();
             (reps.sets || []).forEach(s => {
               if (!s) return;
               if (s.done) markDone();
@@ -8180,6 +8206,16 @@
     // so this is the one place a user can turn the welcome page on again.
     // No hide-the-Cover switch here either. This page is asleep, and waking it
     // with a second copy of that switch would rebuild the same trap.
+    // Units: one tap here and every new exercise follows. Anything already
+    // built keeps the unit it was made with.
+    html += '<button class="setup-row" onclick="toggleUnitPref(\'weight\')">'
+      + '<div class="setup-label">Weight unit</div>'
+      + '<div class="setup-value">' + (unitPref.weight === "kg" ? "Kilos (kg)" : "Pounds (lbs)") + '</div>'
+      + '<div class="setup-edit-hint">✏️</div></button>';
+    html += '<button class="setup-row" onclick="toggleUnitPref(\'dist\')">'
+      + '<div class="setup-label">Distance unit</div>'
+      + '<div class="setup-value">' + (unitPref.dist === "km" ? "Kilometres (km)" : "Miles (mi)") + '</div>'
+      + '<div class="setup-edit-hint">✏️</div></button>';
     body.innerHTML = html;
   }
 
@@ -9352,8 +9388,8 @@
       mem.vals = { reps:first.reps || "", weight:first.weight || "", time:first.time || "", distance:first.distance || "" };
       mem.count = (det.reps.sets && det.reps.sets.length) || 1;
       mem.showSets = det.reps.showSets !== false;
-      mem.weightUnit = det.reps.weightUnit || "lbs";
-      mem.distUnit = det.reps.distUnit || "mi";
+      mem.weightUnit = det.reps.weightUnit || defWeightUnit();
+      mem.distUnit = det.reps.distUnit || defDistUnit();
     }
     saveCardMem(mem);
     markCardFilled(id);
@@ -9411,7 +9447,7 @@
       body.innerHTML = html;
     } else {
       if (!det.reps) det.reps = { sets: [] };
-      const wU = det.reps.weightUnit || "lbs", dU = det.reps.distUnit || "mi";
+      const wU = det.reps.weightUnit || defWeightUnit(), dU = det.reps.distUnit || defDistUnit();
       const cols = qeditCols();
       const showSets = qeditShowSets();
       const sets = det.reps.sets || (det.reps.sets = []);
@@ -9444,7 +9480,7 @@
       if (cols.weight){
         html += '<div class="si-row"><span class="si-label">Weight</span>'
              + '<input class="si-input qedit-si" data-col="weight" type="number" min="0" step="any" inputmode="decimal" placeholder="wt" value="' + escapeHtml(first.weight == null ? "" : first.weight) + '">'
-             + unitBtn("weight", wU === "kg" ? "Kls" : "Lbs") + '</div>';
+             + unitBtn("weight", wU === "kg" ? "Kg" : "Lbs") + '</div>';
       }
       if (cols.distance){
         html += '<div class="si-row"><span class="si-label">Dist</span>'
@@ -9893,7 +9929,7 @@
     if (st.detail) lines.push("🎯 " + st.detail);
     if (st.kind === "timed"){ lines.push("⏱️ You'll go for " + sessionClock(sessionStepDuration(st))); }
     else if (st.kind === "laps"){ lines.push("🌀 " + st.laps + " lap" + (st.laps === 1 ? "" : "s") + " coming up"); }
-    else if (st.kind === "manual" && (parseFloat(st.dist) || 0) > 0){ lines.push("📍 " + st.dist + " " + (st.distUnit || "mi") + " to cover"); }
+    else if (st.kind === "manual" && (parseFloat(st.dist) || 0) > 0){ lines.push("📍 " + st.dist + " " + (st.distUnit || defDistUnit()) + " to cover"); }
     // A friendly nudge that changes as the clock runs down.
     lines.push(sessionRemain <= 5 ? "Here we go! 🔥" : "Catch your breath, sip some water 💧");
     return lines;
@@ -10183,7 +10219,7 @@
       const cat = exerciseCategory(name);
       const rid = "__starter__:" + pi;
       if (cat.type === "cardio"){
-        out.push({ rid:rid, type:"cardio", name:name, label:"Easy pace", detail:"20 min", reps:0, time:20, dist:0, distUnit:"mi", icon:cat.icon, kind:"timed", starter:true });
+        out.push({ rid:rid, type:"cardio", name:name, label:"Easy pace", detail:"20 min", reps:0, time:20, dist:0, distUnit:defDistUnit(), icon:cat.icon, kind:"timed", starter:true });
       } else if (cat.type === "core"){
         for (var i = 0; i < 3; i++) out.push({ rid:rid, type:cat.type, name:name, label:"Set " + (i + 1), detail:"30 sec hold", reps:0, time:0, dist:0, icon:cat.icon, kind:"timed", fixedSec:30, starter:true });
       } else {
@@ -10202,7 +10238,7 @@
     const restBetween = parseInt(reps.rest, 10) || 0, restAfter = parseInt(reps.restAfter, 10) || 0;
     const video = (reps.video || "").trim(); // how-to / follow-along / companion clip
     if (reps.on && reps.sets){
-      const wUnit = reps.weightUnit || "lbs", dUnit = reps.distUnit || "mi", cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
+      const wUnit = reps.weightUnit || defWeightUnit(), dUnit = reps.distUnit || defDistUnit(), cols = reps.cols || {}, lapLen = parseFloat(reps.lapLen) || 0;
       // Only the sets that actually have something in them; setIndex/setCount let the
       // Today's Session list collapse them into ONE line ("3 Set, 10 Rep") per exercise.
       const validSets = reps.sets.filter(s => s && (s.reps || s.weight || s.time || s.distance));
@@ -10225,7 +10261,7 @@
         const lbl = (row.label || "").toLowerCase();
         const icon = lbl.indexOf("run") >= 0 ? "🏃" : (lbl.indexOf("walk") >= 0 ? "🚶" : "⏱️");
         const nMin = parseFloat(row.min) || 0, nMiles = parseFloat(row.miles) || 0;
-        out.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: "mi", icon: icon, kind: nMin > 0 ? "timed" : "manual", restBetween: restBetween, restAfter: restAfter, video: video });
+        out.push({ rid: rid, type: "cardio", name: r.name, label: row.label || ("Part " + (i + 1)), detail: parts.join(" · "), reps: 0, time: nMin, dist: nMiles, distUnit: defDistUnit(), icon: icon, kind: nMin > 0 ? "timed" : "manual", restBetween: restBetween, restAfter: restAfter, video: video });
       });
     }
     return out;
@@ -10315,9 +10351,9 @@
       if (hasDist && sessionGpsActive){
         const done = sessionGpsDistInUnit(st), target = parseFloat(st.dist) || 0;
         const pct = target > 0 ? Math.min(100, Math.round(done / target * 100)) : 0;
-        inner += '<div class="session-now-timer">📍 ' + done.toFixed(2) + ' / ' + target + ' ' + escapeHtml(st.distUnit || 'mi') + '</div>'
+        inner += '<div class="session-now-timer">📍 ' + done.toFixed(2) + ' / ' + target + ' ' + escapeHtml(st.distUnit || defDistUnit()) + '</div>'
           + '<div class="session-gps-bar"><div class="session-gps-fill" style="width:' + pct + '%"></div></div>'
-          + sessionGpsToGoHtml(done, target, st.distUnit || 'mi')
+          + sessionGpsToGoHtml(done, target, st.distUnit || defDistUnit())
           + '<div class="session-gps-msg" id="sessionGpsMsg">' + escapeHtml(sessionGpsMsgText || 'Getting your location… start moving. 🏃') + '</div>'
           + '<button class="session-gps-btn stop" onclick="sessionGpsStop(true)">✕ Stop GPS</button>';
       } else if (hasDist){
@@ -10683,7 +10719,7 @@
         nameLine = (st.icon ? escapeHtml(st.icon) + ' ' : '') + escapeHtml(st.name);
         const unitLbl = (st.kind === "laps") ? "Lap" : "Rep";
         detailLine = total + " Set" + (total > 1 ? "s" : "") + ", " + st.reps + " " + unitLbl + (st.reps === 1 ? "" : "s");
-        if (st.weight > 0) detailLine += ", " + st.weight + " " + (st.weightUnit || "lbs");
+        if (st.weight > 0) detailLine += ", " + st.weight + " " + (st.weightUnit || defWeightUnit());
         if (isCurrent) detailLine += " · set " + Math.min(total, sessionIdx - i + 1) + "/" + total;
         else if (doneSets > 0) detailLine += " · " + doneSets + "/" + total;
       } else if (st.type === "warmup" || st.type === "cooldown") {
@@ -10872,7 +10908,7 @@
   }
   // ---- GPS auto-distance: measure an outdoor distance step and auto-advance at the target ----
   function sessionGpsUnitToM(u){ return (u === "km") ? 1000 : 1609.344; }
-  function sessionGpsDistInUnit(st){ return sessionGpsDistM / sessionGpsUnitToM((st && st.distUnit) || "mi"); }
+  function sessionGpsDistInUnit(st){ return sessionGpsDistM / sessionGpsUnitToM((st && st.distUnit) || defDistUnit()); }
   // Mid-run, what you want is not how far you've gone — it's how much is left.
   function sessionGpsToGoHtml(done, target, unit){
     if (!(target > 0)) return "";
@@ -10887,7 +10923,7 @@
     if (!st || st.kind !== "manual") return;
     if (!navigator.geolocation){ sessionGpsMsgText = "This phone can't use GPS here — tap ✓ Done instead."; renderSession(); return; }
     sessionGpsDistM = 0; sessionGpsLast = null; sessionGpsActive = true;
-    sessionGpsTargetM = (parseFloat(st.dist) || 0) * sessionGpsUnitToM(st.distUnit || "mi");
+    sessionGpsTargetM = (parseFloat(st.dist) || 0) * sessionGpsUnitToM(st.distUnit || defDistUnit());
     sessionGpsMsgText = "Getting your location… start moving. 🏃";
     if (sessionGpsWatch != null) navigator.geolocation.clearWatch(sessionGpsWatch);
     sessionGpsWatch = navigator.geolocation.watchPosition(onSessionGpsPos, onSessionGpsErr, { enableHighAccuracy:true, maximumAge:1000, timeout:20000 });
