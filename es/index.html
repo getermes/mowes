@@ -7255,6 +7255,7 @@
     const data = {};
     collectMowesKeys().forEach(k => { data[k] = localStorage.getItem(k); });
     const payload = { app: "PIPES", type: "mowes-backup", version: 1, savedAt: new Date().toISOString(), data: data };
+    try { localStorage.setItem(BACKUP_SAVED_KEY, new Date().toISOString()); } catch(e){}
     const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const d = new Date(), pad = n => String(n).padStart(2, "0");
@@ -10025,6 +10026,7 @@
   //   3. Never guilt. A watcher offers; it never scolds, and it never blocks.
   const WATCH_SEEN_KEY = "mowes_watch_seen_v1";
   const LAST_WORKOUT_KEY = "mowes_last_workout_at";
+  const BACKUP_SAVED_KEY = "mowes_backup_saved_v1";
   function watchSeen(){ try { return JSON.parse(localStorage.getItem(WATCH_SEEN_KEY) || "{}") || {}; } catch(e){ return {}; } }
   function watchMarkSeen(id){ const m = watchSeen(); m[id] = new Date().toISOString(); try { localStorage.setItem(WATCH_SEEN_KEY, JSON.stringify(m)); } catch(e){} }
   function watchDaysSince(iso){ if (!iso) return null; const d = (Date.now() - new Date(iso).getTime()) / 86400000; return (isNaN(d) || d < 0) ? null : d; }
@@ -10082,6 +10084,22 @@
         if (watchNum("mowes_workout_count_v1") < 3) return null;   // let the habit come first
         return { text: "Toma una foto hoy \u2014 en un mes te alegrará tenerla para comparar.",
                  btn: "\ud83d\udcf8 Tomar una foto", action: "openBodyPage()" };
+      }
+    },
+    {
+      // Once there is a history worth losing, offer the copy that saves it.
+      // The file holds the exercises, the photos, the history AND the device
+      // code, so restoring it brings back the standing as well as the work.
+      // Nothing is sent: the app hands over a file, the person keeps it.
+      id: "keepcopy",
+      moment: "open",
+      quietDays: 60,
+      check: function(){
+        const n = watchNum("mowes_workout_count_v1");
+        if (n < 3) return null;                                  // nothing worth keeping yet
+        if (localStorage.getItem(BACKUP_SAVED_KEY)) return null;  // they already have one
+        return { text: "Llevas " + n + " entrenamientos en este tel\u00e9fono. Guarda una copia \u2014 el archivo se queda contigo, nunca se env\u00eda a ning\u00fan lado.",
+                 btn: "\ud83d\udcbe Guardar una copia", action: "openBackup()" };
       }
     }
   ];
@@ -12261,6 +12279,11 @@
     if (_memberTaps>=5){ _memberTaps=0; var a=document.getElementById("memberAdmin"); if (a) a.classList.toggle("show"); }
   }
   function memberGen(plan){ var out=document.getElementById("memberAdminOut"); if (out) out.textContent=memberMakeCode(plan); }
+
+  // Give this install its dated code the first time the app opens. It used to
+  // wait until someone opened the Membership panel, which almost nobody does —
+  // and the date is inside the code, so a code made late is a date lost.
+  try { memberDeviceId(); } catch(e){}
 
   // Register the offline worker (works once the app is on a secure https site)
   if ("serviceWorker" in navigator) {
