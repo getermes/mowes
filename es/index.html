@@ -3297,7 +3297,7 @@
         </div>
         <div class="cs-divider"></div>
         <!-- Version tag: bump this together with the CACHE version in sw.js on each publish. -->
-        <div class="cs-version">PIPES <span id="appVersion">v65</span></div>
+        <div class="cs-version">PIPES <span id="appVersion">v66</span></div>
       </div>
     </div>
     <div class="sky-clouds" aria-hidden="true">
@@ -5831,7 +5831,7 @@
     if (det.reps && det.reps.on){
       const sets = det.reps.sets || [];
       const cols = (det.reps.cols) ? SET_COLS.filter(k => det.reps.cols[k]) : ["reps","weight"];
-      const wUnit = ((det.reps.weightUnit || det.reps.unit) === "kg") ? "Kg" : "Lbs";
+      const wUnit = ((det.reps.weightUnit || det.reps.unit) === "kg") ? "Kgs" : "Lbs";
       const dUnit = (det.reps.distUnit === "km") ? "km" : "mi";
       const colText = (s) => cols.map(k => {
         const v = s[k];
@@ -6279,7 +6279,7 @@
   const SET_COLS = ["reps","weight","distance","time"];
   const SET_COL_INFO = {
     reps:     { toggle:"Reps/vueltas", ph:"reps", title:()=>"" },
-    weight:   { toggle:"Peso",      ph:"peso", title:(c)=> c.weightUnit==="kg" ? "Kg" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
+    weight:   { toggle:"Peso",      ph:"peso", title:(c)=> c.weightUnit==="kg" ? "Kgs" : "Lbs", unitKey:"weightUnit", units:["lbs","kg"] },
     distance: { toggle:"Dist",      ph:"dist", title:(c)=> c.distUnit==="km" ? "km" : (c.distUnit==="m" ? "m" : "mi"), unitKey:"distUnit", units:["mi","km","m"] },
     time:     { toggle:"Tiempo",    ph:"min",  title:()=>"min" }
   };
@@ -9470,7 +9470,7 @@
       if (cols.weight){
         html += '<div class="si-row"><span class="si-label">Peso</span>'
              + '<input class="si-input qedit-si" data-col="weight" type="number" min="0" step="any" inputmode="decimal" placeholder="peso" value="' + escapeHtml(first.weight == null ? "" : first.weight) + '">'
-             + unitBtn("weight", wU === "kg" ? "Kg" : "Lbs") + '</div>';
+             + unitBtn("weight", wU === "kg" ? "Kgs" : "Lbs") + '</div>';
       }
       if (cols.distance){
         html += '<div class="si-row"><span class="si-label">Dist</span>'
