@@ -7077,7 +7077,14 @@
     captureDay();
     const arr = weekData[selectedDay];
     const last = arr[arr.length - 1];
-    if (last && !String(last.name || "").trim()) last.name = name;
+    const blankLast = last && !String(last.name || "").trim();
+    // A walk or a bike ride isn't counted in reps — cardio comes in with its
+    // time row instead of the sets table.
+    if (exerciseCategory(name).type === "cardio"){
+      const c = routineFromExerciseName(name);
+      if (blankLast) arr[arr.length - 1] = c; else arr.push(c);
+    }
+    else if (blankLast) last.name = name;
     else { const r = blankRoutine(); r.name = name; arr.push(r); }
     renderRoutines();
     captureDay(); saveData();
@@ -9947,13 +9954,16 @@
   // Categorise an exercise by its name → a muscle "type" (for the switch-pause) and an icon.
   function exerciseCategory(name){
     const n = (name || "").toLowerCase();
-    if (/squat|lunge|\bleg|calf|glute|hamstring|quad|step ?-?up/.test(n)) return { type: "legs", icon: "🦵" };
-    if (/plank|crunch|sit ?-?up|\babs\b|core|twist|mountain/.test(n)) return { type: "core", icon: "🧘" };
-    if (/push ?-?up|chest|bench|\bfly\b|pec/.test(n)) return { type: "chest", icon: "💪" };
-    if (/shoulder|overhead|lateral|delt/.test(n)) return { type: "shoulders", icon: "🏋️" };
-    if (/curl|bicep|tricep|\bdip/.test(n)) return { type: "arms", icon: "💪" };
-    if (/row|pull|\blat|deadlift|\bback\b/.test(n)) return { type: "back", icon: "🏋️" };
-    if (/run|jog|walk|bike|treadmill|cardio|sprint/.test(n)) return { type: "cardio", icon: "🏃" };
+    // A pulldown is a back exercise even though its Spanish name says "pecho" —
+    // catch it before the chest rule below claims it on that word.
+    if (/jal[oó]n|dominada/.test(n)) return { type: "back", icon: "🏋️" };
+    if (/squat|lunge|\bleg|calf|glute|hamstring|quad|step ?-?up|sentadilla|zancada|gl[uú]teo|pantorrilla|isquiotibial|cu[aá]driceps|pierna|puente|escal[oó]n/.test(n)) return { type: "legs", icon: "🦵" };
+    if (/plank|crunch|sit ?-?up|\babs\b|core|twist|mountain|plancha|abdominal|torso|giro|escalador/.test(n)) return { type: "core", icon: "🧘" };
+    if (/push ?-?up|chest|bench|\bfly\b|pec|flexi[oó]n|flexion|pecho|banca|apertura/.test(n)) return { type: "chest", icon: "💪" };
+    if (/shoulder|overhead|lateral|delt|hombro|militar|elevaci[oó]n/.test(n)) return { type: "shoulders", icon: "🏋️" };
+    if (/curl|bicep|tricep|\bdip|b[ií]ceps|tr[ií]ceps|fondo/.test(n)) return { type: "arms", icon: "💪" };
+    if (/row|pull|\blat|deadlift|\bback\b|remo|peso muerto|espalda/.test(n)) return { type: "back", icon: "🏋️" };
+    if (/run|jog|walk|bike|treadmill|cardio|sprint|camina|trote|trotar|correr|carrera|bici|ciclismo|patina|el[ií]ptica/.test(n)) return { type: "cardio", icon: "🏃" };
     return { type: "other", icon: "💪" };
   }
   // Quick "how do I do this?" form tips, matched by exercise name.
@@ -11942,7 +11952,11 @@
     switchToPage("default");
     selectedDay = todayKey;
     // Add the exercise for today, with its sets table already open to fill in.
-    const r = blankRoutine(); r.name = name; r.details.reps.on = true;
+    // A walk or a bike ride isn't counted in reps — cardio comes in with its
+    // time row instead of the sets table.
+    const cardio = exerciseCategory(name).type === "cardio";
+    const r = cardio ? routineFromExerciseName(name) : blankRoutine();
+    if (!cardio){ r.name = name; r.details.reps.on = true; }
     if (!weekData[todayKey]) weekData[todayKey] = [];
     const day = weekData[todayKey];
     if (day.length === 1 && !(day[0].name || "").trim()) day[0] = r; else day.push(r);
