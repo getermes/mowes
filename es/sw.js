@@ -1,5 +1,5 @@
 // Service worker: lets the app work offline (e.g. on a walk/run with no signal)
-const CACHE = "mowes-es-v70";
+const CACHE = "mowes-es-v71";
 const ASSETS = [
   "./",
   "./index.html",
@@ -30,6 +30,13 @@ self.addEventListener("fetch", e => {
 
   // The app page: try the network first so the newest version always loads
   // when online; fall back to the cached copy when offline.
+  // The short counting links (/t, /y) and the older go.html live under this
+  // same scope, but they are not the app: they tally an arrival and forward.
+  // Leave them to the network. Handling them here also poisoned the saved
+  // copy of the app, because every page fetched was stored AS index.html.
+  const path = new URL(req.url).pathname;
+  if (/\/(t|y)\/?$|go\.html$|clicks\.html$/.test(path)) return;
+
   const wantsHtml = req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html");
   if (wantsHtml) {
     e.respondWith(
