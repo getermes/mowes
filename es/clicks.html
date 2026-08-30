@@ -23,22 +23,32 @@
 </head>
 <body>
   <div class="card">
-    <div class="lbl">PIPES · clics del enlace</div>
+    <div class="lbl">PIPES · desde YouTube</div>
     <div class="num" id="n">…</div>
-    <div class="sub">personas que tocaron tu enlace y fueron a PIPES</div>
+    <div class="sub">tocaron el enlace de la descripción (go.html)</div>
+    <div class="lbl" style="margin-top:22px">PIPES · desde TikTok</div>
+    <div class="num" id="t">…</div>
+    <div class="sub">escribieron la dirección corta (/es/t)</div>
     <button class="btn" id="refresh">↻ Refresh</button>
     <div class="note">🔒 An anonymous tally only — never who. The app itself stays untracked.</div>
   </div>
 <script>
-  var GET = "https://abacus.jasoncameron.dev/get/pipes-es-9k4z/biolink";
-  var BASELINE = 0;
-  function load(){
-    var n = document.getElementById("n"); n.textContent = "…";
-    fetch(GET + "?_=" + Date.now())
+  // Two tallies, one per road in, so it is clear which platform actually sends
+  // people — not just which one gets views.
+  var GET  = "https://abacus.jasoncameron.dev/get/pipes-es-9k4z/biolink";
+  var GETT = "https://abacus.jasoncameron.dev/get/pipes-es-9k4z/tiktok";
+  // Each tally starts from where it stood when the link went live, so the
+  // number on screen is real arrivals and not test hits.
+  var BASE = { n: 0, t: 2 };   // t: two hits from testing the redirect
+  function one(url, id){
+    var el = document.getElementById(id); el.textContent = "…";
+    var base = BASE[id] || 0;
+    fetch(url + "?_=" + Date.now())
       .then(function(r){ return r.json(); })
-      .then(function(d){ var v = (d && typeof d.value === "number") ? d.value : BASELINE; n.textContent = Math.max(0, v - BASELINE); })
-      .catch(function(){ n.textContent = "0"; });
+      .then(function(d){ var v = (d && typeof d.value === "number") ? d.value : base; el.textContent = Math.max(0, v - base); })
+      .catch(function(){ el.textContent = "0"; });
   }
+  function load(){ one(GET, "n"); one(GETT, "t"); }
   document.getElementById("refresh").addEventListener("click", load);
   load();
 </script>
