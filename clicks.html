@@ -23,22 +23,30 @@
 </head>
 <body>
   <div class="card">
-    <div class="lbl">MOWES link clicks</div>
+    <div class="lbl">MOWES · from YouTube</div>
     <div class="num" id="n">…</div>
-    <div class="sub">people who tapped your bio link and headed to MOWES</div>
+    <div class="sub">arrived through /y</div>
+    <div class="lbl" style="margin-top:22px">MOWES · from TikTok</div>
+    <div class="num" id="t">…</div>
+    <div class="sub">arrived through /t</div>
     <button class="btn" id="refresh">↻ Refresh</button>
     <div class="note">🔒 An anonymous tally only — never who. The app itself stays untracked.</div>
   </div>
 <script>
-  var GET = "https://abacus.jasoncameron.dev/get/ermes-mowes-x7q2/biolink";
-  var BASELINE = 1; // ignore the 1 stray test hit from setup, so real clicks start at 0
-  function load(){
-    var n = document.getElementById("n"); n.textContent = "…";
-    fetch(GET + "?_=" + Date.now())
+  var GET  = "https://abacus.jasoncameron.dev/get/ermes-mowes-x7q2/youtube";
+  var GETT = "https://abacus.jasoncameron.dev/get/ermes-mowes-x7q2/tiktok";
+  // Each tally starts from where it stood when the link went live, so what
+  // shows on screen is real arrivals and not our own testing.
+  var BASE = { n: 0, t: 4 };
+  function one(url, id){
+    var el = document.getElementById(id); el.textContent = "…";
+    var base = BASE[id] || 0;
+    fetch(url + "?_=" + Date.now())
       .then(function(r){ return r.json(); })
-      .then(function(d){ var v = (d && typeof d.value === "number") ? d.value : BASELINE; n.textContent = Math.max(0, v - BASELINE); })
-      .catch(function(){ n.textContent = "0"; });
+      .then(function(d){ var v = (d && typeof d.value === "number") ? d.value : base; el.textContent = Math.max(0, v - base); })
+      .catch(function(){ el.textContent = "0"; });
   }
+  function load(){ one(GET, "n"); one(GETT, "t"); }
   document.getElementById("refresh").addEventListener("click", load);
   load();
 </script>
