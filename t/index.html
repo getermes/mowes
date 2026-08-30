@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opening MOWES…</title>
+<meta name="robots" content="noindex">
+<style>
+  html,body{ margin:0; height:100%; }
+  body{ display:flex; align-items:center; justify-content:center; text-align:center;
+    background:linear-gradient(180deg,#eef0ff,#e6e9ff);
+    font-family:-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif; color:#5b6cff; }
+  .msg{ font-size:20px; font-weight:800; }
+  .msg .e{ font-size:34px; display:block; margin-bottom:8px; }
+</style>
+</head>
+<body>
+  <div class="msg"><span class="e">💪</span>Opening MOWES…</div>
+<script>
+  // The short counting link, for places where nobody can tap anything.
+  //
+  // On TikTok the caption and the bio are both dead text, and the account has
+  // no website field yet — so the address has to be READ off a screen and
+  // typed by hand. getermes.github.io/mowes/es/go.html is seven characters of
+  // extra chances to get it wrong; ".../es/t" is one. Same tally, own key, so
+  // TikTok arrivals can be told apart from YouTube's.
+  //
+  // Counts that someone arrived. Never who. The app itself has no tracking.
+  (function(){
+    var APP = "https://getermes.github.io/mowes/";
+    var HIT = "https://abacus.jasoncameron.dev/hit/ermes-mowes-x7q2/tiktok";
+    var done = false;
+    function go(){ if (done) return; done = true; location.replace(APP); }
+    try { fetch(HIT, { keepalive:true, mode:"no-cors" }).then(go).catch(go); } catch(e){ go(); }
+    setTimeout(go, 900); // safety: never leave anyone stuck
+  })();
+</script>
+</body>
+</html>
