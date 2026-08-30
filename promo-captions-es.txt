@@ -22,7 +22,7 @@ Sin tienda de apps — es solo un enlace, lo guardas en tu pantalla y ya es una 
 Sin registro, sin cuenta, sin correo. Todo se queda en tu teléfono. 🔒
 Gratis por ahora.
 
-getermes.github.io/mowes/es/
+getermes.github.io/mowes/es/t
 
 #ejercicioencasa #principiantes #rutinadeejercicio #entrenamientoencasa
 #gratis #saludybienestar #ejercicioparaprincipiantes #fitnessencasa
@@ -46,7 +46,7 @@ abre como cualquier otra app, a pantalla completa.
 Sin registro, sin cuenta, sin correo. Guardado solo en tu teléfono — no se
 envía nada a ningún lado. Gratis por ahora.
 
-Pruébalo: getermes.github.io/mowes/es/go.html
+Pruébalo: https://getermes.github.io/mowes/es/y
 
 #ejercicioencasa #principiantes #rutinadeejercicio #gratis #shorts
 
@@ -55,34 +55,32 @@ COMENTARIO FIJADO (el mismo en los dos)
 =========================================================
 Hice PIPES porque yo mismo lo necesitaba — empezar sin complicarme. Si lo
 pruebas, dime qué te sirve y qué no. Leo todos los comentarios. 💪
-getermes.github.io/mowes/es/
+getermes.github.io/mowes/es/t
 
 =========================================================
 NOTA SOBRE EL ENLACE
 =========================================================
-Cada plataforma lleva un enlace distinto, y hay una razón:
+UNA LETRA DICE DE DÓNDE VINO LA PERSONA:
 
-YOUTUBE — getermes.github.io/mowes/es/go.html
-  La descripción de YouTube sí deja tocar el enlace. Ese cuenta el toque y
-  en seguida lleva a la app, así se sabe cuánta gente de verdad entró y no
-  solo cuánta vio el video. El conteo se mira en:
-    getermes.github.io/mowes/es/clicks.html
-  El contador del español es aparte del inglés.
+  getermes.github.io/mowes/es/t     ← la t es de TikTok
+  getermes.github.io/mowes/es/y     ← la y es de YouTube
 
-TIKTOK — getermes.github.io/mowes/es/
-  En TikTok NADA se puede tocar: ni el caption, ni la bio (la cuenta no
-  tiene campo de sitio web todavía — eso llega a las 1000 personas
-  siguiéndote). Quien quiera entrar tiene que LEER la dirección y
-  escribirla a mano. Por eso aquí va la corta: cada letra de más es una
-  letra más para equivocarse. Se pierde el conteo, pero se gana que
-  alguien llegue.
+Es la misma dirección con una letra distinta. Las dos llevan a PIPES, las
+dos cuentan, cada una por su lado. Así se ve cuál plataforma manda gente
+de verdad — no solo cuál junta vistas.
 
-LA TARJETA DEL VIDEO — getermes.github.io/mowes/es/
-  Corta también. En pantalla tiene que leerse de un vistazo.
+El conteo se mira en:
+  getermes.github.io/mowes/es/clicks.html
+
+En YouTube ponlo con https:// adelante para que quede tocable:
+  https://getermes.github.io/mowes/es/y
+
+En TikTok NO hace falta el https:// — ahí nadie puede tocar nada (ni el
+caption ni la bio), la dirección hay que leerla y escribirla a mano, y
+cada letra de más es una letra más para equivocarse.
 
 FALTA (importante): la bio de TikTok no tiene NINGÚN enlace ahora mismo.
-Quien vea un video no tiene por dónde llegar a la app. Ponerlo como texto
-en la bio aunque no se pueda tocar — es lo que hay.
+Quien vea un video no tiene por dónde llegar a la app.
 
 =========================================================
 NOTA SOBRE "GRATIS"
