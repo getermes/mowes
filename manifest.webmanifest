@@ -1,6 +1,6 @@
 {
-  "name": "My Exercise Sheet",
-  "short_name": "Exercise",
+  "name": "MOWES — My Own Weekly Exercise Sheet",
+  "short_name": "MOWES",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
